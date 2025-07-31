@@ -10,83 +10,119 @@ public class Producto {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_producto")
-    private int idProducto;
+    private Long idProducto;
 
-    private String codigo;
+    @Column(name = "codigo_producto", nullable = false)
+    private Integer codigo;
+
+    @Column(name = "nombre", nullable = false)
     private String nombre;
+
+    @Column(name = "descripcion")
     private String descripcion;
-    private String categoria;
 
-    @Column(name = "precio_compra")
-    private double precioCompra;
+    @Column(name = "precio", nullable = false)
+    private Double precio;
 
-    @Column(name = "precio_venta")
-    private double precioVenta;
+    @Column(name = "stock_actual", nullable = false)
+    private Integer stockActual;
 
-    @Column(name = "stock_actual")
-    private int stockActual;
+    @Column(name = "stock_minimo", nullable = false)
+    private Integer stockMinimo;
 
-    @Column(name = "stock_minimo")
-    private int stockMinimo;
+    @Column(name = "presentacion")
+    private String presentacion;
 
-    @Column(name = "unidad_medida")
-    private String unidadMedida;
-
-    private boolean activo;
+    @ManyToOne
+    @JoinColumn(name = "id_proveedor", nullable = false)
+    private Proveedor proveedor;
 
     // Constructores
+
     public Producto() {}
 
-    public Producto(String codigo, String nombre, String descripcion, String categoria,
-                    double precioCompra, double precioVenta, int stockMinimo, String unidadMedida) {
+    public Producto(Integer codigo, String nombre, String descripcion, Double precio, Integer stockActual, Integer stockMinimo, String presentacion, Proveedor proveedor) {
         this.codigo = codigo;
         this.nombre = nombre;
         this.descripcion = descripcion;
-        this.categoria = categoria;
-        this.precioCompra = precioCompra;
-        this.precioVenta = precioVenta;
-        this.stockActual = 0;
+        this.precio = precio;
+        this.stockActual = stockActual;
         this.stockMinimo = stockMinimo;
-        this.unidadMedida = unidadMedida;
-        this.activo = true;
+        this.presentacion = presentacion;
+        this.proveedor = proveedor;
     }
 
     // Getters y Setters
-    public int getIdProducto() { return idProducto; }
-    public void setIdProducto(int idProducto) { this.idProducto = idProducto; }
 
-    public String getCodigo() { return codigo; }
-    public void setCodigo(String codigo) { this.codigo = codigo; }
+    public Long getIdProducto() {
+        return idProducto;
+    }
 
-    public String getNombre() { return nombre; }
-    public void setNombre(String nombre) { this.nombre = nombre; }
+    public void setIdProducto(Long idProducto) {
+        this.idProducto = idProducto;
+    }
 
-    public String getDescripcion() { return descripcion; }
-    public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
+    public Integer getCodigo() {
+        return codigo;
+    }
 
-    public String getCategoria() { return categoria; }
-    public void setCategoria(String categoria) { this.categoria = categoria; }
+    public void setCodigo(Integer codigo) {
+        this.codigo = codigo;
+    }
 
-    public double getPrecioCompra() { return precioCompra; }
-    public void setPrecioCompra(double precioCompra) { this.precioCompra = precioCompra; }
+    public String getNombre() {
+        return nombre;
+    }
 
-    public double getPrecioVenta() { return precioVenta; }
-    public void setPrecioVenta(double precioVenta) { this.precioVenta = precioVenta; }
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
 
-    public int getStockActual() { return stockActual; }
-    public void setStockActual(int stockActual) { this.stockActual = stockActual; }
+    public String getDescripcion() {
+        return descripcion;
+    }
 
-    public int getStockMinimo() { return stockMinimo; }
-    public void setStockMinimo(int stockMinimo) { this.stockMinimo = stockMinimo; }
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
+    }
 
-    public String getUnidadMedida() { return unidadMedida; }
-    public void setUnidadMedida(String unidadMedida) { this.unidadMedida = unidadMedida; }
+    public Double getPrecio() {
+        return precio;
+    }
 
-    public boolean isActivo() { return activo; }
-    public void setActivo(boolean activo) { this.activo = activo; }
+    public void setPrecio(Double precio) {
+        this.precio = precio;
+    }
 
-    @Override
-    public String toString() {
-        return codigo + " - " + nombre;
+    public Integer getStockActual() {
+        return stockActual;
+    }
+
+    public void setStockActual(Integer stockActual) {
+        this.stockActual = stockActual;
+    }
+
+    public Integer getStockMinimo() {
+        return stockMinimo;
+    }
+
+    public void setStockMinimo(Integer stockMinimo) {
+        this.stockMinimo = stockMinimo;
+    }
+
+    public String getPresentacion() {
+        return presentacion;
+    }
+
+    public void setPresentacion(String presentacion) {
+        this.presentacion = presentacion;
+    }
+
+    public Proveedor getProveedor() {
+        return proveedor;
+    }
+
+    public void setProveedor(Proveedor proveedor) {
+        this.proveedor = proveedor;
     }
 }

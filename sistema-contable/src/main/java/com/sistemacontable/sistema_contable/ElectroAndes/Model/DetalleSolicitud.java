@@ -15,14 +15,18 @@ public class DetalleSolicitud {
     @JoinColumn(name = "id_producto", nullable = false)
     private Producto producto;
 
-    @Column(nullable = false)
-    private int cantidad;
+    @Column(name = "cantidad", nullable = false)
+    private Integer cantidad;
+
+    @Column(name = "descripcion")
+    private String descripcion;
 
     @ManyToOne
     @JoinColumn(name = "id_solicitud", nullable = false)
     private SolicitudDeCompra solicitud;
 
     // Getters y setters
+
 
     public Long getId() {
         return id;
@@ -40,12 +44,20 @@ public class DetalleSolicitud {
         this.producto = producto;
     }
 
-    public int getCantidad() {
+    public Integer getCantidad() {
         return cantidad;
     }
 
-    public void setCantidad(int cantidad) {
+    public void setCantidad(Integer cantidad) {
         this.cantidad = cantidad;
+    }
+
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
     }
 
     public SolicitudDeCompra getSolicitud() {

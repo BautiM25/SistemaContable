@@ -17,17 +17,22 @@ public class OrdenDeCompra {
     @Column(name = "fecha_emision", nullable = false)
     private LocalDate fechaEmision;
 
-    @Column(name = "estado", nullable = false)
-    private String estado; // o usar un enum: EN_PROCESO, RECIBIDA, CANCELADA
+    @Column(name = "nroOrden", nullable = false)
+    private Integer nroOrden;
 
     @ManyToOne
     @JoinColumn(name = "id_proveedor", nullable = false)
     private Proveedor proveedor;
 
+    @ManyToOne
+    @JoinColumn(name = "usuario", nullable = false)
+    private Usuario usuario;
+
     @OneToMany(mappedBy = "orden", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DetalleOrden> detalles;
 
     // Getters y setters
+
 
     public Long getId() {
         return id;
@@ -45,12 +50,12 @@ public class OrdenDeCompra {
         this.fechaEmision = fechaEmision;
     }
 
-    public String getEstado() {
-        return estado;
+    public Integer getNroOrden() {
+        return nroOrden;
     }
 
-    public void setEstado(String estado) {
-        this.estado = estado;
+    public void setNroOrden(Integer nroOrden) {
+        this.nroOrden = nroOrden;
     }
 
     public Proveedor getProveedor() {
@@ -59,6 +64,14 @@ public class OrdenDeCompra {
 
     public void setProveedor(Proveedor proveedor) {
         this.proveedor = proveedor;
+    }
+
+    public Usuario getUsuario() {
+        return usuario;
+    }
+
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
     }
 
     public List<DetalleOrden> getDetalles() {

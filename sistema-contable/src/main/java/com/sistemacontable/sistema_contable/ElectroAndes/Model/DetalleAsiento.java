@@ -12,10 +12,10 @@ public class DetalleAsiento {
     private Long id;
 
     @Column(nullable = false)
-    private double debe;
+    private Double debe;
 
     @Column(nullable = false)
-    private double haber;
+    private Double haber;
 
     @ManyToOne
     @JoinColumn(name = "cuenta_id", nullable = false)
@@ -27,6 +27,7 @@ public class DetalleAsiento {
 
     // Getters y Setters
 
+
     public Long getId() {
         return id;
     }
@@ -35,19 +36,19 @@ public class DetalleAsiento {
         this.id = id;
     }
 
-    public double getDebe() {
+    public Double getDebe() {
         return debe;
     }
 
-    public void setDebe(double debe) {
+    public void setDebe(Double debe) {
         this.debe = debe;
     }
 
-    public double getHaber() {
+    public Double getHaber() {
         return haber;
     }
 
-    public void setHaber(double haber) {
+    public void setHaber(Double haber) {
         this.haber = haber;
     }
 
