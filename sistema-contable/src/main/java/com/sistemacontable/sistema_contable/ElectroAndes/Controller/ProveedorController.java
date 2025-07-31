@@ -27,7 +27,7 @@ public class ProveedorController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PostMapping
+    @PostMapping (value = "/create")
     public Proveedor crearProveedor(@RequestBody Proveedor proveedor) {
         return proveedorService.guardar(proveedor);
     }
