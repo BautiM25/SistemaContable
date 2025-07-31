@@ -14,8 +14,8 @@ public class Usuario {
     @Column(name = "nombre_usuario", nullable = false, unique = true)
     private String nombreUsuario;
 
-    @Column(nullable = false)
-    private String contraseña;
+    @Column(name = "contrasenia", nullable = false)
+    private String contrasenia;
 
     @Column(name = "nombre_completo")
     private String nombreCompleto;
@@ -42,12 +42,12 @@ public class Usuario {
         this.nombreUsuario = nombreUsuario;
     }
 
-    public String getContraseña() {
-        return contraseña;
+    public String getContrasenia() {
+        return contrasenia;
     }
 
-    public void setContraseña(String contraseña) {
-        this.contraseña = contraseña;
+    public void setContrasenia(String contrasenia) {
+        this.contrasenia = contrasenia;
     }
 
     public String getNombreCompleto() {
