@@ -24,8 +24,10 @@ public class Cuenta {
     @JoinColumn(name = "cuenta_padre_id")
     private Cuenta cuentaPadre;
 
-    // Getters y Setters
+    @Column(name = "eliminado", nullable = false)
+    private Boolean eliminado = false;
 
+    // Getters y Setters
 
     public Long getId() {
         return id;
@@ -65,5 +67,13 @@ public class Cuenta {
 
     public void setCuentaPadre(Cuenta cuentaPadre) {
         this.cuentaPadre = cuentaPadre;
+    }
+
+    public Boolean getEliminado() {
+        return eliminado;
+    }
+
+    public void setEliminado(Boolean eliminado) {
+        this.eliminado = eliminado;
     }
 }
