@@ -15,16 +15,17 @@ public class Cuenta {
     private String nombreCuenta;
 
     @Column(nullable = false)
-    private boolean activado;
+    private Boolean activado;
 
     @Column(name = "es_hoja", nullable = false)
-    private boolean esHoja;
+    private Boolean esHoja;
 
     @ManyToOne
     @JoinColumn(name = "cuenta_padre_id")
     private Cuenta cuentaPadre;
 
     // Getters y Setters
+
 
     public Long getId() {
         return id;
@@ -42,19 +43,19 @@ public class Cuenta {
         this.nombreCuenta = nombreCuenta;
     }
 
-    public boolean isActivado() {
+    public Boolean getActivado() {
         return activado;
     }
 
-    public void setActivado(boolean activado) {
+    public void setActivado(Boolean activado) {
         this.activado = activado;
     }
 
-    public boolean isEsHoja() {
+    public Boolean getEsHoja() {
         return esHoja;
     }
 
-    public void setEsHoja(boolean esHoja) {
+    public void setEsHoja(Boolean esHoja) {
         this.esHoja = esHoja;
     }
 

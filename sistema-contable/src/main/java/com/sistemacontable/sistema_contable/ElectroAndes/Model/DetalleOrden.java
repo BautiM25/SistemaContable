@@ -16,16 +16,20 @@ public class DetalleOrden {
     private Producto producto;
 
     @Column(nullable = false)
-    private int cantidad;
+    private Integer cantidad;
 
     @Column(name = "precio_unitario", nullable = false)
-    private double precioUnitario;
+    private Double precioUnitario;
+
+    @Column(name = "descripcion")
+    private String descripcion;
 
     @ManyToOne
     @JoinColumn(name = "id_orden", nullable = false)
     private OrdenDeCompra orden;
 
     // Getters y setters
+
 
     public Long getId() {
         return id;
@@ -43,20 +47,28 @@ public class DetalleOrden {
         this.producto = producto;
     }
 
-    public int getCantidad() {
+    public Integer getCantidad() {
         return cantidad;
     }
 
-    public void setCantidad(int cantidad) {
+    public void setCantidad(Integer cantidad) {
         this.cantidad = cantidad;
     }
 
-    public double getPrecioUnitario() {
+    public Double getPrecioUnitario() {
         return precioUnitario;
     }
 
-    public void setPrecioUnitario(double precioUnitario) {
+    public void setPrecioUnitario(Double precioUnitario) {
         this.precioUnitario = precioUnitario;
+    }
+
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
     }
 
     public OrdenDeCompra getOrden() {

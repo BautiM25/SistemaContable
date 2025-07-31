@@ -17,13 +17,18 @@ public class SolicitudDeCompra {
     @Column(name = "fecha_solicitud", nullable = false)
     private LocalDate fechaSolicitud;
 
-    @Column(name = "estado", nullable = false)
-    private String estado; // o usar un enum: PENDIENTE, APROBADA, RECHAZADA
+    @Column(name = "departamento", nullable = false)
+    private String departamento;
 
     @OneToMany(mappedBy = "solicitud", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DetalleSolicitud> detalles;
 
+    @ManyToOne
+    @JoinColumn(name = "usuario", nullable = false)
+    private Usuario usuario;
+
     // Getters y setters
+
 
     public Long getId() {
         return id;
@@ -41,12 +46,12 @@ public class SolicitudDeCompra {
         this.fechaSolicitud = fechaSolicitud;
     }
 
-    public String getEstado() {
-        return estado;
+    public String getDepartamento() {
+        return departamento;
     }
 
-    public void setEstado(String estado) {
-        this.estado = estado;
+    public void setDepartamento(String departamento) {
+        this.departamento = departamento;
     }
 
     public List<DetalleSolicitud> getDetalles() {
@@ -55,5 +60,13 @@ public class SolicitudDeCompra {
 
     public void setDetalles(List<DetalleSolicitud> detalles) {
         this.detalles = detalles;
+    }
+
+    public Usuario getUsuario() {
+        return usuario;
+    }
+
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
     }
 }
