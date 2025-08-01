@@ -22,10 +22,10 @@ public class ProductoController {
         return service.obtenerTodos();
     }
 
-    @GetMapping("/stock-bajo")
-    public List<Producto> stockBajo() {
-        return service.obtenerConStockBajo();
-    }
+//    @GetMapping("/stock-bajo")
+//    public List<Producto> stockBajo() {
+//        return service.obtenerConStockBajo();
+//    }
 
     @GetMapping("/{id}")
     public Producto buscar(@PathVariable int id) {

@@ -14,16 +14,20 @@ public class ProductoMapper {
 
     // DTO -> ENTITY
     public static Producto toEntity(ProductoDTO dto/*, ProveedorRepository proveedorRepository */) {
-        Producto producto = new Producto(
-                dto.getCodigo(),
-                dto.getNombre(),
-                dto.getDescripcion(),
-                dto.getCategoria(),
-                dto.getPrecioCompra(),
-                dto.getPrecioVenta(),
-                (double) dto.getStockMinimo(),
-                dto.getPresentacion()
-        );
+        Producto producto = new Producto();
+        producto.setCodigo(dto.getCodigo());
+        producto.setNombre(dto.getNombre());
+        producto.setDescripcion(dto.getDescripcion());
+        producto.setCategoria(dto.getCategoria());
+        producto.setPrecioCompra(dto.getPrecioCompra());
+        producto.setPrecioVenta(dto.getPrecioVenta());
+        producto.setStockMinimo((double) dto.getStockMinimo());
+        producto.setPresentacion(dto.getPresentacion());
+        producto.setActivo(dto.isActivo());
+        producto.setIvaCompra(dto.getIvaCompra());
+        producto.setIvaVenta(dto.getIvaVenta());
+// producto.setProveedores(...) si corresponde
+
 
         producto.setActivo(dto.isActivo());
         producto.setIvaCompra(dto.getIvaCompra());

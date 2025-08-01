@@ -40,7 +40,8 @@ public class Producto {
     // Constructor sin stockActual
     public Producto(String codigo, String nombre, String descripcion, String categoria,
                     Double precioCompra, Double precioVenta, Double stockMinimo,
-                    String presentacion) {
+                    String presentacion, Boolean activo, Double ivaCompra,
+                    Double ivaVenta, List<ProductoProveedor> proveedores) {
         this.codigo = codigo;
         this.nombre = nombre;
         this.descripcion = descripcion;
@@ -49,8 +50,12 @@ public class Producto {
         this.precioVenta = precioVenta;
         this.stockMinimo = stockMinimo;
         this.presentacion = presentacion;
-        this.activo = true;
+        this.activo = activo;
+        this.ivaCompra = ivaCompra;
+        this.ivaVenta = ivaVenta;
+        this.proveedores = proveedores;
     }
+
 
     public Producto() {
     }

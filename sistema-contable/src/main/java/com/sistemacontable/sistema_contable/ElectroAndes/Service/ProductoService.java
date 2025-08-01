@@ -20,9 +20,9 @@ public class ProductoService {
         return repo.findByActivoTrueOrderByNombreAsc();
     }
 
-    public List<Producto> obtenerConStockBajo() {
-        return repo.findByStockActualLessThanEqualAndActivoTrueOrderByNombreAsc();
-    }
+//    public List<Producto> obtenerConStockBajo() {
+//        return repo.findByStockActualLessThanEqualAndActivoTrueOrderByNombreAsc();
+//    }
 
     public Optional<Producto> buscarPorId(int id) {
         return repo.findById(id);
