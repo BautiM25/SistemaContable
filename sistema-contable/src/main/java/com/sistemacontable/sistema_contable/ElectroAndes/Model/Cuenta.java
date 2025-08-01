@@ -27,6 +27,13 @@ public class Cuenta {
     @Column(name = "eliminado", nullable = false)
     private Boolean eliminado = false;
 
+    @Column(nullable = false)
+    private Double saldo = 0.0;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tipo", nullable = false)
+    private TipoCuenta tipo;
+
     // Getters y Setters
 
     public Long getId() {
@@ -75,5 +82,21 @@ public class Cuenta {
 
     public void setEliminado(Boolean eliminado) {
         this.eliminado = eliminado;
+    }
+
+    public TipoCuenta getTipo() {
+        return tipo;
+    }
+
+    public void setTipo(TipoCuenta tipo) {
+        this.tipo = tipo;
+    }
+
+    public Double getSaldo() {
+        return saldo;
+    }
+
+    public void setSaldo(Double saldo) {
+        this.saldo = saldo;
     }
 }
