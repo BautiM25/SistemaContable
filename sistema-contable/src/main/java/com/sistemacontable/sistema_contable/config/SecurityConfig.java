@@ -10,14 +10,16 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     @Bean
+
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable()) // desactiva protección CSRF (necesario para Postman)
+                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .anyRequest().authenticated() // requiere autenticación para todas las rutas
-                )
-                .httpBasic(Customizer.withDefaults()); // activa Basic Auth (forma moderna)
+                        .anyRequest().permitAll()
+                );
 
         return http.build();
     }
+
 }
+

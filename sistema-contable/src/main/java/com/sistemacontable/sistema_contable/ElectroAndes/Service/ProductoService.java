@@ -24,7 +24,7 @@ public class ProductoService {
 //        return repo.findByStockActualLessThanEqualAndActivoTrueOrderByNombreAsc();
 //    }
 
-    public Optional<Producto> buscarPorId(int id) {
+    public Optional<Producto> buscarPorId(Long id) {
         return repo.findById(id);
     }
 
@@ -43,7 +43,7 @@ public class ProductoService {
 //        return false;
 //    }
 
-    public void eliminar(int id) {
+    public void eliminar(Long id) {
         repo.deleteById(id);
     }
 } 

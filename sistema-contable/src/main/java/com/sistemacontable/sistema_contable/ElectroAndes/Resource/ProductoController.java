@@ -28,7 +28,7 @@ public class ProductoController {
 //    }
 
     @GetMapping("/{id}")
-    public Producto buscar(@PathVariable int id) {
+    public Producto buscar(@PathVariable long id) {
         return service.buscarPorId(id).orElse(null);
     }
 
@@ -43,7 +43,7 @@ public class ProductoController {
 //    }
 
     @DeleteMapping("/{id}")
-    public void eliminar(@PathVariable int id) {
+    public void eliminar(@PathVariable long id) {
         service.eliminar(id);
     }
 }
