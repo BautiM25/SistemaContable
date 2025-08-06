@@ -19,7 +19,7 @@ public class CuentaServiceImp implements CuentaService {
     // Recupera todas las cuentas de la base de datos
     @Override
     public List<CuentaDTO> obtenerTodasLasCuentas() {
-        return cuentaRepositorio.findAllByEliminadoFalse()
+        return cuentaRepositorio.findAllByActivadoIsTrue()
                 .stream()
                 .map(this::convertirADTO)
                 .collect(Collectors.toList());
@@ -57,7 +57,7 @@ public class CuentaServiceImp implements CuentaService {
     public void eliminarCuenta(Long id) {
         Cuenta cuenta = cuentaRepositorio.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Cuenta no encontrada"));
-        cuenta.setEliminado(true);
+        cuenta.setActivado(false);
         cuentaRepositorio.save(cuenta);
     }
 
