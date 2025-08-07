@@ -1,7 +1,7 @@
 package com.sistemacontable.sistema_contable.ElectroAndes.Model;
 
-
 import jakarta.persistence.*;
+import java.util.List;
 
 @Entity
 @Table(name = "productos")
@@ -9,64 +9,70 @@ public class Producto {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_producto")
-    private Long idProducto;
+    private Long id;
 
-    @Column(name = "codigo_producto", nullable = false)
-    private Integer codigo;
+    private String codigo;
 
-    @Column(name = "nombre", nullable = false)
     private String nombre;
 
-    @Column(name = "descripcion")
     private String descripcion;
 
-    @Column(name = "precio", nullable = false)
-    private Double precio;
+    private String categoria;
 
-    @Column(name = "stock_actual", nullable = false)
-    private Integer stockActual;
+    private Double precioCompra;
 
-    @Column(name = "stock_minimo", nullable = false)
-    private Integer stockMinimo;
+    private Double precioVenta;
 
-    @Column(name = "presentacion")
+    private Double stockMinimo;
+
     private String presentacion;
 
-    @ManyToOne
-    @JoinColumn(name = "id_proveedor", nullable = false)
-    private Proveedor proveedor;
+    private Boolean activo;
 
-    // Constructores
+    private Double ivaCompra;
 
-    public Producto() {}
+    private Double ivaVenta;
 
-    public Producto(Integer codigo, String nombre, String descripcion, Double precio, Integer stockActual, Integer stockMinimo, String presentacion, Proveedor proveedor) {
+    // Relación con proveedores
+    @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProductoProveedor> proveedores;
+
+    // Constructor sin stockActual
+    public Producto(String codigo, String nombre, String descripcion, String categoria,
+                    Double precioCompra, Double precioVenta, Double stockMinimo,
+                    String presentacion, Boolean activo, Double ivaCompra,
+                    Double ivaVenta, List<ProductoProveedor> proveedores) {
         this.codigo = codigo;
         this.nombre = nombre;
         this.descripcion = descripcion;
-        this.precio = precio;
-        this.stockActual = stockActual;
+        this.categoria = categoria;
+        this.precioCompra = precioCompra;
+        this.precioVenta = precioVenta;
         this.stockMinimo = stockMinimo;
         this.presentacion = presentacion;
-        this.proveedor = proveedor;
+        this.activo = activo;
+        this.ivaCompra = ivaCompra;
+        this.ivaVenta = ivaVenta;
+        this.proveedores = proveedores;
     }
 
-    // Getters y Setters
 
-    public Long getIdProducto() {
-        return idProducto;
+    public Producto() {
     }
 
-    public void setIdProducto(Long idProducto) {
-        this.idProducto = idProducto;
+    public Long getId() {
+        return id;
     }
 
-    public Integer getCodigo() {
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getCodigo() {
         return codigo;
     }
 
-    public void setCodigo(Integer codigo) {
+    public void setCodigo(String codigo) {
         this.codigo = codigo;
     }
 
@@ -86,27 +92,35 @@ public class Producto {
         this.descripcion = descripcion;
     }
 
-    public Double getPrecio() {
-        return precio;
+    public String getCategoria() {
+        return categoria;
     }
 
-    public void setPrecio(Double precio) {
-        this.precio = precio;
+    public void setCategoria(String categoria) {
+        this.categoria = categoria;
     }
 
-    public Integer getStockActual() {
-        return stockActual;
+    public Double getPrecioCompra() {
+        return precioCompra;
     }
 
-    public void setStockActual(Integer stockActual) {
-        this.stockActual = stockActual;
+    public void setPrecioCompra(Double precioCompra) {
+        this.precioCompra = precioCompra;
     }
 
-    public Integer getStockMinimo() {
+    public Double getPrecioVenta() {
+        return precioVenta;
+    }
+
+    public void setPrecioVenta(Double precioVenta) {
+        this.precioVenta = precioVenta;
+    }
+
+    public Double getStockMinimo() {
         return stockMinimo;
     }
 
-    public void setStockMinimo(Integer stockMinimo) {
+    public void setStockMinimo(Double stockMinimo) {
         this.stockMinimo = stockMinimo;
     }
 
@@ -118,11 +132,35 @@ public class Producto {
         this.presentacion = presentacion;
     }
 
-    public Proveedor getProveedor() {
-        return proveedor;
+    public Boolean getActivo() {
+        return activo;
     }
 
-    public void setProveedor(Proveedor proveedor) {
-        this.proveedor = proveedor;
+    public void setActivo(Boolean activo) {
+        this.activo = activo;
+    }
+
+    public Double getIvaCompra() {
+        return ivaCompra;
+    }
+
+    public void setIvaCompra(Double ivaCompra) {
+        this.ivaCompra = ivaCompra;
+    }
+
+    public Double getIvaVenta() {
+        return ivaVenta;
+    }
+
+    public void setIvaVenta(Double ivaVenta) {
+        this.ivaVenta = ivaVenta;
+    }
+
+    public List<ProductoProveedor> getProveedores() {
+        return proveedores;
+    }
+
+    public void setProveedores(List<ProductoProveedor> proveedores) {
+        this.proveedores = proveedores;
     }
 }
