@@ -14,7 +14,7 @@ public class Cuenta {
     @Column(name = "nombre_cuenta", nullable = false)
     private String nombreCuenta;
 
-    @Column(nullable = false)
+    @Column(name = "activado", nullable = false)
     private Boolean activado;
 
     @Column(name = "es_hoja", nullable = false)
@@ -23,9 +23,6 @@ public class Cuenta {
     @ManyToOne
     @JoinColumn(name = "cuenta_padre_id")
     private Cuenta cuentaPadre;
-
-    @Column(name = "eliminado", nullable = false)
-    private Boolean eliminado = false;
 
     @Column(nullable = false)
     private Double saldo = 0.0;
@@ -74,14 +71,6 @@ public class Cuenta {
 
     public void setCuentaPadre(Cuenta cuentaPadre) {
         this.cuentaPadre = cuentaPadre;
-    }
-
-    public Boolean getEliminado() {
-        return eliminado;
-    }
-
-    public void setEliminado(Boolean eliminado) {
-        this.eliminado = eliminado;
     }
 
     public TipoCuenta getTipo() {
