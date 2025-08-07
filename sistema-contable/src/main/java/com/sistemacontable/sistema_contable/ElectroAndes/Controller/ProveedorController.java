@@ -27,10 +27,12 @@ public class ProveedorController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PostMapping (value = "/create")
+    @PostMapping("/create")
     public Proveedor crearProveedor(@RequestBody Proveedor proveedor) {
+        System.out.println("Proveedor recibido: " + proveedor.getRazonSocial());
         return proveedorService.guardar(proveedor);
     }
+
 
     @PutMapping("/{id}")
     public ResponseEntity<Proveedor> actualizarProveedor(@PathVariable Long id, @RequestBody Proveedor proveedor) {
