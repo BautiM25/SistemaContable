@@ -9,7 +9,5 @@ import java.util.List;
 @Repository
 public interface CuentaRepository extends JpaRepository<Cuenta, Long> {
     List<Cuenta> findByCuentaPadreIsNull(); // Cuentas raíz
-    List<Cuenta> findByCuentaPadreIsNullAndEliminadoFalse();
-    List<Cuenta> findAllByEliminadoFalse();
-
+    List<Cuenta> findAllByActivadoIsTrue();
 }
