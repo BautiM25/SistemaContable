@@ -1,6 +1,5 @@
 package com.sistemacontable.sistema_contable.ElectroAndes.Model;
 
-
 import jakarta.persistence.*;
 
 @Entity
@@ -15,80 +14,174 @@ public class Proveedor {
     @Column(name = "razon_social", nullable = false)
     private String razonSocial;
 
-    @Column(name = "telefono")
-    private Integer telefono;
-
     @Column(name = "cuit")
-    private Integer cuit;
+    private String cuit;
 
-    @Column(name = "rubro")
-    private String rubro;
+    @Column(name = "telefono1")
+    private String telefono1;
+
+    @Column(name = "telefono2")
+    private String telefono2;
+
+    @Column(name = "email")
+    private String email;
 
     @Column(name = "direccion")
     private String direccion;
 
-    // Constructores
+    @Column(name = "codigo_postal")
+    private String codigoPostal;
 
+    @Column(name = "ciudad")
+    private String ciudad;
 
-    public Proveedor() {}
+    @Column(name = "provincia")
+    private String provincia;
 
-    public Proveedor(String razonSocial, Integer telefono, Integer cuit, String rubro, String direccion) {
-        this.razonSocial = razonSocial;
-        this.telefono = telefono;
-        this.cuit = cuit;
-        this.rubro = rubro;
-        this.direccion = direccion;
-    }
+    @Column(name = "pais")
+    private String pais;
 
+    @Column(name = "inscripcion_municipal")
+    private String inscripcionMunicipal;
 
-    // Getters y Setters
+    @Column(name = "categoria_iva")
+    private String categoriaIVA;
 
-    public Long getId() {
-        return id;
-    }
+    @Column(name = "tipo_contribuyente")
+    private String tipoContribuyente;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    @Column(name = "rubro")
+    private String rubro;
 
-    public String getRazonSocial() {
-        return razonSocial;
-    }
+    @Column(name = "banco")
+    private String banco;
 
-    public void setRazonSocial(String razonSocial) {
-        this.razonSocial = razonSocial;
-    }
+    @Column(name = "forma_pago")
+    private String formaPago;
 
-    public Integer getTelefono() {
-        return telefono;
-    }
+    @Column(name = "porcentaje_percepcion")
+    private Double porcentajePercepcion;
 
-    public void setTelefono(Integer telefono) {
-        this.telefono = telefono;
-    }
+    @Column(name = "porcentaje_descuento")
+    private Double porcentajeDescuento;
 
-    public Integer getCuit() {
-        return cuit;
-    }
+    @Column(name = "porcentaje_iva_fletes")
+    private Double porcentajeIvaFletes;
 
-    public void setCuit(Integer cuit) {
-        this.cuit = cuit;
-    }
+    @Column(name = "subcuenta")
+    private String subcuenta;
 
-    public String getRubro() {
-        return rubro;
-    }
+    @Column(name = "subcta_saldo_favor")
+    private String subctaSaldoFavor;
 
-    public void setRubro(String rubro) {
-        this.rubro = rubro;
-    }
+    @Column(name = "comentario", columnDefinition = "TEXT")
+    private String comentario;
 
-    public String getDireccion() {
-        return direccion;
-    }
+    @Column(name = "contacto")
+    private String personaContacto;
 
-    public void setDireccion(String direccion) {
-        this.direccion = direccion;
-    }
+    @Column(name = "fax")
+    private String fax;
+
+    // Getters y setters generados automáticamente
+
+    public Long getId() { return id; }
+
+    public void setId(Long id) { this.id = id; }
+
+    public String getRazonSocial() { return razonSocial; }
+
+    public void setRazonSocial(String razonSocial) { this.razonSocial = razonSocial; }
+
+    public String getCuit() { return cuit; }
+
+    public void setCuit(String cuit) { this.cuit = cuit; }
+
+    public String getTelefono1() { return telefono1; }
+
+    public void setTelefono1(String telefono1) { this.telefono1 = telefono1; }
+
+    public String getTelefono2() { return telefono2; }
+
+    public void setTelefono2(String telefono2) { this.telefono2 = telefono2; }
+
+    public String getEmail() { return email; }
+
+    public void setEmail(String email) { this.email = email; }
+
+    public String getDireccion() { return direccion; }
+
+    public void setDireccion(String direccion) { this.direccion = direccion; }
+
+    public String getCodigoPostal() { return codigoPostal; }
+
+    public void setCodigoPostal(String codigoPostal) { this.codigoPostal = codigoPostal; }
+
+    public String getCiudad() { return ciudad; }
+
+    public void setCiudad(String ciudad) { this.ciudad = ciudad; }
+
+    public String getProvincia() { return provincia; }
+
+    public void setProvincia(String provincia) { this.provincia = provincia; }
+
+    public String getPais() { return pais; }
+
+    public void setPais(String pais) { this.pais = pais; }
+
+    public String getInscripcionMunicipal() { return inscripcionMunicipal; }
+
+    public void setInscripcionMunicipal(String inscripcionMunicipal) { this.inscripcionMunicipal = inscripcionMunicipal; }
+
+    public String getCategoriaIVA() { return categoriaIVA; }
+
+    public void setCategoriaIVA(String categoriaIVA) { this.categoriaIVA = categoriaIVA; }
+
+    public String getTipoContribuyente() { return tipoContribuyente; }
+
+    public void setTipoContribuyente(String tipoContribuyente) { this.tipoContribuyente = tipoContribuyente; }
+
+    public String getRubro() { return rubro; }
+
+    public void setRubro(String rubro) { this.rubro = rubro; }
+
+    public String getBanco() { return banco; }
+
+    public void setBanco(String banco) { this.banco = banco; }
+
+    public String getFormaPago() { return formaPago; }
+
+    public void setFormaPago(String formaPago) { this.formaPago = formaPago; }
+
+    public Double getPorcentajePercepcion() { return porcentajePercepcion; }
+
+    public void setPorcentajePercepcion(Double porcentajePercepcion) { this.porcentajePercepcion = porcentajePercepcion; }
+
+    public Double getPorcentajeDescuento() { return porcentajeDescuento; }
+
+    public void setPorcentajeDescuento(Double porcentajeDescuento) { this.porcentajeDescuento = porcentajeDescuento; }
+
+    public Double getPorcentajeIvaFletes() { return porcentajeIvaFletes; }
+
+    public void setPorcentajeIvaFletes(Double porcentajeIvaFletes) { this.porcentajeIvaFletes = porcentajeIvaFletes; }
+
+    public String getSubcuenta() { return subcuenta; }
+
+    public void setSubcuenta(String subcuenta) { this.subcuenta = subcuenta; }
+
+    public String getSubctaSaldoFavor() { return subctaSaldoFavor; }
+
+    public void setSubctaSaldoFavor(String subctaSaldoFavor) { this.subctaSaldoFavor = subctaSaldoFavor; }
+
+    public String getComentario() { return comentario; }
+
+    public void setComentario(String comentario) { this.comentario = comentario; }
+
+    public String getPersonaContacto() { return personaContacto; }
+
+    public void setPersonaContacto(String personaContacto) { this.personaContacto = personaContacto; }
+
+    public String getFax() { return fax; }
+
+    public void setFax(String fax) { this.fax = fax; }
 }
-
