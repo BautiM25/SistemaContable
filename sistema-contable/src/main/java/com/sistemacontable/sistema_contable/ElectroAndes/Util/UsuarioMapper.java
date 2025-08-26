@@ -18,7 +18,6 @@ public class UsuarioMapper {
         Usuario usuario = new Usuario();
         usuario.setId(dto.getId());
         usuario.setNombreUsuario(dto.getNombreUsuario());
-        usuario.setContrasenia(dto.getContrasenia());
         usuario.setNombreCompleto(dto.getNombreCompleto());
         usuario.setRol(dto.getRol());
         return usuario;
@@ -33,4 +32,3 @@ public class UsuarioMapper {
         return dto;
     }
 }
-

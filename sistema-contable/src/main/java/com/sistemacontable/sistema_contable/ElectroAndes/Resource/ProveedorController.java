@@ -1,4 +1,4 @@
-package com.sistemacontable.sistema_contable.ElectroAndes.Controller;
+package com.sistemacontable.sistema_contable.ElectroAndes.Resource;
 
 import com.sistemacontable.sistema_contable.ElectroAndes.Model.Proveedor;
 import com.sistemacontable.sistema_contable.ElectroAndes.Service.ProveedorService;
