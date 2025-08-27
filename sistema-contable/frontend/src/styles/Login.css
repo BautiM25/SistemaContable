@@ -1,0 +1,111 @@
+/* Contenedor principal */
+.login-container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+/* Imagen de fondo ocupando toda la ventana con blur */
+.login-background {
+    position: fixed; /* permanece detrás del login al hacer scroll */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('../assets/LogoEmpresa.png') no-repeat center center;
+    background-size: cover;
+    filter: blur(12px) brightness(0.5);
+    z-index: 1;
+}
+
+/* Caja del login centrada */
+.login-box {
+    position: relative;
+    z-index: 2;
+    background: rgba(30, 30, 30, 0.85); /* semi-transparente */
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+    width: 360px;
+    padding: 40px 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Contenedor del logo dentro del login */
+.login-logo-container {
+    width: 100%;
+    height: 150px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    border-radius: 12px;
+}
+
+.login-logo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Formulario centrado horizontalmente */
+.login-box form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+/* Inputs */
+.input {
+    width: 100%;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
+    color: var(--color-text);
+    font-size: 14px;
+    outline: none;
+    transition: border 0.3s ease;
+}
+
+.input:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 6px rgba(255,255,255,0.4);
+}
+
+/* Botón de login */
+.button.login-button {
+    width: 100%;
+    padding: 12px 0;
+    font-size: 16px;
+    font-weight: bold;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 8px;
+    border: 2px solid #2a2a2a;
+    background: #aca5a5;
+    color: var(--color-text);
+    box-shadow: inset -2px -2px 4px rgba(255,255,255,0.1),
+                inset 2px 2px 6px rgba(0,0,0,0.6),
+                0 4px 8px rgba(0,0,0,0.5);
+    transition: all 0.15s ease-in-out;
+}
+
+.button.login-button:hover {
+    background: #505050;
+}
+
+.button.login-button:active {
+    background: #2e2e2e;
+    box-shadow: inset 2px 2px 6px rgba(0,0,0,0.6),
+                inset -2px -2px 4px rgba(255,255,255,0.1);
+    transform: translateY(2px);
+}

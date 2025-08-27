@@ -1,0 +1,156 @@
+/* ========== GLOBAL THEME ========== */
+:root {
+    /* Paleta de colores */
+    --color-bg-dark: #0f0f0f;   /* Negro profundo */
+    --color-bg-light: #2b2b2b;  /* Gris oscuro */
+    --color-text: #f5f5f5;      /* Blanco suave */
+    --color-text-secondary: #c4c4c4;
+    --color-primary: #ffffff;   /* Blanco para detalles */
+    --color-accent: #444;       /* Gris intermedio para bordes */
+    --color-border: #555;
+  
+    /* Tipografía */
+    --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  
+    /* Bordes y sombras */
+    --border-radius: 12px;
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  }
+  
+  /* Fondo general con gradiente */
+  body {
+    margin: 0;
+    font-family: var(--font-family);
+    color: var(--color-text);
+    background: linear-gradient(to bottom right, var(--color-bg-dark), var(--color-bg-light));
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* Imagen de marca fija (falso botón logo) */
+  .brand-logo {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    width: 120px;
+    cursor: pointer;
+    opacity: 0.9;
+    transition: transform 0.3s ease;
+  }
+  .brand-logo:hover {
+    transform: scale(1.05);
+  }
+  
+/* ========== BOTONES ========== */
+/* ========== BOTONES CON TAMAÑO FIJO ========== */
+.button {
+    display: flex;
+    flex-direction: column; /* columna: logo arriba, texto abajo */
+    align-items: center;    /* centrar horizontalmente */
+    justify-content: center;
+    gap: 6px;               /* espacio entre logo y texto */
+
+    background: #aca5a5;
+    color: var(--color-text);
+    border: 2px solid #2a2a2a;
+
+    border-radius: 4px; /* cuadrado */
+    width: 180px;       /* ancho fijo */
+    height: 100px;      /* mayor altura para acomodar logo + texto */
+
+    font-size: 16px;
+    font-weight: bold;
+    text-transform: uppercase;
+    text-align: center; /* texto centrado */
+
+    cursor: pointer;
+
+    /* efecto botón físico */
+    box-shadow: inset -2px -2px 4px rgba(255,255,255,0.1),
+                inset 2px 2px 6px rgba(0,0,0,0.6),
+                0 4px 8px rgba(0,0,0,0.5);
+
+    transition: all 0.15s ease-in-out;
+}
+
+.button img {
+    width: 36px;      /* más visible */
+    height: 36px;
+    object-fit: contain;
+}
+
+.button:hover {
+    background: #505050;
+}
+
+.button:active {
+    background: #2e2e2e;
+    box-shadow: inset 2px 2px 6px rgba(0,0,0,0.6),
+                inset -2px -2px 4px rgba(255,255,255,0.1);
+    transform: translateY(2px);
+}
+
+  /* ========== TABLAS ========== */
+  .table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--color-bg-light);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  
+  .table th, .table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--color-border);
+  }
+  
+  .table th {
+    background: var(--color-bg-dark);
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    font-size: 12px;
+  }
+  
+  .table tr:hover {
+    background: rgba(255, 255, 255, 0.05);
+  }
+  
+  /* ========== CAMPOS DE ESCRITURA ========== */
+  .input {
+    width: 100%;
+    padding: 10px 12px;
+    background: var(--color-bg-light);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
+    color: var(--color-text);
+    font-size: 14px;
+    outline: none;
+    transition: border 0.3s ease;
+  }
+  
+  .input:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 6px rgba(255, 255, 255, 0.4);
+  }
+  
+  /* ========== CASCADAS (SELECT) ========== */
+  .select {
+    width: 100%;
+    padding: 10px 12px;
+    background: var(--color-bg-light);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
+    color: var(--color-text);
+    font-size: 14px;
+    cursor: pointer;
+    outline: none;
+  }
+  
+  .select option {
+    background: var(--color-bg-dark);
+    color: var(--color-text);
+  }
+  
