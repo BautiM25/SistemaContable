@@ -9,13 +9,11 @@ public class UpdateUsuarioDto {
     private String nombreCompleto;
     private Rol rol;
 
-    public UpdateUsuarioDto() {
-        //Constructor Vacio
-    }
+    public UpdateUsuarioDto() { }
+
     public Long getId() {
         return id;
     }
-
     public void setId(Long id) {
         this.id = id;
     }
@@ -23,7 +21,6 @@ public class UpdateUsuarioDto {
     public String getNombreUsuario() {
         return nombreUsuario;
     }
-
     public void setNombreUsuario(String nombreUsuario) {
         this.nombreUsuario = nombreUsuario;
     }
@@ -31,15 +28,14 @@ public class UpdateUsuarioDto {
     public String getContrasenia() {
         return contrasenia;
     }
-
-    public void setContraseña(String contrasenia) {
+    // CORREGIDO: nombre correcto del setter
+    public void setContrasenia(String contrasenia) {
         this.contrasenia = contrasenia;
     }
 
     public String getNombreCompleto() {
         return nombreCompleto;
     }
-
     public void setNombreCompleto(String nombreCompleto) {
         this.nombreCompleto = nombreCompleto;
     }
@@ -47,10 +43,7 @@ public class UpdateUsuarioDto {
     public Rol getRol() {
         return rol;
     }
-
     public void setRol(Rol rol) {
         this.rol = rol;
     }
-
 }
-

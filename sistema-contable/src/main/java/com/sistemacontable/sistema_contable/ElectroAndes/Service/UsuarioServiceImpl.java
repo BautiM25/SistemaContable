@@ -4,7 +4,9 @@ import com.sistemacontable.sistema_contable.dto.*;
 import com.sistemacontable.sistema_contable.ElectroAndes.Util.UsuarioMapper;
 import com.sistemacontable.sistema_contable.ElectroAndes.Model.Usuario;
 import com.sistemacontable.sistema_contable.ElectroAndes.Repository.UsuarioRepository;
+import com.sistemacontable.sistema_contable.ElectroAndes.Util.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -14,6 +16,9 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     public UsuarioServiceImpl(UsuarioRepository usuarioRepository) {
         this.usuarioRepository = usuarioRepository;
     }
@@ -21,6 +26,8 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Override
     public ResponseUsuarioDto createUsuario(CreateUsuarioDto dto) {
         Usuario usuario = UsuarioMapper.toEntity(dto);
+        // Hashear la contraseña antes de guardar
+        usuario.setContrasenia(passwordEncoder.encode(usuario.getContrasenia()));
         return UsuarioMapper.toDto(usuarioRepository.save(usuario));
     }
 
@@ -45,7 +52,10 @@ public class UsuarioServiceImpl implements UsuarioService {
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         usuario.setNombreUsuario(dto.getNombreUsuario());
-        usuario.setContrasenia(dto.getContrasenia());
+        // Si la contraseña fue enviada y no está vacía, re-hashea
+        if (dto.getContrasenia() != null && !dto.getContrasenia().isBlank()) {
+            usuario.setContrasenia(passwordEncoder.encode(dto.getContrasenia()));
+        }
         usuario.setNombreCompleto(dto.getNombreCompleto());
         usuario.setRol(dto.getRol());
 
@@ -59,5 +69,9 @@ public class UsuarioServiceImpl implements UsuarioService {
         }
         usuarioRepository.deleteById(id);
     }
-}
 
+    // Nuevo método útil para autenticación u otras operaciones
+    public Usuario findByUsername(String username) {
+        return usuarioRepository.findByUsername(username);
+    }
+}
