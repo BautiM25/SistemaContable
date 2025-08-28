@@ -6,7 +6,7 @@ public class CreateUsuarioDto {
     private String nombreUsuario;
     private String contrasenia;
     private String nombreCompleto;
-    private Rol rol;
+    private String rol;
 
     public CreateUsuarioDto() { }
 
@@ -28,10 +28,14 @@ public class CreateUsuarioDto {
     public void setNombreCompleto(String nombreCompleto) {
         this.nombreCompleto = nombreCompleto;
     }
-    public Rol getRol() {
+    public String getRol() {
         return rol;
     }
-    public void setRol(Rol rol) {
-        this.rol = rol;
+    public void setRol(String rol) {
+        if (rol != null) {
+            this.rol = rol.toUpperCase();
+        } else {
+            this.rol = null;
+        }
     }
 }

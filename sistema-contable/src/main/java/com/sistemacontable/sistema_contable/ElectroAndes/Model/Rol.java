@@ -1,7 +1,7 @@
 package com.sistemacontable.sistema_contable.ElectroAndes.Model;
 
 public enum Rol {
-    Contador,
-    Administrador,
-    Comprador
+    CONTADOR,
+    ADMINISTRADOR,
+    COMPRADOR
 }

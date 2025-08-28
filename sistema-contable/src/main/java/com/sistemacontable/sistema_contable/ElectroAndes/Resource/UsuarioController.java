@@ -1,5 +1,6 @@
 package com.sistemacontable.sistema_contable.ElectroAndes.Resource;
 
+import com.sistemacontable.sistema_contable.ElectroAndes.Model.Usuario;
 import com.sistemacontable.sistema_contable.dto.*;
 import com.sistemacontable.sistema_contable.ElectroAndes.Service.UsuarioService;
 import com.sistemacontable.sistema_contable.ElectroAndes.Service.AuthenticationService;
@@ -11,6 +12,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/usuarios")
+@CrossOrigin(origins = "http://localhost:5173")
 public class UsuarioController {
 
     private final UsuarioService usuarioService;
@@ -69,11 +71,12 @@ public class UsuarioController {
     }
 
     // Nuevo endpoint de autenticación
-    @PostMapping(value = "/auth", produces = "application/json")
+    @PostMapping("/auth")
     public ResponseEntity<?> authentication(@RequestBody AuthenticationRequestDTO authRequest) {
         try {
             String token = authenticationService.authenticate(authRequest.getNombreUsuario(), authRequest.getContrasenia());
-            return ResponseEntity.ok(Map.of("token", token));
+            Usuario usuario = usuarioService.findByUsername(authRequest.getNombreUsuario());
+            return ResponseEntity.ok(Map.of("token", token, "rol", usuario.getRol().name()));
         } catch (Exception e) {
             return ResponseEntity.status(401).body(Map.of("error", "Invalid credentials"));
         }

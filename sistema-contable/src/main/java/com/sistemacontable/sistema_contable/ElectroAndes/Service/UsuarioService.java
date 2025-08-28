@@ -1,5 +1,6 @@
 package com.sistemacontable.sistema_contable.ElectroAndes.Service;
 
+import com.sistemacontable.sistema_contable.ElectroAndes.Model.Usuario;
 import com.sistemacontable.sistema_contable.dto.*;
 
 import java.util.List;
@@ -15,5 +16,6 @@ public interface UsuarioService {
 
     void deleteUsuario(Long id);
 
+    Usuario findByUsername(String username);
 }
 

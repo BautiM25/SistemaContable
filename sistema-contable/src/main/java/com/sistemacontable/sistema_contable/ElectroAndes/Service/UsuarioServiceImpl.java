@@ -1,5 +1,6 @@
 package com.sistemacontable.sistema_contable.ElectroAndes.Service;
 
+import com.sistemacontable.sistema_contable.ElectroAndes.Model.Rol;
 import com.sistemacontable.sistema_contable.dto.*;
 import com.sistemacontable.sistema_contable.ElectroAndes.Util.UsuarioMapper;
 import com.sistemacontable.sistema_contable.ElectroAndes.Model.Usuario;
@@ -26,8 +27,18 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Override
     public ResponseUsuarioDto createUsuario(CreateUsuarioDto dto) {
         Usuario usuario = UsuarioMapper.toEntity(dto);
+
         // Hashear la contraseña antes de guardar
         usuario.setContrasenia(passwordEncoder.encode(usuario.getContrasenia()));
+
+        // Convertir rol a enum en mayúscula antes de guardar
+        if (dto.getRol() != null) {
+            try {
+                usuario.setRol(Rol.valueOf(dto.getRol().toString().toUpperCase()));
+            } catch (IllegalArgumentException e) {
+                throw new RuntimeException("Rol inválido: " + dto.getRol());
+            }
+        }
         return UsuarioMapper.toDto(usuarioRepository.save(usuario));
     }
 
@@ -57,8 +68,15 @@ public class UsuarioServiceImpl implements UsuarioService {
             usuario.setContrasenia(passwordEncoder.encode(dto.getContrasenia()));
         }
         usuario.setNombreCompleto(dto.getNombreCompleto());
-        usuario.setRol(dto.getRol());
 
+        // Convertir rol a enum en mayúscula antes de guardar
+        if (dto.getRol() != null) {
+            try {
+                usuario.setRol(Rol.valueOf(dto.getRol().toString().toUpperCase()));
+            } catch (IllegalArgumentException e) {
+                throw new RuntimeException("Rol inválido: " + dto.getRol());
+            }
+        }
         return UsuarioMapper.toDto(usuarioRepository.save(usuario));
     }
 
@@ -70,7 +88,7 @@ public class UsuarioServiceImpl implements UsuarioService {
         usuarioRepository.deleteById(id);
     }
 
-    // Nuevo método útil para autenticación u otras operaciones
+    @Override
     public Usuario findByUsername(String username) {
         return usuarioRepository.findByUsername(username);
     }

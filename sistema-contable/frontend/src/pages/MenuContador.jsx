@@ -3,7 +3,7 @@ import "../styles/MenuAdministrador.css";
 import LogoEmpresa from "../assets/LogoEmpresa.png";
 import LogoGrupo5 from "../assets/LogoGrupo5.png";
 
-export default function MenuContador() {
+export default function MenuContador({ onLogout }) {
   return (
     <div className="page-container">
       <div className="menu-admin">
@@ -21,7 +21,7 @@ export default function MenuContador() {
           <button className="menu-button">
             <img src={LogoGrupo5} alt="" /> Plan de Cuentas
           </button>
-          <button className="menu-button logout">Cerrar Sesión</button>
+          <button className="menu-button logout" onClick={onLogout}>Cerrar Sesión</button>
         </div>
       </div>
     </div>

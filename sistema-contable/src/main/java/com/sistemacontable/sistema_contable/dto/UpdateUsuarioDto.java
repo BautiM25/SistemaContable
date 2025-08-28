@@ -7,13 +7,15 @@ public class UpdateUsuarioDto {
     private String nombreUsuario;
     private String contrasenia;
     private String nombreCompleto;
-    private Rol rol;
+    private String rol;
 
-    public UpdateUsuarioDto() { }
+    public UpdateUsuarioDto() {
+    }
 
     public Long getId() {
         return id;
     }
+
     public void setId(Long id) {
         this.id = id;
     }
@@ -21,6 +23,7 @@ public class UpdateUsuarioDto {
     public String getNombreUsuario() {
         return nombreUsuario;
     }
+
     public void setNombreUsuario(String nombreUsuario) {
         this.nombreUsuario = nombreUsuario;
     }
@@ -28,6 +31,7 @@ public class UpdateUsuarioDto {
     public String getContrasenia() {
         return contrasenia;
     }
+
     // CORREGIDO: nombre correcto del setter
     public void setContrasenia(String contrasenia) {
         this.contrasenia = contrasenia;
@@ -36,14 +40,20 @@ public class UpdateUsuarioDto {
     public String getNombreCompleto() {
         return nombreCompleto;
     }
+
     public void setNombreCompleto(String nombreCompleto) {
         this.nombreCompleto = nombreCompleto;
     }
 
-    public Rol getRol() {
+    public String getRol() {
         return rol;
     }
-    public void setRol(Rol rol) {
-        this.rol = rol;
+
+    public void setRol(String rol) {
+        if (rol != null) {
+            this.rol = rol.toUpperCase();
+        } else {
+            this.rol = null;
+        }
     }
 }
