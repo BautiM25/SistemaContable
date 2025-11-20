@@ -1,0 +1,116 @@
+/* Centra todo el contenido de la página */
+body {
+    min-height: 100vh; /* Ocupa al menos toda la altura de la ventana */
+    margin: 0;         /* Elimina el margen por defecto del body */
+    display: flex;     /* Habilita Flexbox */
+    justify-content: center; /* Centra horizontalmente el contenido hijo (.page-container) */
+    align-items: center;     /* Centra verticalmente el contenido hijo (.page-container) */
+    /* El background aquí es importante si quieres que se vea detrás del contenedor */
+    background: #333; /* Ejemplo de fondo oscuro para el body */
+}
+
+/* Contenedor principal centrado */
+.page-container {
+    display: flex;
+    max-width: 1200px;
+    height: 85vh;
+    padding: 20px;
+    border-radius: 12px;
+    background: rgba(20, 20, 20, 0.95);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+}
+
+/* Ajusta .menu-admin para ocupar todo el contenedor */
+.main-content {
+    flex: 1;
+    display: flex;
+    border-radius: 8px;
+    overflow: hidden;
+    gap: 10px;
+}
+/* Columna izquierda */
+.menu-left {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-bg-light);
+    border-right: 2px solid var(--color-border);
+}
+
+.logo-empresa {
+    height: 100%;
+    width: auto;
+    object-fit: contain;
+}
+
+/* Columna derecha */
+.menu-right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    gap: 10px; /* espacio entre botones */
+    align-items: center; /* centra los botones horizontalmente en la columna */
+}
+
+/* Botones verticales con logo arriba y texto debajo */
+.menu-button {
+    flex: 1;
+    display: flex;
+    flex-direction: column; /* logo arriba, texto abajo */
+    align-items: center;    /* centra logo y texto horizontalmente */
+    justify-content: center;
+    gap: 6px;               /* espacio entre logo y texto */
+
+    font-size: 15px;
+    font-weight: bold;
+    text-transform: uppercase;
+    text-align: center;     /* centra el texto horizontalmente */
+
+    background: #aca5a5;
+    color: var(--color-text);
+    border: 2px solid #2a2a2a;
+    border-radius: 4px;
+
+    cursor: pointer;
+
+    box-shadow: inset -2px -2px 4px rgba(255, 255, 255, 0.1),
+                inset 2px 2px 6px rgba(0, 0, 0, 0.6),
+                0 4px 8px rgba(0, 0, 0, 0.5);
+
+    transition: all 0.15s ease-in-out;
+
+    min-height: 60px; /* suficiente para logo + texto */
+    width: 240px;     /* ancho uniforme para botones */
+}
+
+/* Logo dentro del botón */
+.menu-button img {
+    width: 36px;  /* más visible */
+    height: 36px;
+    object-fit: contain;
+}
+
+/* Efectos hover y active */
+.menu-button:hover {
+    background: #505050;
+}
+
+.menu-button:active {
+    background: #2e2e2e;
+    box-shadow: inset 2px 2px 6px rgba(0, 0, 0, 0.6),
+                inset -2px -2px 4px rgba(255, 255, 255, 0.1);
+    transform: translateY(2px);
+}
+
+/* Botón logout especial */
+.menu-button.logout {
+    background: #e60000;
+    color: white;
+    border: 2px solid #990000;
+}
+
+.menu-button.logout:hover {
+    background: #cc0000;
+}

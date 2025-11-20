@@ -1,0 +1,94 @@
+/* --- Estilos Específicos para PlanDeCuentas --- */
+
+.plan-cuentas-body {
+    overflow-y: auto;
+    padding: 10px;
+}
+
+.arbol-container {
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    flex-grow: 1;
+}
+
+/* Lista Raíz (Quitar estilos por defecto) */
+.plan-cuentas-root {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+/* Nodo de Cuenta Individual (li) */
+.cuenta-node {
+    color: var(--color-text, #f0f0f0);
+    padding: 5px 0 5px 10px; /* Padding izquierdo para iniciar el texto */
+    font-size: 15px;
+    cursor: pointer;
+    transition: background 0.2s;
+    position: relative; /* Necesario para las líneas de conexión */
+}
+
+.cuenta-node:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* Estilos de Código y Nombre */
+.cuenta-code {
+    font-weight: bold;
+    color: var(--color-primary, #1e90ff);
+    margin-right: 15px;
+    min-width: 80px; /* Asegura un ancho mínimo para el código */
+    display: inline-block;
+}
+
+.cuenta-name {
+    font-weight: normal;
+}
+
+/* --- Diferenciación de Nivel --- */
+
+/* Estilo para Cuentas de Nivel Principal (Ej. 1, 2, 3) */
+.parent-node > .cuenta-code,
+.parent-node > .cuenta-name {
+    font-weight: 700;
+    font-size: 17px;
+    color: #ffd700; /* Dorado para cuentas principales */
+}
+
+/* Estilo para Cuentas de Grupo Intermedio (Ej. 1.1) */
+.subcuentas-list > .parent-node > .cuenta-name {
+    font-weight: 600;
+    color: #87ceeb; /* Azul claro para grupos */
+}
+
+/* --- Sangría y Estilos para Subcuentas (Jerarquía clara) --- */
+.subcuentas-list {
+    list-style: none;
+    padding-left: 30px; /* Sangría CLAVE: Aumentada de 20px a 30px */
+    margin-top: 2px;
+    margin-bottom: 2px;
+    border-left: 1px solid rgba(255, 255, 255, 0.1); /* Línea vertical sutil */
+}
+
+/* Línea horizontal simulada para conectar nodo hijo con padre */
+.subcuentas-list > .cuenta-node::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 13px; /* Centrado verticalmente */
+    width: 20px; /* Longitud de la línea horizontal */
+    height: 1px;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Eliminamos la línea para el último elemento de cada lista */
+.subcuentas-list > .cuenta-node:last-child {
+    border-left: none; /* No rompe la línea vertical si usamos ::before */
+}
+
+/* Ajuste para nodos hoja (sin sublistas) */
+.leaf-node {
+    font-size: 14px;
+    color: #cccccc;
+}
