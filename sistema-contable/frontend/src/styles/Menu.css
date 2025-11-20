@@ -1,24 +1,33 @@
+/* Centra todo el contenido de la página */
+body {
+    min-height: 100vh; /* Ocupa al menos toda la altura de la ventana */
+    margin: 0;         /* Elimina el margen por defecto del body */
+    display: flex;     /* Habilita Flexbox */
+    justify-content: center; /* Centra horizontalmente el contenido hijo (.page-container) */
+    align-items: center;     /* Centra verticalmente el contenido hijo (.page-container) */
+    /* El background aquí es importante si quieres que se vea detrás del contenedor */
+    background: #333; /* Ejemplo de fondo oscuro para el body */
+}
+
 /* Contenedor principal centrado */
 .page-container {
+    display: flex;
     max-width: 1200px;
-    margin: 40px auto;
+    height: 85vh;
     padding: 20px;
     border-radius: 12px;
     background: rgba(20, 20, 20, 0.95);
     box-shadow: 0 8px 20px rgba(0,0,0,0.6);
-    display: flex;
-    height: 85vh;
 }
 
 /* Ajusta .menu-admin para ocupar todo el contenedor */
-.menu-admin {
+.main-content {
     flex: 1;
     display: flex;
     border-radius: 8px;
     overflow: hidden;
-    gap: 20px; /* espacio entre logo y columna de botones */
+    gap: 10px;
 }
-
 /* Columna izquierda */
 .menu-left {
     flex: 1;

@@ -1,0 +1,154 @@
+/* --- Estilos Específicos para GestionDeUsuarios --- */
+
+.gestion-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center; 
+    justify-content: flex-start; 
+    padding: 30px;
+}
+
+.gestion-buttons-container {
+    flex-grow: 1; 
+    display: flex;
+    flex-direction: column;
+    gap: 25px; 
+    align-items: center; 
+    justify-content: center; 
+    width: 100%;
+}
+
+.gestion-button {
+    width: 350px; 
+    height: 80px;
+    font-size: 18px;
+    display: flex; 
+    flex-direction: row; 
+    align-items: center;
+    justify-content: center;
+    gap: 15px; 
+}
+
+/* --- Variaciones de Color Sobrias para los Botones de Gestión --- */
+
+/* 1. Alta Usuario (Verde Sobrio / Éxito) */
+.primary-button {
+    background: #3c6c3e; 
+    color: #f0f0f0; 
+    border-color: #2b502d;
+    box-shadow: inset -2px -2px 4px rgba(255, 255, 255, 0.2), 
+                inset 2px 2px 6px rgba(0, 0, 0, 0.8),
+                0 4px 8px rgba(0, 0, 0, 0.5);
+}
+.primary-button:hover {
+    background: #467948;
+}
+
+/* 2. Modificación Usuario (Gris Cálido / Secundario) */
+.secondary-button {
+    background: #505050; 
+    color: #f0f0f0;
+    border-color: #3d3d3d;
+    box-shadow: inset -2px -2px 4px rgba(255, 255, 255, 0.2), 
+                inset 2px 2px 6px rgba(0, 0, 0, 0.8),
+                0 4px 8px rgba(0, 0, 0, 0.5);
+}
+.secondary-button:hover {
+    background: #666666;
+}
+
+/* 3. Baja Usuario (Rojo Oscuro / Peligro) */
+.danger-button {
+    background: #8b2b2b; 
+    color: #f0f0f0;
+    border-color: #6a1f1f;
+    box-shadow: inset -2px -2px 4px rgba(255, 255, 255, 0.2), 
+                inset 2px 2px 6px rgba(0, 0, 0, 0.8),
+                0 4px 8px rgba(0, 0, 0, 0.5);
+}
+.danger-button:hover {
+    background: #9d3535;
+}
+
+/* --- Estilos Específicos para Formularios de Alta/Baja/Modificación --- */
+
+.form-body {
+    align-items: center; 
+    justify-content: flex-start;
+    padding: 30px;
+}
+
+.user-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px; 
+    width: 100%; /* Aseguramos que ocupe todo el ancho disponible */
+    max-width: 500px; 
+    padding-top: 20px;
+    
+    /* CLAVE: Centra el formulario completo en el body */
+    align-items: center; 
+}
+
+/* CAMBIO CLAVE PARA CENTRADO DE CAMPOS */
+.header-field {
+    color: var(--color-text, #f0f0f0);
+    font-size: 14px;
+    font-weight: bold;
+    display: flex;
+    flex-direction: column;
+    
+    /* CENTRADO HORIZONTAL DEL LABEL Y EL INPUT */
+    align-items: center; 
+    
+    gap: 5px;
+    width: 100%; /* El campo debe ocupar 100% del ancho del user-form */
+}
+
+.large-input {
+    width: 100%; 
+}
+
+.submit-button {
+    margin-top: 15px;
+    height: 50px;
+    font-size: 16px;
+    flex: 0 0 auto !important; 
+    width: 100% !important; 
+}
+
+/* --- Estilos para la vista de Modificación (Búsqueda) --- */
+
+.search-form {
+    padding: 20px;
+    background: rgba(30, 30, 30, 0.7); 
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.search-field {
+    width: 100%;
+}
+
+.search-button-action {
+    width: 100%;
+    max-width: 250px; 
+}
+
+.modification-form {
+    margin-top: 30px; 
+    padding: 20px;
+    border: 1px solid var(--color-border, #444);
+    border-radius: 8px;
+    background: rgba(30, 30, 30, 0.5); 
+}
+
+.modification-title {
+    color: var(--color-primary, #1e90ff); 
+    border-bottom: 1px dashed var(--color-primary, #1e90ff);
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+    font-size: 18px;
+    width: 100%;
+    text-align: center;
+}

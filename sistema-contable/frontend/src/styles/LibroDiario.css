@@ -1,0 +1,80 @@
+/* --- Estilos Específicos para LibroDiario --- */
+
+/* 1. Ajuste del Body para acomodar Filtros y Tabla */
+.libro-body {
+    display: flex;
+    flex-direction: column;
+    /* Redefinimos el padding y el background para el body de reportes si es necesario */
+    padding: 15px 20px;
+}
+
+.filter-title {
+    color: var(--color-text, #f0f0f0);
+    font-size: 18px;
+    margin-bottom: 10px;
+    border-bottom: 1px dashed var(--color-border, #444);
+    padding-bottom: 5px;
+}
+
+.report-filters {
+    background: rgba(30, 30, 30, 0.5); 
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    flex-shrink: 0; /* No se encoge */
+}
+
+.filter-controls {
+    display: flex;
+    align-items: flex-end; /* Alinea los inputs y el botón por la parte inferior */
+    gap: 30px;
+}
+
+.filter-field {
+    color: var(--color-text, #f0f0f0);
+    font-size: 14px;
+    font-weight: bold;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+}
+
+/* Botón de búsqueda usa estilos de .action-button */
+.search-button {
+    padding: 10px 25px;
+    background: var(--color-primary, #1e90ff);
+    color: white;
+    border-color: #147ad1;
+    box-shadow: 0 4px 10px rgba(30, 144, 255, 0.3);
+}
+.search-button:hover {
+    background: #46a3ff;
+}
+
+/* 2. Estructura de la Tabla de Reporte */
+.report-table-wrapper {
+    flex-grow: 1; /* Ocupa el espacio restante bajo los filtros */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Contiene la tabla con scroll */
+}
+
+.report-table {
+    flex-grow: 1; /* Permite que la tabla se expanda */
+    width: 100%;
+    /* En este caso, no usaremos el fondo rayado del RegistrarAsiento.css para un reporte */
+    /* Lo ideal es que esta tabla tenga un scroll propio dentro del wrapper */
+    overflow-y: auto;
+}
+
+/* 3. Ajuste del Footer para un solo botón */
+.single-button-footer {
+    justify-content: flex-end !important; /* Mueve el único botón a la derecha */
+    gap: 0 !important;
+}
+
+.single-button-footer .action-button {
+    flex: 0 0 auto; /* El botón no se expande */
+    width: 150px; /* Ancho fijo para el botón Volver */
+}
