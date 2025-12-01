@@ -84,7 +84,8 @@ const CuentaInput = ({ value, onChange, index }) => {
 };
 
 
-export default function RegistrarAsiento() {
+// Componente principal: Acepta onPageChange para la navegación
+export default function RegistrarAsiento({ onPageChange }) {
     // Estado inicial: una sola fila vacía
     const [partidas, setPartidas] = useState([
         { cuenta: '', debe: '', haber: '' }
@@ -102,13 +103,20 @@ export default function RegistrarAsiento() {
         setPartidas(nuevasPartidas);
     };
 
+    // FUNCIÓN CLAVE: Navega de vuelta al menú (DASHBOARD)
+    const handleVolver = () => {
+        // Llama a la función que resetea la página al menú (DASHBOARD) en App.jsx
+        if (onPageChange) {
+            onPageChange("DASHBOARD"); 
+        }
+    };
+
     return (
         <div className="page-container">
             <div className="main-content">
                 <div className="asiento-layout-column"> 
                     
                     {/* HEADER */}
-                    {/* ... (código del header sin cambios) ... */}
                     <div className="asiento-header">
                         <div className="asiento-logo-wrapper">
                             <img src={LogoEmpresa} alt="Logo Empresa" className="logo-small" />
@@ -182,7 +190,6 @@ export default function RegistrarAsiento() {
                     </div>
 
                     {/* FOOTER */}
-                    {/* ... (código del footer sin cambios) ... */}
                     <div className="asiento-footer">
                         <button 
                             className="action-button icon-with-text add-button"
@@ -195,7 +202,12 @@ export default function RegistrarAsiento() {
                             <img src={LogoGrupo5} alt="Icono Guardar" className="icon-small" /> 
                             Guardar
                         </button>
-                        <button className="action-button icon-with-text back-button-footer">
+                        
+                        {/* BOTÓN VOLVER MODIFICADO PARA NAVEGAR */}
+                        <button 
+                            className="action-button icon-with-text back-button-footer"
+                            onClick={handleVolver}
+                        >
                             <img src={LogoGrupo5} alt="Icono Volver" className="icon-small" /> 
                             Volver
                         </button>

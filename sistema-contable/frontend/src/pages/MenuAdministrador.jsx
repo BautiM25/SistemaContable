@@ -3,18 +3,30 @@ import "../styles/Menu.css";
 import LogoEmpresa from "../assets/LogoEmpresa.png";
 import LogoGrupo5 from "../assets/LogoGrupo5.png";
 
-export default function MenuAdministrador({ onLogout }) {
+// Aceptamos la función onPageChange de App.jsx
+export default function MenuAdministrador({ onLogout, onPageChange }) {
+  
+  // Función para cerrar el menú y abrir la página
+  const handleMenuClick = (pageName) => {
+    onPageChange(pageName);
+  };
+
   return (
-    <div className="page-container"> {/* Única Etiqueta Raíz */}
+    <div className="page-container">
       <div className="main-content">
         <div className="menu-left">
           <img src={LogoEmpresa} alt="Logo Empresa" className="logo-empresa" />
         </div>
 
         <div className="menu-right">
-          <button className="menu-button">
+          {/* Botón Registrar Asiento: Llama al handler en App.jsx */}
+          <button 
+            className="menu-button"
+            onClick={() => handleMenuClick('REGISTRAR_ASIENTO')} // Enviamos la señal
+          >
             <img src={LogoGrupo5} alt="" /> Registrar Asiento
           </button>
+          
           <button className="menu-button">
             <img src={LogoGrupo5} alt="" /> Ver Reportes
           </button>
@@ -27,9 +39,10 @@ export default function MenuAdministrador({ onLogout }) {
           <button className="menu-button">
             <img src={LogoGrupo5} alt="" /> Configuración
           </button>
+          
           <button className="menu-button logout" onClick={onLogout}>Cerrar Sesión</button>
         </div>
       </div>
-    </div> // <--- ¡Asegúrate de que hay 3 etiquetas de cierre para las 3 de apertura!
+    </div>
   );
 }
