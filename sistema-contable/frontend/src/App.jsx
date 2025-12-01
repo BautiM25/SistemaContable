@@ -3,6 +3,8 @@ import Login from "./pages/Login.jsx";
 import MenuAdministrador from "./pages/MenuAdministrador.jsx";
 import MenuComprador from "./pages/MenuComprador.jsx";
 import MenuContador from "./pages/MenuContador.jsx";
+import React from "react";
+import DemoUI from "./pages/AltaUsuario.jsx";
 
 function App() {
   const [token, setToken] = useState(null);
