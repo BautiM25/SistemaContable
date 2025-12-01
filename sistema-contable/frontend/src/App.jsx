@@ -4,7 +4,7 @@ import MenuAdministrador from "./pages/MenuAdministrador.jsx";
 import MenuComprador from "./pages/MenuComprador.jsx";
 import MenuContador from "./pages/MenuContador.jsx";
 import React from "react";
-import DemoUI from "./pages/AltaUsuario.jsx";
+import DemoUI from "./pages/ModificacionCuentas.jsx";
 
 function App() {
   const [token, setToken] = useState(null);
