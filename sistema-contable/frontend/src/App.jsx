@@ -1,5 +1,5 @@
 import React from "react";
-import DemoUI from "./pages/AltaUsuario.jsx";
+import DemoUI from "./pages/ModificacionCuentas.jsx";
 
 function App() {
   return <DemoUI />;

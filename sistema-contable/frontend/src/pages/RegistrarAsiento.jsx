@@ -4,6 +4,86 @@ import "../styles/RegistrarAsiento.css";
 import LogoEmpresa from "../assets/LogoEmpresa.png";
 import LogoGrupo5 from "../assets/LogoGrupo5.png";
 
+// Datos de ejemplo para el menú de cuentas (serán reemplazados por el endpoint)
+const cuentasDummy = [
+    { codigo: '1.1.1', nombre: 'Caja' },
+    { codigo: '1.1.2', nombre: 'Banco' },
+    { codigo: '1.1.3', nombre: 'Cuentas por Cobrar' },
+    { codigo: '2.1.1', nombre: 'Proveedores' },
+    { codigo: '3.1.1', nombre: 'Capital Social' },
+];
+
+// Nuevo Componente para el Input con Dropdown
+const CuentaInput = ({ value, onChange, index }) => {
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [searchTerm, setSearchTerm] = useState(value);
+
+    // Filtra las cuentas basado en el texto de búsqueda
+    const filteredCuentas = cuentasDummy.filter(cuenta => 
+        cuenta.codigo.includes(searchTerm) || cuenta.nombre.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    const handleInputChange = (e) => {
+        const newValue = e.target.value;
+        setSearchTerm(newValue);
+        onChange(index, 'cuenta', newValue); // Actualiza el estado del componente padre
+        setIsDropdownOpen(true); // Abre el menú al escribir
+    };
+
+    const handleSelectCuenta = (cuenta) => {
+        const fullAccountName = `${cuenta.codigo} - ${cuenta.nombre}`;
+        setSearchTerm(fullAccountName);
+        onChange(index, 'cuenta', fullAccountName); // Rellena el input con el valor completo
+        setIsDropdownOpen(false); // Cierra el menú al seleccionar
+    };
+    
+    // Abre/cierra el menú al hacer clic en el input si no está escribiendo
+    const handleInputClick = () => {
+        setIsDropdownOpen(!isDropdownOpen);
+    };
+
+    // Cierra el menú cuando pierde el foco (con un pequeño retraso)
+    const handleBlur = () => {
+        // Usamos un pequeño retraso para permitir clics en el dropdown
+        setTimeout(() => setIsDropdownOpen(false), 200);
+    };
+
+    return (
+        <div className="cuenta-input-wrapper" onBlur={handleBlur}>
+            <input 
+                type="text" 
+                className="table-input cuenta-input" 
+                placeholder="Buscar cuenta..."
+                value={searchTerm}
+                onChange={handleInputChange}
+                onClick={handleInputClick}
+                onFocus={() => setIsDropdownOpen(true)}
+            />
+
+            {isDropdownOpen && (
+                <div className="cuenta-dropdown">
+                    {filteredCuentas.length > 0 ? (
+                        filteredCuentas.map((cuenta) => (
+                            <div 
+                                key={cuenta.codigo} 
+                                className="dropdown-item"
+                                // Mousedown se usa para registrar el clic antes del evento onBlur
+                                onMouseDown={() => handleSelectCuenta(cuenta)} 
+                            >
+                                <span className="item-code">{cuenta.codigo}</span>
+                                <span className="item-name">{cuenta.nombre}</span>
+                            </div>
+                        ))
+                    ) : (
+                        <div className="dropdown-item no-results">No se encontraron cuentas</div>
+                    )}
+                </div>
+            )}
+        </div>
+    );
+};
+
+
 export default function RegistrarAsiento() {
     // Estado inicial: una sola fila vacía
     const [partidas, setPartidas] = useState([
@@ -28,6 +108,7 @@ export default function RegistrarAsiento() {
                 <div className="asiento-layout-column"> 
                     
                     {/* HEADER */}
+                    {/* ... (código del header sin cambios) ... */}
                     <div className="asiento-header">
                         <div className="asiento-logo-wrapper">
                             <img src={LogoEmpresa} alt="Logo Empresa" className="logo-small" />
@@ -69,12 +150,11 @@ export default function RegistrarAsiento() {
                                 {partidas.map((partida, index) => (
                                     <tr className="partida-row" key={index}>
                                         <td>
-                                            <input 
-                                                type="text" 
-                                                className="table-input" 
-                                                placeholder="Buscar cuenta..."
+                                            {/* REEMPLAZO DEL INPUT POR EL COMPONENTE CUSTOM */}
+                                            <CuentaInput 
                                                 value={partida.cuenta}
-                                                onChange={(e) => handleInputChange(index, 'cuenta', e.target.value)}
+                                                onChange={handleInputChange}
+                                                index={index}
                                             />
                                         </td>
                                         <td>
@@ -102,6 +182,7 @@ export default function RegistrarAsiento() {
                     </div>
 
                     {/* FOOTER */}
+                    {/* ... (código del footer sin cambios) ... */}
                     <div className="asiento-footer">
                         <button 
                             className="action-button icon-with-text add-button"
