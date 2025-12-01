@@ -1,20 +1,26 @@
 package com.sistemacontable.sistema_contable.ElectroAndes.Resource;
 
+import com.sistemacontable.sistema_contable.ElectroAndes.Model.Usuario;
 import com.sistemacontable.sistema_contable.dto.*;
 import com.sistemacontable.sistema_contable.ElectroAndes.Service.UsuarioService;
+import com.sistemacontable.sistema_contable.ElectroAndes.Service.AuthenticationService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/usuarios")
+@CrossOrigin(origins = "http://localhost:5173")
 public class UsuarioController {
 
     private final UsuarioService usuarioService;
+    private final AuthenticationService authenticationService;
 
-    public UsuarioController(UsuarioService usuarioService) {
+    public UsuarioController(UsuarioService usuarioService, AuthenticationService authenticationService) {
         this.usuarioService = usuarioService;
+        this.authenticationService = authenticationService;
     }
 
     @PostMapping(value = "/create")
@@ -61,6 +67,18 @@ public class UsuarioController {
             return ResponseEntity.ok("Usuario eliminado");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // Nuevo endpoint de autenticación
+    @PostMapping("/auth")
+    public ResponseEntity<?> authentication(@RequestBody AuthenticationRequestDTO authRequest) {
+        try {
+            String token = authenticationService.authenticate(authRequest.getNombreUsuario(), authRequest.getContrasenia());
+            Usuario usuario = usuarioService.findByUsername(authRequest.getNombreUsuario());
+            return ResponseEntity.ok(Map.of("token", token, "rol", usuario.getRol().name()));
+        } catch (Exception e) {
+            return ResponseEntity.status(401).body(Map.of("error", "Invalid credentials"));
         }
     }
 }

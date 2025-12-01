@@ -1,5 +1,6 @@
 package com.sistemacontable.sistema_contable.ElectroAndes.Util;
 
+import com.sistemacontable.sistema_contable.ElectroAndes.Model.Rol;
 import com.sistemacontable.sistema_contable.dto.*;
 import com.sistemacontable.sistema_contable.ElectroAndes.Model.Usuario;
 
@@ -10,17 +11,22 @@ public class UsuarioMapper {
         usuario.setNombreUsuario(dto.getNombreUsuario());
         usuario.setContrasenia(dto.getContrasenia());
         usuario.setNombreCompleto(dto.getNombreCompleto());
-        usuario.setRol(dto.getRol());
+        if (dto.getRol() != null) {
+            usuario.setRol(Rol.valueOf(dto.getRol().toUpperCase()));
+        }
+
         return usuario;
     }
+
 
     public static Usuario toEntity(UpdateUsuarioDto dto) {
         Usuario usuario = new Usuario();
         usuario.setId(dto.getId());
         usuario.setNombreUsuario(dto.getNombreUsuario());
-        usuario.setContrasenia(dto.getContrasenia());
         usuario.setNombreCompleto(dto.getNombreCompleto());
-        usuario.setRol(dto.getRol());
+        if (dto.getRol() != null) {
+            usuario.setRol(Rol.valueOf(dto.getRol().toUpperCase()));
+        }
         return usuario;
     }
 
@@ -33,4 +39,3 @@ public class UsuarioMapper {
         return dto;
     }
 }
-

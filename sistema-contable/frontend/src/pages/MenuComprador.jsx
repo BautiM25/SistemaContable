@@ -3,7 +3,7 @@ import "../styles/Menu.css";
 import LogoEmpresa from "../assets/LogoEmpresa.png";
 import LogoGrupo5 from "../assets/LogoGrupo5.png";
 
-export default function MenuComprador() {
+export default function MenuComprador({ onLogout }) {
   return (
     <div className="page-container">
       <div className="main-content">
@@ -24,7 +24,7 @@ export default function MenuComprador() {
           <button className="menu-button">
             <img src={LogoGrupo5} alt="" /> Cuentas Corrientes
           </button>
-          <button className="menu-button logout">Cerrar Sesión</button>
+          <button className="menu-button logout" onClick={onLogout}>Cerrar Sesión</button>
         </div>
       </div>
     </div>

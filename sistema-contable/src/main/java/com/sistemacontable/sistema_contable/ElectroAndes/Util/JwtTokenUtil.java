@@ -10,31 +10,31 @@ import java.util.Date;
 @Component
 public class JwtTokenUtil implements Serializable {
 
-    private static final String SECRET_KEY = "SSAAII"; //Esta es la clave para firmar el JWT
-    private static final Algorithm ALGORITHM = Algorithm.HMAC512(SECRET_KEY); //ESte es el algoritmo que usaremos junto a la clave secreta
-    private static final long EXPIRATION_TIME = 10 * 24 * 60 * 60 * 1000;  // 10(Dias) * 24(Horas) * 60(Minutos) * 60(Segundos) * 1000(Expresar en Milisegundos)
+    private static final String SECRET_KEY = "SSAAII"; // RECOMENDACIÓN: mover a env var (p.ej. System.getenv("JWT_SECRET"))
+    private static final Algorithm ALGORITHM = Algorithm.HMAC512(SECRET_KEY);
+    private static final long EXPIRATION_TIME = 10 * 24 * 60 * 60 * 1000L;  // 10 días
     public static final String TOKEN_PREFIX = "Bearer ";
 
     public String generateToken(String subject){
         return TOKEN_PREFIX + JWT.create()
-                .withSubject(subject)   //Añade el subject (username) al payload del Token
-                .withExpiresAt(new Date(System.currentTimeMillis() + EXPIRATION_TIME)) //Establecemos el tiempo de expiracion del Token
-                .sign(ALGORITHM);   //Firma el Token con el Algoritmo
+                .withSubject(subject)
+                .withExpiresAt(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
+                .sign(ALGORITHM);
     }
 
     public static boolean verify(String token){
         try {
             JWT.require(ALGORITHM)
-                    .build() // Crea un verificador con el mismo algoritmo
-                    .verify(token.replace(TOKEN_PREFIX, "")); // Verifica el token (eliminando "Bearer ")
-            return true;  // Retorna true si es válido
+                    .build()
+                    .verify(token.replace(TOKEN_PREFIX, ""));
+            return true;
         } catch (JWTVerificationException e) {
-            return false; // Retorna false si no es válido
+            return false;
         }
     }
 
     public static String getSubject(String token) {
-        return JWT.decode(token.replace(TOKEN_PREFIX, "")).getSubject(); // Retorna el username del payload
+        return JWT.decode(token.replace(TOKEN_PREFIX, "")).getSubject();
     }
 
     public Date getExpirationDate(String token){

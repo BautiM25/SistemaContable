@@ -7,11 +7,12 @@
     justify-content: center;
     align-items: center;
     overflow: hidden;
+    font-family: 'Arial', sans-serif;
 }
 
 /* Imagen de fondo ocupando toda la ventana con blur */
 .login-background {
-    position: fixed; /* permanece detrás del login al hacer scroll */
+    position: fixed;
     top: 0;
     left: 0;
     width: 100%;
@@ -26,7 +27,7 @@
 .login-box {
     position: relative;
     z-index: 2;
-    background: rgba(30, 30, 30, 0.85); /* semi-transparente */
+    background: rgba(30, 30, 30, 0.85);
     border-radius: 12px;
     box-shadow: 0 8px 20px rgba(0,0,0,0.6);
     width: 360px;
@@ -34,6 +35,14 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+}
+
+/* Título */
+.login-title {
+    color: white;
+    margin-bottom: 20px;
+    font-size: 24px;
+    font-weight: bold;
 }
 
 /* Contenedor del logo dentro del login */
@@ -68,17 +77,21 @@
     width: 100%;
     padding: 12px 16px;
     background: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--color-border);
-    border-radius: var(--border-radius);
-    color: var(--color-text);
+    border: 1px solid #444;
+    border-radius: 6px;
+    color: white; /* Texto blanco para mejor contraste */
     font-size: 14px;
     outline: none;
     transition: border 0.3s ease;
 }
 
+.input::placeholder {
+    color: #aaa; /* Placeholder más visible */
+}
+
 .input:focus {
-    border-color: var(--color-primary);
-    box-shadow: 0 0 6px rgba(255,255,255,0.4);
+    border-color: #4a90e2;
+    box-shadow: 0 0 6px rgba(74, 144, 226, 0.4);
 }
 
 /* Botón de login */
@@ -92,20 +105,33 @@
     border-radius: 8px;
     border: 2px solid #2a2a2a;
     background: #aca5a5;
-    color: var(--color-text);
+    color: white;
     box-shadow: inset -2px -2px 4px rgba(255,255,255,0.1),
-                inset 2px 2px 6px rgba(0,0,0,0.6),
-                0 4px 8px rgba(0,0,0,0.5);
+    inset 2px 2px 6px rgba(0,0,0,0.6),
+    0 4px 8px rgba(0,0,0,0.5);
     transition: all 0.15s ease-in-out;
 }
 
-.button.login-button:hover {
+.button.login-button:hover:not(:disabled) {
     background: #505050;
 }
 
-.button.login-button:active {
+.button.login-button:active:not(:disabled) {
     background: #2e2e2e;
     box-shadow: inset 2px 2px 6px rgba(0,0,0,0.6),
-                inset -2px -2px 4px rgba(255,255,255,0.1);
+    inset -2px -2px 4px rgba(255,255,255,0.1);
     transform: translateY(2px);
+}
+
+.button.login-button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* Mensaje de error */
+.error-message {
+    color: #ff5252;
+    margin-top: 15px;
+    text-align: center;
+    font-size: 14px;
 }
