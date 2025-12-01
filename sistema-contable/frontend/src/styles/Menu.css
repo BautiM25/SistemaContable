@@ -12,12 +12,17 @@ body {
 /* Contenedor principal centrado */
 .page-container {
     display: flex;
+    min-width: 50vw;
     max-width: 1200px;
     height: 85vh;
     padding: 20px;
     border-radius: 12px;
     background: rgba(20, 20, 20, 0.95);
     box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+    background-image: url("../assets/LogoEmpresa.png");
+    background-size: cover; /* Cubre todo el área */
+    background-position: center center; /* Centra la imagen */
+    background-repeat: no-repeat;
 }
 
 /* Ajusta .menu-admin para ocupar todo el contenedor */
@@ -25,8 +30,10 @@ body {
     flex: 1;
     display: flex;
     border-radius: 8px;
+    border: #2a2a2a solid 5px;
     overflow: hidden;
     gap: 10px;
+    background-color: #2e2e2e;
 }
 /* Columna izquierda */
 .menu-left {

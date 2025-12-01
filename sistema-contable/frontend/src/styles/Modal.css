@@ -1,0 +1,59 @@
+/* --- Modal.css: Estilos base para Pop-ups --- */
+
+/* Fondo Oscuro que cubre la pantalla (Overlay) */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    
+    /* CAMBIO CLAVE: Fondo completamente oscuro para enfocar la atención */
+    background: rgba(0, 0, 0, 0.9); 
+    
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000; 
+}
+
+/* Contenedor del Pop-up */
+.modal-content {
+    background: rgba(30, 30, 30, 1); /* Menos transparencia para que se vea sólido */
+    border-radius: 12px;
+    
+    /* Añadimos una sombra más fuerte para el efecto "emergente" */
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 1); 
+    
+    padding: 30px;
+    width: 90%;
+    max-width: 550px;
+    color: var(--color-text, #f0f0f0);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.modal-title {
+    font-size: 22px;
+    color: var(--color-primary, #1e90ff);
+    border-bottom: 1px solid var(--color-border, #444);
+    padding-bottom: 10px;
+}
+
+.modal-details p {
+    margin: 5px 0;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+    margin-top: 10px;
+}
+
+/* Estilo para los formularios dentro del modal */
+.modal-form {
+    padding: 0; /* Remueve padding si el formulario está dentro del modal-content */
+    max-width: 100%;
+}

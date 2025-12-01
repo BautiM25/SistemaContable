@@ -3,38 +3,46 @@ import "../styles/Menu.css";
 import LogoEmpresa from "../assets/LogoEmpresa.png";
 import LogoGrupo5 from "../assets/LogoGrupo5.png";
 
-export default function MenuAdministrador({ onLogout }) {
+// Aceptamos la función onPageChange de App.jsx
+export default function MenuAdministrador({ onLogout, onPageChange }) {
+  
+  // Función para cerrar el menú y abrir la página
+  const handleMenuClick = (pageName) => {
+    onPageChange(pageName);
+  };
+
   return (
-      <div className="page-container">
-        <div className="menu-admin">
-          <div className="menu-left">
-            <img src={LogoEmpresa} alt="Logo Empresa" className="logo-empresa" />
-          </div>
     <div className="page-container">
       <div className="main-content">
         <div className="menu-left">
           <img src={LogoEmpresa} alt="Logo Empresa" className="logo-empresa" />
         </div>
 
-          <div className="menu-right">
-            <button className="menu-button">
-              <img src={LogoGrupo5} alt="" /> Registrar Asiento
-            </button>
-            <button className="menu-button">
-              <img src={LogoGrupo5} alt="" /> Ver Reportes
-            </button>
-            <button className="menu-button">
-              <img src={LogoGrupo5} alt="" /> Gestión de Usuarios
-            </button>
-            <button className="menu-button">
-              <img src={LogoGrupo5} alt="" /> Plan de Cuentas
-            </button>
-            <button className="menu-button">
-              <img src={LogoGrupo5} alt="" /> Configuración
-            </button>
-            <button className="menu-button logout" onClick={onLogout}>Cerrar Sesión</button>
-          </div>
+        <div className="menu-right">
+          {/* Botón Registrar Asiento: Llama al handler en App.jsx */}
+          <button 
+            className="menu-button"
+            onClick={() => handleMenuClick('REGISTRAR_ASIENTO')} // Enviamos la señal
+          >
+            <img src={LogoGrupo5} alt="" /> Registrar Asiento
+          </button>
+          
+          <button className="menu-button">
+            <img src={LogoGrupo5} alt="" /> Ver Reportes
+          </button>
+          <button className="menu-button">
+            <img src={LogoGrupo5} alt="" /> Gestión de Usuarios
+          </button>
+          <button className="menu-button">
+            <img src={LogoGrupo5} alt="" /> Plan de Cuentas
+          </button>
+          <button className="menu-button">
+            <img src={LogoGrupo5} alt="" /> Configuración
+          </button>
+          
+          <button className="menu-button logout" onClick={onLogout}>Cerrar Sesión</button>
         </div>
       </div>
+    </div>
   );
 }
