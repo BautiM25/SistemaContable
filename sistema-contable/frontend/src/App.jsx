@@ -20,14 +20,15 @@ function App() {
   const [currentPage, setCurrentPage] = useState("DASHBOARD");
 
   // Al iniciar, leemos localStorage
-  useEffect(() => {
+  /*useEffect(() => {
     const storedToken = localStorage.getItem("token");
     const storedRol = localStorage.getItem("rol");
 
     if (storedToken) setToken(storedToken);
     if (storedRol) setRol(storedRol.trim().toUpperCase());
   }, []);
-
+  */
+ 
   const handleLogin = (newToken, newRol) => {
     console.log("Login recibido:", newToken, newRol);
     localStorage.setItem("token", newToken);
