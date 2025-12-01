@@ -30,6 +30,7 @@ body {
     flex: 1;
     display: flex;
     border-radius: 8px;
+    border: #2a2a2a solid 5px;
     overflow: hidden;
     gap: 10px;
     background-color: #2e2e2e;
