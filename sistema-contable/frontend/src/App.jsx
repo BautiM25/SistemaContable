@@ -5,6 +5,14 @@ import MenuAdministrador from "./pages/MenuAdministrador.jsx";
 import MenuComprador from "./pages/MenuComprador.jsx";
 import MenuContador from "./pages/MenuContador.jsx";
 import RegistrarAsiento from "./pages/RegistrarAsiento.jsx";
+import GestionDeUsuarios from "./pages/GestionUsuarios.jsx";
+import AltaUsuarios from "./pages/AltaUsuario.jsx";
+import BajaUsuarios from "./pages/BajaUsuario.jsx";
+import GestionDeCuentas from "./pages/GestionDeCuentas.jsx";
+import AltaCuentas from "./pages/AltaCuentas.jsx";
+import BajaCuentas from "./pages/BajaCuentas.jsx";
+import ModificacionCuentas from "./pages/ModificacionCuentas.jsx";
+import PlanDeCuentas from "./pages/PlanDeCuentas.jsx";
 
 const AdminLayout = ({ onLogout }) => (
   // Nota: MenuAdministrador debe aceptar 'children' o usar Outlet.
@@ -28,7 +36,7 @@ function App() {
     if (storedRol) setRol(storedRol.trim().toUpperCase());
   }, []);
   */
- 
+
   const handleLogin = (newToken, newRol) => {
     console.log("Login recibido:", newToken, newRol);
     localStorage.setItem("token", newToken);
@@ -60,6 +68,30 @@ function App() {
         // CLAVE: Pasamos onPageChange
         return <RegistrarAsiento onPageChange={handlePageChange} />;
     }
+
+    if (currentPage === "GESTION_USUARIOS") {
+      // Pasa onPageChange para que el botón "Volver" pueda regresar al menú
+      return <GestionDeUsuarios onPageChange={handlePageChange} />; 
+    }
+
+    if (currentPage === "ALTA_USUARIO") {
+      return <AltaUsuarios onPageChange={handlePageChange} />;
+  } else if (currentPage === "BAJA_USUARIO") {
+      return <BajaUsuarios onPageChange={handlePageChange} />;
+  } else if (currentPage === "GESTION_USUARIOS") {
+      return <GestionDeUsuarios onPageChange={handlePageChange} />; // La vista actual
+  } else if (currentPage === "GESTION_CUENTAS") {
+    // Pasa onPageChange para que el botón "Volver" funcione
+    return <GestionDeCuentas onPageChange={handlePageChange} />; 
+  } else if (currentPage === "ALTA_CUENTA") {
+    return <AltaCuentas onPageChange={handlePageChange} />;
+} else if (currentPage === "BAJA_CUENTA") {
+    return <BajaCuentas onPageChange={handlePageChange} />;
+} else if (currentPage === "MODIFICACION_CUENTA") {
+    return <ModificacionCuentas onPageChange={handlePageChange} />;
+} else if (currentPage === "PLAN_DE_CUENTAS") {
+  return <PlanDeCuentas onPageChange={handlePageChange} />; 
+}
     // ... (Añadir más páginas aquí) ...
     
     // Si estamos en el DASHBOARD (el menú), mostramos el layout del menú

@@ -72,7 +72,7 @@ const ModificacionModal = ({ cuenta, onClose, onSave }) => {
 };
 
 
-export default function ModificacionCuentas() {
+export default function ModificacionCuentas({onPageChange}) {
     const [numCuentaBuscar, setNumCuentaBuscar] = useState('');
     const [cuentaEncontrada, setCuentaEncontrada] = useState(null); 
     const [showModal, setShowModal] = useState(false);
@@ -95,6 +95,12 @@ export default function ModificacionCuentas() {
         setShowModal(false);
         setCuentaEncontrada(null); 
         setNumCuentaBuscar('');
+    };
+
+    const handleVolver = () => {
+        if (onPageChange) {
+            onPageChange("GESTION_CUENTAS"); 
+        }
     };
 
     return (
@@ -137,7 +143,10 @@ export default function ModificacionCuentas() {
 
                     {/* FOOTER: Botón Volver */}
                     <div className="asiento-footer single-button-footer">
-                        <button className="action-button icon-with-text back-button-footer">
+                    <button 
+                            className="action-button icon-with-text back-button-footer"
+                            onClick={handleVolver} // CLAVE: Vuelve a GESTION_CUENTAS
+                        >
                             <img src={LogoGrupo5} alt="Icono Volver" className="icon-small" /> 
                             Volver
                         </button>
