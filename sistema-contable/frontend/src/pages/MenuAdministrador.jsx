@@ -19,10 +19,10 @@ export default function MenuAdministrador({ onLogout, onPageChange }) {
         </div>
 
         <div className="menu-right">
-          {/* Botón Registrar Asiento: Llama al handler en App.jsx */}
+          {/* Botón Registrar Asiento */}
           <button 
             className="menu-button"
-            onClick={() => handleMenuClick('REGISTRAR_ASIENTO')} // Enviamos la señal
+            onClick={() => handleMenuClick('REGISTRAR_ASIENTO')} 
           >
             <img src={LogoGrupo5} alt="" /> Registrar Asiento
           </button>
@@ -30,14 +30,28 @@ export default function MenuAdministrador({ onLogout, onPageChange }) {
           <button className="menu-button">
             <img src={LogoGrupo5} alt="" /> Ver Reportes
           </button>
-          <button className="menu-button">
+          
+          {/* BOTÓN: Gestión de Usuarios */}
+          <button 
+            className="menu-button"
+            onClick={() => handleMenuClick('GESTION_USUARIOS')} 
+          >
             <img src={LogoGrupo5} alt="" /> Gestión de Usuarios
           </button>
-          <button className="menu-button">
+          
+          {/* BOTÓN CLAVE: Plan de Cuentas */}
+          <button 
+            className="menu-button"
+            onClick={() => handleMenuClick('PLAN_DE_CUENTAS')} // Enviamos la señal
+          >
             <img src={LogoGrupo5} alt="" /> Plan de Cuentas
           </button>
-          <button className="menu-button">
-            <img src={LogoGrupo5} alt="" /> Configuración
+          
+          <button 
+            className="menu-button"
+            onClick={() => handleMenuClick('GESTION_CUENTAS')} 
+          >
+            <img src={LogoGrupo5} alt="" /> Gestion de Cuentas
           </button>
           
           <button className="menu-button logout" onClick={onLogout}>Cerrar Sesión</button>

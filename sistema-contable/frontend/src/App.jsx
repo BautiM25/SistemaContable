@@ -5,6 +5,15 @@ import MenuAdministrador from "./pages/MenuAdministrador.jsx";
 import MenuComprador from "./pages/MenuComprador.jsx";
 import MenuContador from "./pages/MenuContador.jsx";
 import RegistrarAsiento from "./pages/RegistrarAsiento.jsx";
+import GestionDeUsuarios from "./pages/GestionUsuarios.jsx";
+import AltaUsuarios from "./pages/AltaUsuario.jsx";
+import BajaUsuarios from "./pages/BajaUsuario.jsx";
+import GestionDeCuentas from "./pages/GestionDeCuentas.jsx";
+import AltaCuentas from "./pages/AltaCuentas.jsx";
+import BajaCuentas from "./pages/BajaCuentas.jsx";
+import ModificacionCuentas from "./pages/ModificacionCuentas.jsx";
+import PlanDeCuentas from "./pages/PlanDeCuentas.jsx";
+//import VerReportes from "./pages/VerReportes.jsx";
 
 const AdminLayout = ({ onLogout }) => (
   // Nota: MenuAdministrador debe aceptar 'children' o usar Outlet.
@@ -28,7 +37,7 @@ function App() {
     if (storedRol) setRol(storedRol.trim().toUpperCase());
   }, []);
   */
- 
+
   const handleLogin = (newToken, newRol) => {
     console.log("Login recibido:", newToken, newRol);
     localStorage.setItem("token", newToken);
@@ -54,24 +63,55 @@ function App() {
 
   // Función que decide qué componente de contenido mostrar
   const renderContent = (rol) => {
+    // Primero, definimos qué componente de PÁGINA se debe renderizar.
+    // La variable 'onPageChange' se pasa a TODAS las vistas de contenido.
     
-    // Si la página es Registrar Asiento, le pasamos el handler de cambio de página
-    if (currentPage === "REGISTRAR_ASIENTO") {
-        // CLAVE: Pasamos onPageChange
+    switch (currentPage) {
+      // Vistas Contables
+      case "REGISTRAR_ASIENTO":
         return <RegistrarAsiento onPageChange={handlePageChange} />;
-    }
-    // ... (Añadir más páginas aquí) ...
-    
-    // Si estamos en el DASHBOARD (el menú), mostramos el layout del menú
-    switch (rol) {
-        case "ADMINISTRADOR":
-            // Pasamos el handler para que el menú pueda cambiar el estado de la página
+      case "PLAN_DE_CUENTAS":
+        return <PlanDeCuentas onPageChange={handlePageChange} />;
+      
+      // Gestión de Usuarios
+      case "GESTION_USUARIOS":
+        // Nota: GESTION_USUARIOS es la página de índice (botones), no un formulario.
+        return <GestionDeUsuarios onPageChange={handlePageChange} />;
+      case "ALTA_USUARIO":
+        return <AltaUsuarios onPageChange={handlePageChange} />;
+      case "BAJA_USUARIO":
+        return <BajaUsuarios onPageChange={handlePageChange} />;
+      // Añadir: case "MODIFICACION_USUARIO":
+        
+      // Gestión de Cuentas
+      case "GESTION_CUENTAS":
+        return <GestionDeCuentas onPageChange={handlePageChange} />;
+      case "ALTA_CUENTA":
+        return <AltaCuentas onPageChange={handlePageChange} />;
+      case "BAJA_CUENTA":
+        return <BajaCuentas onPageChange={handlePageChange} />;
+      case "MODIFICACION_CUENTA":
+        return <ModificacionCuentas onPageChange={handlePageChange} />;
+      
+      //Reportes
+      case "VER_REPORTES":
+        return <VerReportes onPageChange={handlePageChange} />;
+      // Si la página no coincide con ninguna vista de contenido específica,
+      // o si es la página de inicio ("DASHBOARD"), renderizamos el MENÚ.
+      case "DASHBOARD":
+      default:
+        switch (rol) {
+          case "ADMINISTRADOR":
             return <MenuAdministrador onLogout={handleLogout} onPageChange={handlePageChange} />;
-        // ... (Otros roles) ...
-        default:
+          case "CONTADOR":
+            return <MenuContador onLogout={handleLogout} onPageChange={handlePageChange} />;
+          case "COMPRADOR":
+            return <MenuComprador onLogout={handleLogout} onPageChange={handlePageChange} />;
+          default:
             return <p>Rol no reconocido</p>;
+        }
     }
-};
+  };
 
 
   console.log("Token:", token, "Rol normalizado:", rol);

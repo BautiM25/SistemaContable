@@ -36,7 +36,7 @@ const AltaModal = ({ cuentaPadre, nombre, onConfirm, onClose }) => (
 );
 
 
-export default function AltaCuentas() {
+export default function AltaCuentas({onPageChange}) {
     const [numCuentaPadre, setNumCuentaPadre] = useState('');
     const [nombreCuenta, setNombreCuenta] = useState('');
     const [showModal, setShowModal] = useState(false); 
@@ -51,6 +51,12 @@ export default function AltaCuentas() {
         setShowModal(false);
         setNumCuentaPadre(''); 
         setNombreCuenta('');
+    };
+
+    const handleVolver = () => {
+        if (onPageChange) {
+            onPageChange("GESTION_CUENTAS"); 
+        }
     };
 
     return (
@@ -106,7 +112,10 @@ export default function AltaCuentas() {
 
                     {/* FOOTER: Botón Volver */}
                     <div className="asiento-footer single-button-footer">
-                        <button className="action-button icon-with-text back-button-footer">
+                    <button 
+                            className="action-button icon-with-text back-button-footer"
+                            onClick={handleVolver} // CLAVE: Vuelve a GESTION_CUENTAS
+                        >
                             <img src={LogoGrupo5} alt="Icono Volver" className="icon-small" /> 
                             Volver
                         </button>
