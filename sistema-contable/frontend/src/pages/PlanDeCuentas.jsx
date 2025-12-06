@@ -62,7 +62,14 @@ const CuentaNodo = ({ cuenta }) => {
 };
 
 
-export default function PlanDeCuentas() {
+export default function PlanDeCuentas({onPageChange}) {
+    
+    const handleVolver = () => {
+        if (onPageChange) {
+            onPageChange("DASHBOARD"); 
+        }
+    };
+
     return (
         <div className="page-container">
             <div className="main-content">
@@ -91,7 +98,10 @@ export default function PlanDeCuentas() {
 
                     {/* FOOTER: Solo el botón Volver */}
                     <div className="asiento-footer single-button-footer">
-                        <button className="action-button icon-with-text back-button-footer">
+                        <button 
+                            className="action-button icon-with-text back-button-footer"
+                            onClick={handleVolver} // CLAVE: Llama a la función de navegación
+                        >
                             <img src={LogoGrupo5} alt="Icono Volver" className="icon-small" /> 
                             Volver
                         </button>

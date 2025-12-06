@@ -6,11 +6,19 @@ import "../styles/GestionUsuarios.css"; // Contiene los estilos de botones de ge
 import LogoEmpresa from "../assets/LogoEmpresa.png";
 import LogoGrupo5 from "../assets/LogoGrupo5.png";
 
-export default function GestionDeCuentas() {
+export default function GestionDeCuentas({onPageChange}) {
 
-    const handleAction = (action) => {
-        alert(`Acción seleccionada: ${action}`);
-        // Aquí iría la lógica de navegación a las vistas de Alta, Modificación o Baja de Cuentas
+    const handleActionClick = (pageName) => {
+        if (onPageChange) {
+            onPageChange(pageName);
+        }
+    };
+
+    // Función para manejar el clic en Volver (regresa al menú principal)
+    const handleVolver = () => {
+        if (onPageChange) {
+            onPageChange("DASHBOARD"); // Vuelve a la pantalla principal del menú
+        }
     };
 
     return (
@@ -32,23 +40,26 @@ export default function GestionDeCuentas() {
                         
                         <div className="gestion-buttons-container">
                             
-                            <button 
+                        <button 
                                 className="menu-button gestion-button primary-button"
-                                onClick={() => handleAction('Alta Cuenta')}
+                                // CLAVE: Navegación a Alta Cuenta
+                                onClick={() => handleActionClick('ALTA_CUENTA')} 
                             >
                                 <img src={LogoGrupo5} alt="Icono Alta" /> Alta Cuenta
                             </button>
                             
                             <button 
                                 className="menu-button gestion-button secondary-button"
-                                onClick={() => handleAction('Modificación Cuenta')}
+                                // CLAVE: Navegación a Modificación Cuenta
+                                onClick={() => handleActionClick('MODIFICACION_CUENTA')} 
                             >
                                 <img src={LogoGrupo5} alt="Icono Modificación" /> Modificación Cuenta
                             </button>
                             
                             <button 
                                 className="menu-button gestion-button danger-button"
-                                onClick={() => handleAction('Baja Cuenta')}
+                                // CLAVE: Navegación a Baja Cuenta
+                                onClick={() => handleActionClick('BAJA_CUENTA')} 
                             >
                                 <img src={LogoGrupo5} alt="Icono Baja" /> Baja Cuenta
                             </button>
@@ -58,7 +69,10 @@ export default function GestionDeCuentas() {
 
                     {/* FOOTER: Solo el botón Volver */}
                     <div className="asiento-footer single-button-footer">
-                        <button className="action-button icon-with-text back-button-footer">
+                    <button 
+                            className="action-button icon-with-text back-button-footer"
+                            onClick={handleVolver} // CLAVE: Vuelve a DASHBOARD
+                        >
                             <img src={LogoGrupo5} alt="Icono Volver" className="icon-small" /> 
                             Volver
                         </button>
