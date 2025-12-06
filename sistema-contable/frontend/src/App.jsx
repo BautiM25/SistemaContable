@@ -99,7 +99,12 @@ function App() {
         case "ADMINISTRADOR":
             // Pasamos el handler para que el menú pueda cambiar el estado de la página
             return <MenuAdministrador onLogout={handleLogout} onPageChange={handlePageChange} />;
-        // ... (Otros roles) ...
+        case "CONTADOR":
+            // Pasamos el handler para que el menú pueda cambiar el estado de la página
+            return <MenuContador onLogout={handleLogout} onPageChange={handlePageChange} />;
+        case "COMPRADOR":
+            // Pasamos el handler para que el menú pueda cambiar el estado de la página
+            return <MenuComprador onLogout={handleLogout} onPageChange={handlePageChange} />;
         default:
             return <p>Rol no reconocido</p>;
     }
