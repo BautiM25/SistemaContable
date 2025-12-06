@@ -1,8 +1,8 @@
-// Archivo: src/components/PlanDeCuentas.jsx
-
 import React, { useState, useEffect } from "react";
-import { obtenerCuentas } from "../services/cuentaService"; // <-- Importamos el servicio
-import { buildCuentaTree } from "../utils/treeConverter"; // <-- Importamos el conversor
+import { obtenerCuentas } from "../services/cuentaService"; 
+// Importamos la utilidad que ahora calcula el código jerárquico
+import { buildCuentaTree } from "../utils/treeConverter"; 
+
 // Reutilizamos el layout base y estilos de botones/inputs
 import "../styles/Menu.css";
 import "../styles/RegistrarAsiento.css"; 
@@ -11,20 +11,23 @@ import LogoEmpresa from "../assets/LogoEmpresa.png";
 import LogoGrupo5 from "../assets/LogoGrupo5.png";
 
 // Componente recursivo para renderizar cada nodo del árbol
-// NOTA: Usamos 'nombreCuenta' e 'id' de tu DTO, no 'codigo' y 'nombre' del ejemplo anterior.
 const CuentaNodo = ({ cuenta }) => {
     const hasChildren = cuenta.children && cuenta.children.length > 0;
 
     return (
         <li className={`cuenta-node ${hasChildren ? 'parent-node' : 'leaf-node'}`}>
-            {/* Usamos el ID de la cuenta para referencia */}
-            <span className="cuenta-code">[ID: {cuenta.id}]</span> 
+            
+            {/* ⭐ CLAVE: Muestra el código jerárquico calculado en el Frontend */}
+            <span className="cuenta-id-label">{cuenta.codigoJerarquico}</span> 
+            
             <span className="cuenta-name">{cuenta.nombreCuenta}</span> 
-            {/* Etiqueta para indicar si es una cuenta que se puede usar en asientos */}
-            {cuenta.esHoja && <span className="hoja-badge">(Hoja)</span>}
-
+            
+            {/* Ícono para cuenta de hoja (Hoja = utilizable para asientos) */}
+            {cuenta.esHoja && <span className="hoja-badge" title="Cuenta de Hoja (Utilizable en asientos)"></span>}
+            
             {hasChildren && (
                 <ul className="subcuentas-list">
+                    {/* Usamos el ID original para la key, ya que es único */}
                     {cuenta.children.map((child) => (
                         <CuentaNodo key={child.id} cuenta={child} /> 
                     ))}
@@ -35,27 +38,31 @@ const CuentaNodo = ({ cuenta }) => {
 };
 
 
-export default function PlanDeCuentas() {
-    // 1. Estados para manejo de datos y UI
+export default function PlanDeCuentas({onPageChange}) {
+    // ESTADOS PARA CARGA DE DATOS REALES
     const [cuentasTree, setCuentasTree] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // 2. useEffect para cargar los datos
+    const handleVolver = () => {
+        if (onPageChange) {
+            onPageChange("DASHBOARD"); 
+        }
+    };
+
+    // EFECTO para cargar los datos del backend y convertirlos
     useEffect(() => {
         const cargarCuentas = async () => {
             try {
-                // Paso 1: Obtener la lista plana del backend
                 const cuentasPlanas = await obtenerCuentas();
                 
-                // Paso 2: Convertir la lista plana a la estructura de árbol
+                // Conversión y cálculo del código jerárquico
                 const treeData = buildCuentaTree(cuentasPlanas);
 
                 setCuentasTree(treeData); 
                 setError(null);
             } catch (err) {
-                // Manejo de errores de conexión o del backend
-                // Se puede mejorar mostrando el mensaje de error específico del servidor
+                console.error("Detalle del Error:", err);
                 setError("Error al cargar las cuentas. Asegúrese que el backend está corriendo.");
             } finally {
                 setLoading(false);
@@ -63,7 +70,8 @@ export default function PlanDeCuentas() {
         };
 
         cargarCuentas();
-    }, []); // El array vacío asegura que se ejecuta solo al montar el componente
+    }, []); 
+
 
     // Renderizado condicional de estados de carga/error
     if (loading) {
@@ -77,6 +85,7 @@ export default function PlanDeCuentas() {
         </div>;
     }
 
+
     return (
         <div className="page-container">
             <div className="main-content">
@@ -88,7 +97,6 @@ export default function PlanDeCuentas() {
                             <img src={LogoEmpresa} alt="Logo Empresa" className="logo-small" />
                             <h2 className="asiento-title">Plan de Cuentas</h2>
                         </div>
-                        {/* Botón para la funcionalidad de Administrador (Crear) */}
                         <button className="action-button primary-button">
                             Crear Nueva Cuenta
                         </button>
@@ -100,10 +108,9 @@ export default function PlanDeCuentas() {
                         
                         <div className="arbol-container">
                             {cuentasTree.length === 0 ? (
-                                <p>No hay cuentas cargadas en el sistema o las cuentas no tienen una estructura de padre/hijo definida.</p>
+                                <p>No hay cuentas cargadas en el sistema. Utilice el botón "Crear Nueva Cuenta" para comenzar.</p>
                             ) : (
                                 <ul className="plan-cuentas-root">
-                                    {/* Mapea las cuentas raíz que devuelve buildCuentaTree */}
                                     {cuentasTree.map((cuenta) => (
                                         <CuentaNodo key={cuenta.id} cuenta={cuenta} />
                                     ))}
@@ -116,7 +123,7 @@ export default function PlanDeCuentas() {
                     <div className="asiento-footer single-button-footer">
                         <button 
                             className="action-button icon-with-text back-button-footer"
-                            onClick={handleVolver} // CLAVE: Llama a la función de navegación
+                            onClick={handleVolver}
                         >
                             <img src={LogoGrupo5} alt="Icono Volver" className="icon-small" /> 
                             Volver
