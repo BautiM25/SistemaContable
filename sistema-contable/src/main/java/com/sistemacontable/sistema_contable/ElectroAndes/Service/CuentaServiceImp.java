@@ -2,6 +2,7 @@ package com.sistemacontable.sistema_contable.ElectroAndes.Service;
 
 import com.sistemacontable.sistema_contable.dto.CuentaDTO;
 import com.sistemacontable.sistema_contable.ElectroAndes.Model.Cuenta;
+import com.sistemacontable.sistema_contable.ElectroAndes.Model.TipoCuenta; 
 import com.sistemacontable.sistema_contable.ElectroAndes.Repository.CuentaRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,7 +53,7 @@ public class CuentaServiceImp implements CuentaService {
         return convertirADTO(cuenta);
     }
 
-    // Elimina una cuenta por su ID
+    // Elimina una cuenta por su ID (Eliminación Lógica)
     @Override
     public void eliminarCuenta(Long id) {
         Cuenta cuenta = cuentaRepositorio.findById(id)
@@ -84,7 +85,7 @@ public class CuentaServiceImp implements CuentaService {
         StringBuilder linea = new StringBuilder();
 
         for (int i = 0; i < nivel; i++) {
-            linea.append("    ");
+            linea.append("    ");
         }
 
         linea.append(numeracion).append(" - ").append(cuenta.getNombreCuenta())
@@ -104,13 +105,19 @@ public class CuentaServiceImp implements CuentaService {
         }
     }
 
-    // Convierte una entidad Cuenta a CuentaDTO
+    // Convierte una entidad Cuenta a CuentaDTO (AGREGADO: Conversión del TipoCuenta a String)
     private CuentaDTO convertirADTO(Cuenta cuenta) {
         CuentaDTO dto = new CuentaDTO();
         dto.setId(cuenta.getId());
         dto.setNombreCuenta(cuenta.getNombreCuenta());
         dto.setActivado(cuenta.getActivado());
         dto.setEsHoja(cuenta.getEsHoja());
+        
+        // Mapear el TipoCuenta a String en el DTO de salida
+        if (cuenta.getTipo() != null) {
+            dto.setTipo(cuenta.getTipo().name());
+        }
+
         if (cuenta.getCuentaPadre() != null) {
             dto.setCuentaPadreId(cuenta.getCuentaPadre().getId());
         }
@@ -122,6 +129,22 @@ public class CuentaServiceImp implements CuentaService {
         cuenta.setNombreCuenta(dto.getNombreCuenta());
         cuenta.setActivado(dto.getActivado());
         cuenta.setEsHoja(dto.getEsHoja());
+        
+        // LÓGICA AGREGADA PARA MAPE AR Y VALIDAR 'TIPO'
+        if (dto.getTipo() != null && !dto.getTipo().isEmpty()) {
+            try {
+                // Convierte el String (ej: "ACTIVO") al Enum (TipoCuenta.ACTIVO)
+                cuenta.setTipo(TipoCuenta.valueOf(dto.getTipo().toUpperCase())); 
+            } catch (IllegalArgumentException e) {
+                // Si el valor no coincide con el Enum
+                throw new IllegalArgumentException("Tipo de cuenta no válido: " + dto.getTipo() + ". Valores permitidos: ACTIVO, PASIVO, PATRIMONIO, INGRESO, EGRESO.");
+            }
+        } else {
+            // Si el DTO no trae el campo (a pesar de ser obligatorio)
+            throw new IllegalArgumentException("El campo 'tipo' es obligatorio y no puede estar vacío.");
+        }
+        
+        // Lógica para el padre
         if (dto.getCuentaPadreId() != null) {
             Cuenta padre = cuentaRepositorio.findById(dto.getCuentaPadreId())
                     .orElseThrow(() -> new EntityNotFoundException("Cuenta padre no encontrada"));
@@ -129,5 +152,8 @@ public class CuentaServiceImp implements CuentaService {
         } else {
             cuenta.setCuentaPadre(null);
         }
+        
+        // El campo 'saldo' tiene un valor por defecto de 0.0 en la Entity, 
+        // por lo que no necesita ser mapeado a menos que se quiera permitir un saldo inicial distinto.
     }
 }

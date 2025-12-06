@@ -6,6 +6,7 @@ public class CuentaDTO {
     private Boolean activado;
     private Boolean esHoja;
     private Long cuentaPadreId;
+    private String tipo;
 
     // Getters y Setters
 
@@ -47,5 +48,13 @@ public class CuentaDTO {
 
     public void setCuentaPadreId(Long cuentaPadreId) {
         this.cuentaPadreId = cuentaPadreId;
+    }
+
+    public String getTipo() {
+        return tipo;
+    }
+
+    public void setTipo(String tipo) {
+        this.tipo = tipo;
     }
 }
