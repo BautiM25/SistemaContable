@@ -1,16 +1,25 @@
 import React from "react";
-// Reutilizamos el layout base y estilos de botones/inputs
 import "../styles/Menu.css";
 import "../styles/RegistrarAsiento.css"; 
-import "../styles/GestionUsuarios.css"; // Estilos específicos para la gestión
+import "../styles/GestionUsuarios.css"; 
 import LogoEmpresa from "../assets/LogoEmpresa.png";
 import LogoGrupo5 from "../assets/LogoGrupo5.png";
 
-export default function GestionUsuarios() {
+// Aceptamos onPageChange como prop
+export default function GestionUsuarios({ onPageChange }) {
 
-    const handleAction = (action) => {
-        alert(`Acción seleccionada: ${action}`);
-        // Aquí iría la lógica de navegación a las vistas de Alta, Modificación o Baja
+    // Función para manejar el clic en los botones de acción
+    const handleActionClick = (pageName) => {
+        if (onPageChange) {
+            onPageChange(pageName);
+        }
+    };
+    
+    // Función para manejar el clic en Volver (regresa al menú principal)
+    const handleVolver = () => {
+        if (onPageChange) {
+            onPageChange("DASHBOARD"); 
+        }
     };
 
     return (
@@ -34,21 +43,16 @@ export default function GestionUsuarios() {
                             
                             <button 
                                 className="menu-button gestion-button primary-button"
-                                onClick={() => handleAction('Alta Usuario')}
+                                // CLAVE: Navegación a la vista de Alta
+                                onClick={() => handleActionClick('ALTA_USUARIO')} 
                             >
                                 <img src={LogoGrupo5} alt="Icono Alta" /> Alta Usuario
                             </button>
                             
                             <button 
-                                className="menu-button gestion-button secondary-button"
-                                onClick={() => handleAction('Modificación Usuario')}
-                            >
-                                <img src={LogoGrupo5} alt="Icono Modificación" /> Modificación Usuario
-                            </button>
-                            
-                            <button 
                                 className="menu-button gestion-button danger-button"
-                                onClick={() => handleAction('Baja Usuario')}
+                                // CLAVE: Navegación a la vista de Baja
+                                onClick={() => handleActionClick('BAJA_USUARIO')} 
                             >
                                 <img src={LogoGrupo5} alt="Icono Baja" /> Baja Usuario
                             </button>
@@ -56,9 +60,12 @@ export default function GestionUsuarios() {
                         </div>
                     </div>
 
-                    {/* FOOTER: Solo el botón Volver */}
+                    {/* FOOTER: Botón Volver */}
                     <div className="asiento-footer single-button-footer">
-                        <button className="action-button icon-with-text back-button-footer">
+                        <button 
+                            className="action-button icon-with-text back-button-footer"
+                            onClick={handleVolver} // CLAVE: Navegación a DASHBOARD
+                        >
                             <img src={LogoGrupo5} alt="Icono Volver" className="icon-small" /> 
                             Volver
                         </button>

@@ -5,7 +5,7 @@ import "../styles/GestionUsuarios.css";
 import LogoEmpresa from "../assets/LogoEmpresa.png";
 import LogoGrupo5 from "../assets/LogoGrupo5.png";
 
-export default function BajaUsuarios() {
+export default function BajaUsuarios({onPageChange}) {
     const [nombreUsuario, setNombreUsuario] = useState('');
     const [password, setPassword] = useState('');
 
@@ -14,6 +14,13 @@ export default function BajaUsuarios() {
         // NOTA: En un sistema real, la contraseña sería la del administrador que ejecuta la baja.
         alert(`Confirmando baja del usuario: ${nombreUsuario}`);
         // Aquí iría la lógica de API para eliminar el usuario
+    };
+
+    const handleVolver = () => {
+        // CLAVE: Cambia el estado para volver a la pantalla de Gestión de Usuarios
+        if (onPageChange) {
+            onPageChange("GESTION_USUARIOS"); 
+        }
     };
 
     return (
@@ -69,7 +76,10 @@ export default function BajaUsuarios() {
 
                     {/* FOOTER: Botón Volver */}
                     <div className="asiento-footer single-button-footer">
-                        <button className="action-button icon-with-text back-button-footer">
+                        <button 
+                            className="action-button icon-with-text back-button-footer"
+                            onClick={handleVolver} // <--- FUNCIÓN CLAVE
+                        >
                             <img src={LogoGrupo5} alt="Icono Volver" className="icon-small" /> 
                             Volver
                         </button>

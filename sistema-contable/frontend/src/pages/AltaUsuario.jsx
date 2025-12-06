@@ -5,7 +5,7 @@ import "../styles/GestionUsuarios.css"; // Reutilizamos estilos de gestión
 import LogoEmpresa from "../assets/LogoEmpresa.png";
 import LogoGrupo5 from "../assets/LogoGrupo5.png";
 
-export default function AltaUsuarios() {
+export default function AltaUsuarios({onPageChange}) {
     const [nombreCompleto, setNombreCompleto] = useState('');
     const [nombreUsuario, setNombreUsuario] = useState('');
     const [password, setPassword] = useState('');
@@ -14,6 +14,13 @@ export default function AltaUsuarios() {
         e.preventDefault();
         alert(`Dando de Alta al usuario: ${nombreUsuario} (${nombreCompleto})`);
         // Aquí iría la lógica de API para registrar el usuario
+    };
+
+    const handleVolver = () => {
+        // CLAVE: Cambia el estado para volver a la pantalla de Gestión de Usuarios
+        if (onPageChange) {
+            onPageChange("GESTION_USUARIOS"); 
+        }
     };
 
     return (
@@ -80,7 +87,10 @@ export default function AltaUsuarios() {
 
                     {/* FOOTER: Botón Volver */}
                     <div className="asiento-footer single-button-footer">
-                        <button className="action-button icon-with-text back-button-footer">
+                        <button 
+                            className="action-button icon-with-text back-button-footer"
+                            onClick={handleVolver} // <--- FUNCIÓN CLAVE
+                        >
                             <img src={LogoGrupo5} alt="Icono Volver" className="icon-small" /> 
                             Volver
                         </button>

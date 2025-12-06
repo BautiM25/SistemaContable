@@ -25,6 +25,7 @@ const BajaModal = ({ cuenta, onConfirm, onClose }) => {
         onConfirm(adminPassword);
     };
 
+    
     return (
         <div className="modal-overlay">
             <div className="modal-content">
@@ -61,7 +62,7 @@ const BajaModal = ({ cuenta, onConfirm, onClose }) => {
 };
 
 
-export default function BajaCuentas() {
+export default function BajaCuentas({onPageChange}) {
     const [numCuenta, setNumCuenta] = useState('');
     const [showModal, setShowModal] = useState(false);
 
@@ -72,6 +73,12 @@ export default function BajaCuentas() {
             return;
         }
         setShowModal(true); 
+    };
+
+    const handleVolver = () => {
+        if (onPageChange) {
+            onPageChange("GESTION_CUENTAS"); 
+        }
     };
 
     const handleConfirmarBaja = (adminPassword) => {
@@ -122,7 +129,10 @@ export default function BajaCuentas() {
 
                     {/* FOOTER: Botón Volver */}
                     <div className="asiento-footer single-button-footer">
-                        <button className="action-button icon-with-text back-button-footer">
+                    <button 
+                            className="action-button icon-with-text back-button-footer"
+                            onClick={handleVolver} // CLAVE: Vuelve a GESTION_CUENTAS
+                        >
                             <img src={LogoGrupo5} alt="Icono Volver" className="icon-small" /> 
                             Volver
                         </button>
