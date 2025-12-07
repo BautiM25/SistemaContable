@@ -31,7 +31,7 @@ body {
     display: flex;
     border-radius: 8px;
     border: #2a2a2a solid 5px;
-    overflow: hidden;
+    overflow: visible;
     gap: 10px;
     background-color: #2e2e2e;
 }
