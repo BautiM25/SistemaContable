@@ -53,7 +53,12 @@ export default function MenuAdministrador({ onLogout, onPageChange }) {
           >
             <img src={LogoGrupo5} alt="" /> Gestion de Cuentas
           </button>
-          
+          <button
+              className="menu-item"
+              onClick={() => onPageChange("LIBRO_DIARIO")} // Llama a la nueva ruta
+          >
+            Libro Diario
+          </button>
           <button className="menu-button logout" onClick={onLogout}>Cerrar Sesión</button>
         </div>
       </div>

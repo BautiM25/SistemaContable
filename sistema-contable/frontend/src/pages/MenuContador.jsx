@@ -46,7 +46,12 @@ export default function MenuContador({ onLogout, onPageChange }) {
           >
             <img src={LogoGrupo5} alt="" /> Plan de Cuentas
           </button>
-          
+          <button
+              className="menu-item"
+              onClick={() => onPageChange("LIBRO_DIARIO")} // Llama a la nueva ruta
+          >
+            Libro Diario
+          </button>
           {/* Botón Cerrar Sesión (usa el prop onLogout) */}
           <button className="menu-button logout" onClick={onLogout}>Cerrar Sesión</button>
         </div>
