@@ -22,6 +22,7 @@ import GestionDeCuentas from "./pages/GestionDeCuentas.jsx";
 import AltaCuentas from "./pages/AltaCuentas.jsx";
 import BajaCuentas from "./pages/BajaCuentas.jsx";
 import ModificacionCuentas from "./pages/ModificacionCuentas.jsx";
+import SolicitudCompraView from "./pages/SolicitudDeCompra.jsx";
 
 // Reportes
 // import VerReportes from "./pages/VerReportes.jsx";
@@ -108,6 +109,8 @@ function App() {
                 // Verifica si has descomentado la importación de VerReportes
                 // return <VerReportes onPageChange={handlePageChange} />;
                 return <p>Reportes no implementados aún.</p>
+            case "SOLICITUD_COMPRA":
+                return <SolicitudCompraView onPageChange={handlePageChange} />;
 
             // --- Menús de Navegación (DASHBOARD) ---
             case "DASHBOARD":

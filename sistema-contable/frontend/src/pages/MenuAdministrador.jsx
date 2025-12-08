@@ -59,6 +59,12 @@ export default function MenuAdministrador({ onLogout, onPageChange }) {
           >
             Libro Diario
           </button>
+          <button
+              className="menu-button"
+              onClick={() => handleMenuClick('SOLICITUD_COMPRA')}
+          >
+            <img src={LogoGrupo5} alt="" /> Solicitud de Compra
+          </button>
           <button className="menu-button logout" onClick={onLogout}>Cerrar Sesión</button>
         </div>
       </div>
