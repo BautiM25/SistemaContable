@@ -1,15 +1,20 @@
 package com.sistemacontable.sistema_contable.ElectroAndes.Service;
 
-import com.sistemacontable.sistema_contable.dto.CuentaDTO;
-import com.sistemacontable.sistema_contable.ElectroAndes.Model.Cuenta;
-import com.sistemacontable.sistema_contable.ElectroAndes.Model.TipoCuenta; 
-import com.sistemacontable.sistema_contable.ElectroAndes.Repository.CuentaRepository;
-import jakarta.persistence.EntityNotFoundException;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import com.sistemacontable.sistema_contable.ElectroAndes.Model.Cuenta;
+import com.sistemacontable.sistema_contable.ElectroAndes.Model.TipoCuenta;
+import com.sistemacontable.sistema_contable.ElectroAndes.Repository.CuentaRepository;
+import com.sistemacontable.sistema_contable.dto.CuentaDTO;
+
+import jakarta.persistence.EntityNotFoundException;
 
 @Service
 public class CuentaServiceImp implements CuentaService {
@@ -89,7 +94,7 @@ public class CuentaServiceImp implements CuentaService {
         }
 
         linea.append(numeracion).append(" - ").append(cuenta.getNombreCuenta())
-                .append(" [ID: ").append(cuenta.getId()).append("]");
+                .append(" [ID: ").append(cuenta.getId()).append("]")/*.append(cuenta.getTipo())*/;
         resultado.add(linea.toString());
 
         List<Cuenta> hijos = cuentaRepositorio.findAll().stream()
@@ -112,7 +117,7 @@ public class CuentaServiceImp implements CuentaService {
         dto.setNombreCuenta(cuenta.getNombreCuenta());
         dto.setActivado(cuenta.getActivado());
         dto.setEsHoja(cuenta.getEsHoja());
-        
+
         // Mapear el TipoCuenta a String en el DTO de salida
         if (cuenta.getTipo() != null) {
             dto.setTipo(cuenta.getTipo().name());
@@ -129,12 +134,12 @@ public class CuentaServiceImp implements CuentaService {
         cuenta.setNombreCuenta(dto.getNombreCuenta());
         cuenta.setActivado(dto.getActivado());
         cuenta.setEsHoja(dto.getEsHoja());
-        
+
         // LÓGICA AGREGADA PARA MAPE AR Y VALIDAR 'TIPO'
         if (dto.getTipo() != null && !dto.getTipo().isEmpty()) {
             try {
                 // Convierte el String (ej: "ACTIVO") al Enum (TipoCuenta.ACTIVO)
-                cuenta.setTipo(TipoCuenta.valueOf(dto.getTipo().toUpperCase())); 
+                cuenta.setTipo(TipoCuenta.valueOf(dto.getTipo().toUpperCase()));
             } catch (IllegalArgumentException e) {
                 // Si el valor no coincide con el Enum
                 throw new IllegalArgumentException("Tipo de cuenta no válido: " + dto.getTipo() + ". Valores permitidos: ACTIVO, PASIVO, PATRIMONIO, INGRESO, EGRESO.");
@@ -143,7 +148,7 @@ public class CuentaServiceImp implements CuentaService {
             // Si el DTO no trae el campo (a pesar de ser obligatorio)
             throw new IllegalArgumentException("El campo 'tipo' es obligatorio y no puede estar vacío.");
         }
-        
+
         // Lógica para el padre
         if (dto.getCuentaPadreId() != null) {
             Cuenta padre = cuentaRepositorio.findById(dto.getCuentaPadreId())
@@ -152,7 +157,7 @@ public class CuentaServiceImp implements CuentaService {
         } else {
             cuenta.setCuentaPadre(null);
         }
-        
+
         // El campo 'saldo' tiene un valor por defecto de 0.0 en la Entity, 
         // por lo que no necesita ser mapeado a menos que se quiera permitir un saldo inicial distinto.
     }

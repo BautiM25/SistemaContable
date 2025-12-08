@@ -1,128 +1,115 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "../styles/Menu.css";
-import "../styles/RegistrarAsiento.css"; // Asegúrate de que este archivo contenga el CSS para scrolling
+import "../styles/RegistrarAsiento.css"; 
+import "../styles/Modal.css"; // Estilos para el Modal
 import LogoEmpresa from "../assets/LogoEmpresa.png";
 import LogoGrupo5 from "../assets/LogoGrupo5.png";
 
-// URL base de la API
+// URL base de la API (debería ser importado desde api.js)
 const API_URL = "http://localhost:8080/api";
+const CREATOR_ID_DUMMY = 1; // ID del usuario que crea el asiento (ejemplo)
 
-// Nuevo Componente para el Input con Dropdown
-const CuentaInput = ({ value, onChange, index, cuentasDisponibles }) => {
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const [searchTerm, setSearchTerm] = useState(value);
 
-    // Filtra las cuentas basado en el texto de búsqueda
+// =========================================================
+// 1. Componente Modal de Selección de Cuenta
+// =========================================================
+const CuentaModal = ({ cuentasDisponibles, onSelect, onClose, loading, initialSearch }) => {
+    // Permite que la búsqueda se inicie con el texto que estaba en el input
+    const [searchTerm, setSearchTerm] = useState(initialSearch || '');
+
     const filteredCuentas = (cuentasDisponibles || []).filter(cuenta => {
         const codigo = cuenta.codigoJerarquico || ''; 
         const nombre = cuenta.nombreCuenta || '';
-
         return codigo.includes(searchTerm) || nombre.toLowerCase().includes(searchTerm.toLowerCase());
     });
 
-    const handleInputChange = (e) => {
-        const newValue = e.target.value;
-        setSearchTerm(newValue);
-        onChange(index, 'cuentaDisplay', newValue);
-        setIsDropdownOpen(true);
-    };
-
-    const handleSelectCuenta = (cuenta) => {
-        const codigo = cuenta.codigoJerarquico || '';
-        const nombre = cuenta.nombreCuenta || '';
-        
-        let fullAccountName;
-        if (codigo && nombre) {
-            fullAccountName = `${codigo} - ${nombre}`;
-        } else {
-            fullAccountName = codigo || nombre || ''; 
-        }
-        
-        setSearchTerm(fullAccountName);
-        onChange(index, 'cuentaId', cuenta.id);
-        onChange(index, 'cuentaDisplay', fullAccountName);
-        
-        setIsDropdownOpen(false);
-    };
-    
-    // Cierra el menú cuando pierde el foco (con un pequeño retraso)
-    const handleBlur = () => {
-        // Usar un retraso de 200ms permite que el evento onMouseDown del ítem se dispare antes de que el dropdown se oculte.
-        setTimeout(() => setIsDropdownOpen(false), 200); 
-    };
-    
-    // Previene que el evento onBlur se dispare antes del onMouseDown del elemento
-    const handleMouseDownItem = (cuenta) => {
-        handleSelectCuenta(cuenta);
-    };
-
-
     return (
-        <div className="cuenta-input-wrapper" onBlur={handleBlur}>
-            <input
-                type="text"
-                className="table-input cuenta-input"
-                placeholder="Buscar cuenta..."
-                value={searchTerm}
-                onChange={handleInputChange}
-                onClick={() => setIsDropdownOpen(true)}
-                onFocus={() => setIsDropdownOpen(true)}
-            />
+        <div className="modal-overlay">
+            <div className="modal-content modal-cuenta">
+                <h3 className="modal-title">Seleccionar Cuenta Contable</h3>
+                
+                {/* Campo de búsqueda */}
+                <input 
+                    type="text" 
+                    className="input-base large-input" 
+                    placeholder="Buscar por código o nombre..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    disabled={loading}
+                />
 
-            {isDropdownOpen && (
-                <div className="cuenta-dropdown"> 
-                    {filteredCuentas.length > 0 ? (
-                        filteredCuentas.map((cuenta) => (
-                            <div 
-                                key={cuenta.id} 
-                                className="dropdown-item"
-                                // 🚨 FIX: Usamos onMouseDown en lugar de onClick para que se dispare antes del onBlur del wrapper.
-                                onMouseDown={() => handleMouseDownItem(cuenta)} 
-                            >
-                                <span className="item-code">{cuenta.codigoJerarquico}</span>
-                                <span className="item-name">{cuenta.nombreCuenta}</span>
-                            </div>
-                        ))
+                {/* Lista de Resultados */}
+                <div className="cuenta-list-container">
+                    {loading ? (
+                        <div className="loading-state">Cargando Plan de Cuentas...</div>
                     ) : (
-                        <div className="dropdown-item no-results">No se encontraron cuentas</div>
+                        filteredCuentas.length > 0 ? (
+                            filteredCuentas.map((cuenta) => (
+                                <div 
+                                    key={cuenta.id} 
+                                    className="list-item"
+                                    onClick={() => onSelect(cuenta)}
+                                >
+                                    <span className="item-name">{cuenta.nombreCuenta}</span>
+                                </div>
+                            ))
+                        ) : (
+                            <div className="list-item no-results">No se encontraron cuentas que coincidan.</div>
+                        )
                     )}
                 </div>
-            )}
+
+                <div className="modal-actions">
+                    <button 
+                        className="action-button secondary-button" 
+                        onClick={onClose}
+                        disabled={loading}
+                    >
+                        Cerrar
+                    </button>
+                </div>
+            </div>
         </div>
     );
 };
 
-
-// Componente principal
+// =========================================================
+// 2. Componente Principal RegistrarAsiento
+// =========================================================
 export default function RegistrarAsiento({ onPageChange }) {
-    const CREATOR_ID_DUMMY = 1; 
-
+    
     const [cuentas, setCuentas] = useState([]); 
     const [loadingCuentas, setLoadingCuentas] = useState(true);
     const [error, setError] = useState(null);
 
     const [asientoHeader, setAsientoHeader] = useState({
         descripcion: '',
-        fecha: new Date().toISOString().split('T')[0], // Fecha por defecto: hoy
+        fecha: new Date().toISOString().split('T')[0],
     });
 
     const [partidas, setPartidas] = useState([
-        { cuentaId: null, cuentaDisplay: '', debe: '', haber: '' }
+        { cuentaId: null, cuentaDisplay: 'Seleccionar...', debe: '', haber: '' }
     ]);
+    
+    const [showAccountModal, setShowAccountModal] = useState(false);
+    const [editingIndex, setEditingIndex] = useState(null); 
+    const [initialSearchTerm, setInitialSearchTerm] = useState(''); 
 
     const totalDebe = partidas.reduce((sum, p) => sum + (parseFloat(p.debe) || 0), 0);
     const totalHaber = partidas.reduce((sum, p) => sum + (parseFloat(p.haber) || 0), 0);
 
-
+    // ---------------------------------------------------------
+    // Lógica de Carga de Cuentas (useEffect)
+    // ---------------------------------------------------------
     useEffect(() => {
         const fetchCuentasHoja = async () => {
             try {
+                // Usar api.get("/cuentas") si api.js está configurado
                 const response = await axios.get(`${API_URL}/cuentas`); 
                 const cuentasHoja = response.data.filter(c => c.esHoja); 
                 setCuentas(cuentasHoja);
             } catch (err) {
-                console.error("Error al cargar las cuentas:", err);
                 setError("No se pudo cargar el Plan de Cuentas. Verifique la conexión al backend.");
             } finally {
                 setLoadingCuentas(false);
@@ -132,48 +119,50 @@ export default function RegistrarAsiento({ onPageChange }) {
         fetchCuentasHoja();
     }, []);
 
+    // ---------------------------------------------------------
+    // Lógica de Manejo de Partidas y API
+    // ---------------------------------------------------------
     const agregarFila = () => {
-        setPartidas([...partidas, { cuentaId: null, cuentaDisplay: '', debe: '', haber: '' }]);
+        setPartidas([...partidas, { cuentaId: null, cuentaDisplay: 'Seleccionar...', debe: '', haber: '' }]);
     };
 
     const handleInputChange = (index, field, value) => {
         const nuevasPartidas = [...partidas];
         
         if (field === 'debe' || field === 'haber') {
-            // Aseguramos que el valor no sea negativo, aunque el min="0" de HTML lo maneja visualmente
             const numValue = value === '' ? '' : Math.max(0, parseFloat(value) || 0);
             nuevasPartidas[index][field] = numValue;
             
+            // Lógica de autocompletado (solo permite Debe o Haber)
             if (field === 'debe' && numValue > 0) {
                 nuevasPartidas[index]['haber'] = '';
             } else if (field === 'haber' && numValue > 0) {
                 nuevasPartidas[index]['debe'] = '';
             }
-        } else if (field === 'fecha') {
-            setAsientoHeader({...asientoHeader, fecha: value});
-            return;
         } else {
-            nuevasPartidas[index][field] = value;
+             // Manejo de inputs del Header
+            if (field === 'fecha') {
+                setAsientoHeader({...asientoHeader, fecha: value});
+            } else if (field === 'descripcion') {
+                 setAsientoHeader({...asientoHeader, descripcion: value});
+            }
         }
         
         setPartidas(nuevasPartidas);
     };
     
-    // 💾 FUNCIÓN CLAVE: Guardar Asiento
     const handleGuardarAsiento = async () => {
-        // 1. Validaciones Preliminares del Frontend
+        // 1. Validaciones Preliminares (sin cambios)
         if (!asientoHeader.descripcion || !asientoHeader.fecha) {
             alert("Debe completar la descripción y la fecha del asiento.");
             return;
         }
         
-        // 🚨 NUEVA VALIDACIÓN: Fecha no posterior a la actual
         const today = new Date().toISOString().split('T')[0];
         if (asientoHeader.fecha > today) {
             alert("Error: No se puede registrar un asiento con una fecha futura.");
             return;
         }
-
 
         const detallesValidos = partidas.filter(p => p.cuentaId !== null && (p.debe > 0 || p.haber > 0));
 
@@ -182,13 +171,12 @@ export default function RegistrarAsiento({ onPageChange }) {
             return;
         }
 
-        // 2. Verificar Partida Doble
         if (Math.abs(totalDebe - totalHaber) > 0.01) { 
             alert(`Error de Partida Doble: Debe (${totalDebe.toFixed(2)}) ≠ Haber (${totalHaber.toFixed(2)}).`);
             return;
         }
 
-        // 3. Preparar el DTO para el Backend
+        // 2. Preparar el DTO y Llamada a la API (sin cambios)
         const createAsientoDto = {
             descripcion: asientoHeader.descripcion,
             fecha: asientoHeader.fecha, 
@@ -199,10 +187,7 @@ export default function RegistrarAsiento({ onPageChange }) {
                 cuenta: p.cuentaId 
             }))
         };
-        
-        console.log("DTO a enviar:", createAsientoDto); 
 
-        // 4. Llamada a la API
         try {
             const response = await axios.post(`${API_URL}/asientos/create`, createAsientoDto);
             
@@ -213,7 +198,7 @@ export default function RegistrarAsiento({ onPageChange }) {
                 descripcion: '',
                 fecha: new Date().toISOString().split('T')[0],
             });
-            setPartidas([{ cuentaId: null, cuentaDisplay: '', debe: '', haber: '' }]);
+            setPartidas([{ cuentaId: null, cuentaDisplay: 'Seleccionar...', debe: '', haber: '' }]);
             
         } catch (err) {
             const errorMessage = err.response && err.response.data 
@@ -222,6 +207,35 @@ export default function RegistrarAsiento({ onPageChange }) {
             
             alert(`Fallo en el registro:\n${errorMessage}`);
         }
+    };
+    
+    // ---------------------------------------------------------
+    // Lógica del Modal
+    // ---------------------------------------------------------
+    const handleOpenModal = (index) => {
+        setEditingIndex(index);
+        setInitialSearchTerm(partidas[index].cuentaDisplay === 'Seleccionar...' ? '' : partidas[index].cuentaDisplay);
+        setShowAccountModal(true);
+    };
+
+    const handleAccountSelect = (cuenta) => {
+        const codigo = cuenta.codigoJerarquico;
+        const nombre = cuenta.nombreCuenta;
+        
+        // 🚨 FIX LÓGICO: Construimos el display name para el input
+        // Si hay código, mostramos "Código - Nombre", si no, solo el nombre.
+        const fullAccountName = codigo ? `${codigo} - ${nombre}` : nombre;
+        
+        if (editingIndex !== null) {
+            const nuevasPartidas = [...partidas];
+            nuevasPartidas[editingIndex]['cuentaId'] = cuenta.id;
+            nuevasPartidas[editingIndex]['cuentaDisplay'] = fullAccountName;
+            setPartidas(nuevasPartidas);
+        }
+        
+        setShowAccountModal(false);
+        setEditingIndex(null);
+        setInitialSearchTerm('');
     };
     
     const handleVolver = () => {
@@ -239,6 +253,9 @@ export default function RegistrarAsiento({ onPageChange }) {
     }
 
 
+    // ---------------------------------------------------------
+    // RENDERIZADO FINAL
+    // ---------------------------------------------------------
     return (
         <div className="page-container">
             <div className="main-content">
@@ -258,7 +275,7 @@ export default function RegistrarAsiento({ onPageChange }) {
                                     className="input-base description-input" 
                                     placeholder="Descripción del asiento..." 
                                     value={asientoHeader.descripcion}
-                                    onChange={(e) => setAsientoHeader({...asientoHeader, descripcion: e.target.value})}
+                                    onChange={(e) => handleInputChange(null, 'descripcion', e.target.value)}
                                     required
                                 />
                             </label>
@@ -267,7 +284,7 @@ export default function RegistrarAsiento({ onPageChange }) {
                                     type="date" 
                                     className="input-base date-input" 
                                     value={asientoHeader.fecha}
-                                    onChange={(e) => setAsientoHeader({...asientoHeader, fecha: e.target.value})}
+                                    onChange={(e) => handleInputChange(null, 'fecha', e.target.value)}
                                     max={new Date().toISOString().split('T')[0]} 
                                     required
                                 />
@@ -287,17 +304,18 @@ export default function RegistrarAsiento({ onPageChange }) {
                                         <th className="th-monto">Haber</th>
                                     </tr>
                                 </thead>
-                                {/* 🚨 El scrolling se aplica al TBODY */}
                                 <tbody> 
                                     {partidas.map((partida, index) => (
                                         <tr className="partida-row" key={index}>
-                                            <td>
-                                                <CuentaInput 
-                                                    value={partida.cuentaDisplay} 
-                                                    onChange={handleInputChange}
-                                                    index={index}
-                                                    cuentasDisponibles={cuentas}
-                                                />
+                                            <td 
+                                                // 🚨 CLAVE: El click en la celda abre el modal
+                                                onClick={() => handleOpenModal(index)}
+                                                className="cuenta-select-cell"
+                                            >
+                                                {/* Reemplazamos el input por un DIV/SPAN que muestra el valor */}
+                                                <div className="cuenta-display-value">
+                                                    {partida.cuentaDisplay}
+                                                </div>
                                             </td>
                                             <td>
                                                 <input 
@@ -306,7 +324,7 @@ export default function RegistrarAsiento({ onPageChange }) {
                                                     placeholder="0.00"
                                                     value={partida.debe}
                                                     onChange={(e) => handleInputChange(index, 'debe', e.target.value)}
-                                                    min="0" // 🚨 FIX: Impide números negativos
+                                                    min="0"
                                                 />
                                             </td>
                                             <td>
@@ -316,7 +334,7 @@ export default function RegistrarAsiento({ onPageChange }) {
                                                     placeholder="0.00"
                                                     value={partida.haber}
                                                     onChange={(e) => handleInputChange(index, 'haber', e.target.value)}
-                                                    min="0" // 🚨 FIX: Impide números negativos
+                                                    min="0"
                                                 />
                                             </td>
                                         </tr>
@@ -335,24 +353,25 @@ export default function RegistrarAsiento({ onPageChange }) {
                                     </tr>
                                 </tfoot>
                             </table>
-                        </div> {/* Fin de table-container-wrapper */}
+                        </div>
                     </div>
 
                     {/* FOOTER */}
                     <div className="asiento-footer">
-                        <button 
-                            className="action-button icon-with-text add-button"
-                            onClick={agregarFila}
-                        >
-                            <img src={LogoGrupo5} alt="Icono Agregar" className="icon-small" /> 
-                            Agregar Fila
-                        </button>
                         <button 
                             className="action-button icon-with-text save-button"
                             onClick={handleGuardarAsiento} 
                         >
                             <img src={LogoGrupo5} alt="Icono Guardar" className="icon-small" /> 
                             Guardar
+                        </button>
+                        
+                        <button 
+                            className="action-button icon-with-text add-button"
+                            onClick={agregarFila}
+                        >
+                            <img src={LogoGrupo5} alt="Icono Agregar" className="icon-small" /> 
+                            Agregar Fila
                         </button>
                         
                         <button 
@@ -365,6 +384,17 @@ export default function RegistrarAsiento({ onPageChange }) {
                     </div>
                 </div>
             </div>
+            
+            {/* 🚨 MODAL DE SELECCIÓN DE CUENTA */}
+            {showAccountModal && (
+                <CuentaModal 
+                    cuentasDisponibles={cuentas}
+                    loading={loadingCuentas}
+                    onSelect={handleAccountSelect}
+                    onClose={() => setShowAccountModal(false)}
+                    initialSearch={initialSearchTerm}
+                />
+            )}
         </div>
     );
 }
