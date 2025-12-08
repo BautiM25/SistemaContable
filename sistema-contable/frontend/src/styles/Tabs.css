@@ -1,0 +1,339 @@
+/* --- Tabs.css --- */
+
+/* Contenedor de las solapas dentro del header */
+.tabs-container {
+    display: flex;
+    justify-content: flex-start;
+    border-bottom: 2px solid #555;
+    padding-top: 10px;
+    flex-wrap: wrap;
+}
+
+.tab-button {
+    background: #3a3a3a;
+    color: #ccc;
+    border: none;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    padding: 10px 15px;
+    margin-right: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.2s, color 0.2s;
+    border-bottom: 2px solid transparent;
+}
+
+.tab-button:hover {
+    background: #4f4f4f;
+    color: white;
+}
+
+.tab-button.active {
+    background: #2e2e2e; /* Mismo color que el fondo del main-content */
+    color: #1e90ff; /* Color primario */
+    border-bottom: 2px solid #1e90ff; /* Barra activa debajo */
+    position: relative;
+    z-index: 10;
+}
+
+/* --- Layout de la Pestaña (Grid) --- */
+tab-content-grid {
+    padding: 20px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    overflow-y: auto; 
+    flex-grow: 1;
+}
+
+.input-row {
+    display: flex;
+    gap: 20px;
+    /* 🚨 CLAVE: El contenido de la fila ocupa un ancho controlado. 
+       90% del contenedor padre (.asiento-body)
+    */
+    width: 90%; 
+    max-width: 90%; 
+    box-sizing: border-box; 
+    
+    /* Nota: Si quieres que el 90% sea relativo al .asiento-body, usa width: 90%; */
+}
+
+/* 🚨 REGLAS PARA 2 CAMPOS O MENOS (Por defecto y Two-Columns) */
+.input-row .header-field {
+    /* Si la fila tiene 2 hijos (por defecto), cada uno toma 50% del espacio disponible
+       del contenedor, lo cual se traduce en un 45% del ancho total del formulario (90% / 2). */
+    flex: 1 1 0%; 
+    min-width: 0;
+}
+
+/* 🚨 REGLAS PARA 3 CAMPOS (Three-Columns) */
+.input-row.three-columns .header-field {
+    /* Esto es correcto para 3 columnas dentro de una fila de ancho 90% */
+    flex: 0 0 calc(33.333% - 14px);
+}
+
+/* Estilo para inputs de texto (Aseguramos que el input dentro del label ocupe 100% del label) */
+.header-field input, .header-field select, .header-field .input-display {
+    width: 100%;
+    box-sizing: border-box; /* Incluir padding y border en el ancho total */
+}
+
+.input-base.text-left {
+    text-align: left;
+}
+
+/* 1. LAYOUT PRINCIPAL (Asegura que el contenedor tome toda la altura) */
+.asiento-layout-column {
+    height: 100%; 
+    display: flex;
+    flex-direction: column;
+    gap: 15px; 
+}
+
+/* 2. BODY (Asegura que el cuerpo crezca y limite el contenido) */
+.asiento-body {
+    flex-grow: 1; /* Permite que el cuerpo ocupe el espacio disponible */
+    min-height: 0; /* CRÍTICO: Permite que el elemento se comprima dentro de flex */
+    overflow: hidden; /* CRÍTICO: Oculta el scroll del BODY principal */
+    display: flex; /* Si el contenido (tab-content-grid) es su hijo, debe ser flex */
+    flex-direction: column;
+}
+
+/* 3. LAYOUT DE LA PESTAÑA (Permite el Scroll dentro de la pestaña) */
+/* --- Layout de la Pestaña (Grid) --- */
+.tab-content-grid {
+    padding: 20px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    overflow-y: auto; 
+    flex-grow: 1;
+}
+
+
+/* --- NUEVAS CLASES PARA EL LAYOUT 10/80/10 DE BANCO --- */
+
+/* 1. LAYOUT PRINCIPAL DEL BANCO: Sobrescribe el gap y fuerza 10/80/10 */
+.tab-content-grid.fixed-bank-layout {
+    /* Desactivamos el scroll principal que es útil para Generales/Comercial */
+    overflow-y: hidden; 
+    
+    /* Reseteamos el gap y usamos flex-direction: column (ya está en .tab-content-grid) */
+    gap: 0; 
+    padding: 0; /* Aseguramos que el padding no afecte el cálculo de altura */
+    width: 100%; /* Ocupa todo el ancho del .asiento-body */
+}
+
+/* 2. REFERENCIA SUPERIOR (10% de altura) */
+.bank-header-ref {
+    /* Mantenemos las propiedades de altura de la clase bank-header-ref */
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 5%; /* Añadir padding horizontal para centrar el 90% */
+}
+
+/* Contenedor de la Referencia: Alinea los dos ítems horizontalmente */
+.bank-ref-display {
+    display: flex;
+    justify-content: space-between; /* Espacia las dos mitades */
+    gap: 20px;
+}
+
+/* Cada ítem de referencia (Código/Nombre) */
+.bank-ref-item {
+    flex: 1 1 0%;
+    min-width: 0;
+    
+    /* Contenedor Flex para alinear el texto (label) y el valor (p.input-display) */
+    display: flex;
+    flex-direction: row; /* Horizontal */
+    align-items: center; /* Centrado vertical */
+    gap: 10px;
+    padding-bottom: 5px;
+}
+
+.bank-ref-item label {
+    flex-shrink: 0; /* Asegura que el texto "Código Proveedor" no se comprima */
+    font-weight: bold;
+    color: #ccc;
+}
+
+.bank-ref-item .input-display {
+    flex-grow: 1; /* El valor toma el espacio restante */
+    /* Aseguramos que los estilos de input-display sean compactos */
+    padding: 5px 10px; 
+    margin: 0;
+    text-align: left;
+}
+
+/* 3. VISOR DE TABLA (80% de altura) */
+.tabla-banco-visor {
+    /* CRÍTICO: Absorbe el 80% restante de la altura */
+    flex-grow: 1; 
+    min-height: 200px; /* Altura mínima de tabla visible */
+    
+    /* Centrado y manejo de scroll */
+    display: flex;
+    justify-content: center; /* Centrar horizontalmente el wrapper de la tabla */
+    align-items: stretch; /* Estirar verticalmente el wrapper interno */
+    padding: 10px 0;
+}
+
+/* 4. WRAPPER INTERNO DE LA TABLA (Asegura el 90% del ancho y el scroll) */
+.tabla-wrapper-expandida {
+    width: 90%; 
+    height: 100%; /* CRÍTICO: Usa toda la altura del 80% del visor */
+    overflow-y: auto; 
+    flex-shrink: 1; 
+    margin: 0;
+    
+    /* Estilos de tabla */
+    border: 1px solid #555;
+    border-radius: 6px;
+}
+
+/* 5. CONTROLES FOOTER (10% de altura) */
+.controles-banco-footer {
+    flex-shrink: 0; /* Mantiene el tamaño estático */
+    width: 90%;
+    margin: 0 auto; 
+    padding: 15px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.controles-acciones-banco{
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+/* --- Estilos para la Tabla Bancos (Refinado) --- */
+
+.bancos-table {
+    width: 100%;
+    border-collapse: separate; /* 🚨 CLAVE: Permite bordes separados y bordes redondeados */
+    border-spacing: 0;
+    color: #f0f0f0;
+    background: #252525;
+    font-size: 14px;
+}
+
+/* 1. ESTILO DE CEJAS (HEADERS) */
+.bancos-table thead th {
+    background: #3a3a3a; /* Fondo más oscuro */
+    color: #ffffff; /* Texto blanco puro */
+    padding: 12px 10px;
+    text-align: left;
+    font-weight: 600;
+    /* Remover bordes internos si usas border-collapse: separate */
+    border: none;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+/* 2. FILAS CEBRA (Alternando colores para mejor lectura) */
+.bancos-table tbody tr:nth-child(even) {
+    background-color: #2b2b2b; /* Color más oscuro para filas pares */
+}
+
+.bancos-table tbody tr:nth-child(odd) {
+    background-color: #252525; /* Fondo base para filas impares */
+}
+
+/* 3. ESTILO DE CELDAS Y BORDES */
+.bancos-table td {
+    padding: 10px;
+    border-bottom: 1px solid #3d3d3d; /* Borde más sutil entre filas */
+    border-right: 1px solid #3d3d3d; /* 🚨 Borde entre columnas (aspecto de cuadrícula) */
+    white-space: nowrap; /* Evita que el contenido largo se envuelva */
+}
+
+.bancos-table td:last-child {
+    border-right: none; /* Eliminar borde derecho en la última columna */
+}
+
+/* 4. RESALTADO INTERACTIVO (HOVER) */
+.bancos-table tbody tr:hover {
+    background: #1e90ff20; /* Resaltado suave y azul (del color primario) */
+    cursor: pointer;
+}
+
+/* 5. RESALTADO DE EDICIÓN */
+.bancos-table .editing-row {
+    background: #1e90ff40 !important; /* Resaltado fuerte y mantiene la prioridad */
+    font-weight: bold;
+}
+
+/* 6. CORRECCIÓN DE BORDES DE ENVOLTURA */
+/* Asegurar que el borde redondeado esté solo en el table-wrapper y no se repita */
+.bancos-table th:first-child { border-top-left-radius: 6px; }
+.bancos-table th:last-child { border-top-right-radius: 6px; }
+
+/* --- NUEVA REGLA PARA 7 COLUMNAS EN EL FORMULARIO DE ENTRADA --- */
+
+/* Calculamos el ancho para 7 columnas. Usaremos 100% / 7 para el flex-basis */
+.input-row.seven-columns {
+    /* El contenedor input-row ya tiene display: flex y gap: 20px */
+    flex-wrap: wrap; /* Asegura que si no hay espacio, se envuelvan */
+}
+
+.input-row.seven-columns .header-field {
+    /* Calculamos 100% / 7 = 14.28%. Lo ajustamos con el gap de 20px */
+    flex: 1 1 calc(14.28% - 18px); /* 🚨 Ajuste para que quepan 7. Usamos flex-shrink: 1 si es necesario. */
+    min-width: 80px; /* Mínimo para evitar colapso total */
+}
+
+/* 🚨 REGLA ESPECIAL PARA PRODUCTO/FAMILIA Y CÓDIGO (si son más grandes) */
+/* Los ajustamos por inline style en el JSX para darles más peso: style={{ flex: '2 1 0%' }} */
+
+/* --- NUEVAS REGLAS DE LAYOUT PARA COMENTARIO (Máxima Altura) --- */
+
+/* 1. Layout Principal del Comentario */
+.tab-content-grid.fixed-comment-layout {
+    /* Es vital que este contenedor no tenga padding vertical ni gap, 
+       ya que lo aplicamos manualmente en los elementos hijos. */
+    overflow-y: hidden; 
+    gap: 0; 
+    padding: 0; 
+    width: 100%; 
+}
+
+/* 2. ÁREA DE COMENTARIOS: El label ahora es el contenedor que absorbe el 90% */
+.comentarios-area-wrapper {
+    flex-grow: 1; /* CRÍTICO: Absorbe todo el espacio vertical sobrante */
+    min-height: 150px; 
+    
+    /* Configuración para el flexbox: */
+    display: flex;
+    flex-direction: column; /* Apila el texto del label y el textarea */
+    
+    /* Padding para simular los bordes del 90% de ancho: */
+    padding: 10px 20px 20px 20px;
+    
+    /* Alineación de texto */
+    align-items: flex-start;
+}
+
+/* 3. Estilo Final del TEXTAREA */
+.large-textarea.final-full-height-textarea {
+    flex-grow: 1; /* El textarea toma toda la altura restante de su label */
+    min-height: 100px;
+    resize: vertical;
+    width: 100%; /* Ocupa el ancho completo del contenedor (el label) */
+    padding: 10px;
+    margin-top: 5px;
+    box-sizing: border-box;
+}
+
+/* 4. Ajuste de ancho para la Referencia Superior (Repetida del paso anterior) */
+.full-width-input-row {
+    width: 100%; 
+    max-width: 100%;
+    margin: 0; 
+    padding: 20px 20px 0 20px; /* Ajustamos padding superior e inferior */
+    box-sizing: border-box;
+}
