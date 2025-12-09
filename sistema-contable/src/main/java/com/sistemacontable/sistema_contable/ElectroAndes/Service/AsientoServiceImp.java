@@ -1,5 +1,13 @@
 package com.sistemacontable.sistema_contable.ElectroAndes.Service;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.sistemacontable.sistema_contable.ElectroAndes.Model.Asiento;
 import com.sistemacontable.sistema_contable.ElectroAndes.Model.Cuenta;
 import com.sistemacontable.sistema_contable.ElectroAndes.Model.DetalleAsiento;
@@ -10,14 +18,8 @@ import com.sistemacontable.sistema_contable.ElectroAndes.Repository.DetalleAsien
 import com.sistemacontable.sistema_contable.ElectroAndes.Repository.UsuarioRepository;
 import com.sistemacontable.sistema_contable.dto.CreateAsientoDto;
 import com.sistemacontable.sistema_contable.dto.CreateDetalleAsientoDto;
-import jakarta.persistence.EntityNotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import jakarta.persistence.EntityNotFoundException;
 
 @Service
 public class AsientoServiceImp implements AsientoService {
@@ -144,10 +146,10 @@ public class AsientoServiceImp implements AsientoService {
     public List<DetalleAsiento> obtenerMayorPorCuentaYFechas(Long cuentaId, LocalDate desde, LocalDate hasta) {
         // Usa la consulta definida en el repositorio
         return detalleAsientoRepository.findByCuentaIdAndAsientoFechaBetweenOrderByAsientoFechaAsc(
-                cuentaId, 
-                desde, 
+                cuentaId,
+                desde,
                 hasta
         );
     }
-    
+
 }

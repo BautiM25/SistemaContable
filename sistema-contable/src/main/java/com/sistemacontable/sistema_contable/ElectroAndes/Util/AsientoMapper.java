@@ -1,12 +1,14 @@
 package com.sistemacontable.sistema_contable.ElectroAndes.Util;
 
-import com.sistemacontable.sistema_contable.ElectroAndes.Model.Asiento;
-import com.sistemacontable.sistema_contable.dto.ResponseAsientoDto;
-import com.sistemacontable.sistema_contable.dto.ResponseDetalleDto;
-import org.springframework.stereotype.Component;
-
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Component;
+
+import com.sistemacontable.sistema_contable.ElectroAndes.Model.Asiento;
+import com.sistemacontable.sistema_contable.ElectroAndes.Model.DetalleAsiento;
+import com.sistemacontable.sistema_contable.dto.ResponseAsientoDto;
+import com.sistemacontable.sistema_contable.dto.ResponseDetalleDto;
 
 @Component
 public class AsientoMapper {
@@ -18,7 +20,8 @@ public class AsientoMapper {
         dto.setDescripcion(asiento.getDescripcion());
         dto.setCreador(asiento.getCreador().getNombreCompleto());
 
-        List<ResponseDetalleDto> detallesDto = asiento.getDetalles().stream().map(detalle -> {
+        // Código Corregido (Añadiendo el tipo explícito DetalleAsiento):
+        List<ResponseDetalleDto> detallesDto = asiento.getDetalles().stream().map((DetalleAsiento detalle) -> {
             ResponseDetalleDto d = new ResponseDetalleDto();
             d.setId(detalle.getId());
             d.setDebe(detalle.getDebe());
@@ -34,6 +37,5 @@ public class AsientoMapper {
     public List<ResponseAsientoDto> toDtoList(List<Asiento> asientos) {
         return asientos.stream().map(this::mapToDto).collect(Collectors.toList());
     }
-
 
 }
