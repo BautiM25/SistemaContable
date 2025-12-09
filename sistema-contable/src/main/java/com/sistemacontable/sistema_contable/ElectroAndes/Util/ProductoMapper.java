@@ -1,14 +1,10 @@
 package com.sistemacontable.sistema_contable.ElectroAndes.Util;
 
 import com.sistemacontable.sistema_contable.ElectroAndes.Model.Producto;
-import com.sistemacontable.sistema_contable.ElectroAndes.Model.ProductoProveedor;
-import com.sistemacontable.sistema_contable.ElectroAndes.Model.Proveedor;
-//import com.sistemacontable.sistema_contable.ElectroAndes.Repository.ProveedorRepository;
 import com.sistemacontable.sistema_contable.dto.ProductoDTO;
 
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class ProductoMapper {
 
