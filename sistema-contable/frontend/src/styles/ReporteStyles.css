@@ -1,0 +1,439 @@
+/* src/styles/ReporteStyles.css - Versión actualizada */
+/* Se mantienen las variables pero adaptamos a la estructura del Registrar Asiento */
+
+:root {
+    --color-bg-dark: #0f0f0f;
+    --color-bg-light: #2b2b2b;
+    --color-text: #f5f5f5;
+    --color-text-secondary: #c4c4c4;
+    --color-primary: #ffffff;
+    --color-accent: #ffc107;
+    --color-border: #555;
+    --color-error: #ff5252;
+    --color-debe-ledger: #179e17;
+    --color-haber-ledger: #a71d1d;
+}
+
+/* ===== ESTILOS DEL CONTENEDOR PRINCIPAL ===== */
+.reportes-page-container {
+    display: flex;
+    min-width: 50vw;
+    max-width: 1200px;
+    height: 85vh;
+    padding: 20px;
+    border-radius: 12px;
+    background: rgba(20, 20, 20, 0.95);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+}
+
+.reportes-main-content {
+    flex: 1;
+    display: flex;
+    border-radius: 8px;
+    border: #2a2a2a solid 5px;
+    overflow: visible;
+    gap: 10px;
+    background-color: #2e2e2e;
+}
+
+.reportes-layout-column {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding: 20px;
+}
+
+/* ===== HEADER IGUAL QUE REGISTRAR ASIENTO ===== */
+.reportes-header {
+    background: rgba(30, 30, 30, 0.5);
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    gap: 15px;
+}
+
+.reportes-logo-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    border-bottom: 2px solid var(--color-accent);
+    padding-bottom: 10px;
+}
+
+.reportes-logo-small {
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
+}
+
+.reportes-title {
+    color: var(--color-text);
+    margin: 0;
+    font-size: 24px;
+    font-weight: 300;
+}
+
+.selector-reportes-wrapper {
+    display: flex;
+    gap: 20px;
+    margin-top: 10px;
+}
+
+/* Botones de selector estilo Registrar Asiento */
+.selector-button {
+    padding: 12px 25px;
+    background: #aca5a5;
+    color: var(--color-text);
+    border: 2px solid #2a2a2a;
+    border-radius: 4px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.15s ease-in-out;
+    box-shadow: inset -2px -2px 4px rgba(255, 255, 255, 0.1),
+                inset 2px 2px 6px rgba(0, 0, 0, 0.6),
+                0 4px 8px rgba(0, 0, 0, 0.5);
+}
+
+.selector-button:hover {
+    background: #505050;
+}
+
+.selector-button.active {
+    background: var(--color-accent);
+    color: var(--color-bg-dark);
+    border-color: #e0ac00;
+    box-shadow: 0 0 10px rgba(255, 193, 7, 0.5);
+}
+
+/* ===== BODY CON TABLAS ===== */
+.reportes-body {
+    flex-grow: 1;
+    background: rgba(30, 30, 30, 0.5);
+    padding: 15px 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* Contenedor de contenido de reporte */
+.reporte-contenido {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 10px 0;
+}
+
+/* Estilo de filtros igual que en Registrar Asiento */
+.reporte-filters {
+    background: rgba(40, 40, 40, 0.8);
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.filter-title {
+    color: var(--color-text);
+    font-size: 18px;
+    margin-bottom: 15px;
+    border-bottom: 1px dashed var(--color-border);
+    padding-bottom: 5px;
+}
+
+.filter-controls {
+    display: flex;
+    align-items: flex-end;
+    gap: 30px;
+}
+
+.filter-field {
+    color: var(--color-text);
+    font-size: 14px;
+    font-weight: bold;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+}
+
+/* Inputs iguales a Registrar Asiento */
+.input-base {
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--color-border, #444);
+    border-radius: 4px;
+    color: var(--color-text, #f0f0f0);
+    outline: none;
+    transition: border 0.3s ease;
+    width: 100%;
+}
+
+.select {
+    composes: input-base;
+}
+
+/* Botón de búsqueda con mismo estilo que botones de Registrar Asiento */
+.search-button {
+    padding: 10px 25px;
+    background: #aca5a5;
+    color: var(--color-text);
+    border: 2px solid #2a2a2a;
+    border-radius: 4px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.15s ease-in-out;
+    box-shadow: inset -2px -2px 4px rgba(255, 255, 255, 0.1),
+                inset 2px 2px 6px rgba(0, 0, 0, 0.6),
+                0 4px 8px rgba(0, 0, 0, 0.5);
+}
+
+.search-button:hover {
+    background: #505050;
+}
+
+.search-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ===== TABLAS CON ESTILO DE LIBRO CONTABLE ===== */
+.reporte-table-container {
+    flex-grow: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+/* Tabla principal con estilo contable */
+.partidas-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    color: black;
+    border-radius: 4px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border: 1px solid #ccc;
+    table-layout: fixed;
+}
+
+.partidas-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+}
+
+.partidas-table th {
+    background: #e0e0e0;
+    color: #333;
+    padding: 10px;
+    text-align: left;
+    border-bottom: 2px solid #aaa;
+    font-size: 14px;
+}
+
+.partidas-table tbody {
+    display: block;
+    max-height: 300px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background: linear-gradient(to bottom, transparent 34px, rgba(0, 0, 0, 0.1) 35px);
+    background-size: 100% 35px;
+    background-repeat: repeat-y;
+}
+
+.partidas-table tr {
+    height: 35px;
+    flex-shrink: 0;
+    width: 100%;
+    display: table;
+    table-layout: fixed;
+    background-color: white;
+    position: relative;
+    z-index: 100;
+    overflow: visible;
+}
+
+.partidas-table td {
+    display: table-cell;
+    padding: 0 10px;
+    border-bottom: none;
+    overflow: visible;
+}
+
+/* Estilos para colores en tablas */
+.align-right {
+    text-align: right !important;
+}
+
+.saldo-positivo {
+    color: var(--color-debe-ledger);
+    font-weight: bold;
+}
+
+.saldo-negativo {
+    color: var(--color-haber-ledger);
+    font-weight: bold;
+}
+
+/* Pie de tabla con totales */
+.partidas-table tfoot {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+    background-color: #f0f0f0;
+    border-top: 2px solid #aaa;
+    z-index: 50;
+}
+
+.total-row td {
+    font-weight: bold;
+    font-size: 16px;
+    padding: 10px;
+}
+
+.total-label {
+    text-align: right;
+    color: #333;
+}
+
+.debe-total {
+    color: green;
+}
+
+.haber-total {
+    color: red;
+}
+
+/* ===== FOOTER CON BOTONES ===== */
+.reportes-footer {
+    display: flex;
+    justify-content: space-between;
+    gap: 2rem;
+    padding: 15px 0;
+    border-top: 1px solid var(--color-border, #444);
+    flex-shrink: 0;
+}
+
+.action-button {
+    flex: 1;
+    padding: 10px 20px;
+    font-size: 15px;
+    font-weight: bold;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.2s ease-in-out;
+    border: 2px solid #2a2a2a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: #aca5a5;
+    color: var(--color-text);
+    box-shadow: inset -2px -2px 4px rgba(255, 255, 255, 0.1),
+                inset 2px 2px 6px rgba(0, 0, 0, 0.6),
+                0 4px 8px rgba(0, 0, 0, 0.5);
+}
+
+.action-button:hover {
+    background: #505050;
+}
+
+.action-button:active {
+    background: #2e2e2e;
+    box-shadow: inset 2px 2px 6px rgba(0, 0, 0, 0.6),
+                inset -2px -2px 4px rgba(255, 255, 255, 0.1);
+    transform: translateY(2px);
+}
+
+/* ===== ESTILOS PARA ASIENTOS EN DIARIO ===== */
+.reporte-asiento-card {
+    background: rgba(40, 40, 40, 0.8);
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.reporte-asiento-card h3 {
+    color: var(--color-accent);
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 5px;
+    margin-top: 0;
+    font-size: 1.1em;
+}
+
+.asiento-detalle-tabla {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    background: white;
+    color: black;
+    border: 1px solid #ccc;
+}
+
+.asiento-detalle-tabla th,
+.asiento-detalle-tabla td {
+    padding: 8px 10px;
+    border-bottom: 1px dashed #ccc;
+}
+
+.asiento-detalle-tabla th {
+    background-color: #f0f0f0;
+    color: #333;
+}
+
+.detalle-debe td:first-child {
+    font-weight: 600;
+}
+
+.detalle-haber td:first-child {
+    padding-left: 25px;
+    font-style: italic;
+}
+
+/* ===== MENSAJES DE ERROR Y VACÍO ===== */
+.error-message {
+    color: var(--color-error);
+    background: rgba(255, 82, 82, 0.1);
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    border-left: 3px solid var(--color-error);
+}
+
+.mensaje-vacio {
+    text-align: center;
+    padding: 40px;
+    color: var(--color-text-secondary);
+    border: 1px dashed var(--color-border);
+    border-radius: 8px;
+    background: rgba(30, 30, 30, 0.7);
+    margin-top: 20px;
+}
+
+/* ===== LOADING STATE ===== */
+.loading-state {
+    text-align: center;
+    padding: 40px;
+    color: var(--color-text);
+    font-size: 16px;
+}

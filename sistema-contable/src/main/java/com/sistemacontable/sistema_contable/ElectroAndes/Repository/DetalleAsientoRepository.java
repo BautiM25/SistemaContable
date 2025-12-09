@@ -8,5 +8,9 @@ import java.util.List;
 
 @Repository
 public interface DetalleAsientoRepository extends JpaRepository<DetalleAsiento, Long> {
-    List<DetalleAsiento> findByAsientoId(Long asientoId);
+    List<DetalleAsiento> findByCuentaIdAndAsientoFechaBetweenOrderByAsientoFechaAsc(
+            Long cuentaId, 
+            java.time.LocalDate desde, 
+            java.time.LocalDate hasta
+    );
 }

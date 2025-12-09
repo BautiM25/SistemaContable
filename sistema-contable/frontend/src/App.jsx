@@ -13,7 +13,7 @@ import AltaCuentas from "./pages/AltaCuentas.jsx";
 import BajaCuentas from "./pages/BajaCuentas.jsx";
 import ModificacionCuentas from "./pages/ModificacionCuentas.jsx";
 import PlanDeCuentas from "./pages/PlanDeCuentas.jsx";
-//import VerReportes from "./pages/VerReportes.jsx";
+import VerReportes from "./pages/VerReportes.jsx";
 
 const AdminLayout = ({ onLogout }) => (
   // Nota: MenuAdministrador debe aceptar 'children' o usar Outlet.
