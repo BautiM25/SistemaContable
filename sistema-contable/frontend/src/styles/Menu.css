@@ -121,3 +121,35 @@ body {
 .menu-button.logout:hover {
     background: #cc0000;
 }
+
+/* ===============================
+   ESTILOS TABLA SOLICITUD COMPRA
+   =============================== */
+
+.solicitud-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.solicitud-table th {
+    color: #f0f0f0;
+    font-size: 14px;
+    padding: 6px;
+    text-align: left;
+}
+
+.solicitud-table td {
+    padding: 0;
+}
+
+.solicitud-cell {
+    padding: 6px 8px;
+}
+
+.solicitud-cell .input,
+.solicitud-cell .select {
+    width: 100%;
+    padding: 6px 8px;
+    box-sizing: border-box;
+}

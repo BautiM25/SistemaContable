@@ -1,0 +1,103 @@
+/* --- Estilos Específicos para PlanDeCuentas --- */
+
+/* ⚠️ NO rompemos el layout base */
+.plan-cuentas-body {
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+/* Contenedor interno del árbol */
+.arbol-container {
+    flex-grow: 1;
+    padding: 10px;
+    background: transparent; /* hereda fondo */
+}
+
+/* Lista raíz */
+.plan-cuentas-root {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-size: 14px; /* MISMA tipografía base */
+    color: var(--color-text, #f0f0f0);
+}
+
+/* Nodo */
+.cuenta-node {
+    padding: 4px 0 4px 12px;
+    cursor: pointer;
+    position: relative;
+}
+
+/* Hover igual al resto del sistema */
+.cuenta-node:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* Código */
+.cuenta-id-label {
+    display: inline-block;
+    min-width: 70px;
+    font-weight: bold;
+    color: var(--color-primary, #1e90ff);
+}
+
+/* Nombre */
+.cuenta-name {
+    font-weight: normal;
+}
+
+/* Nivel principal */
+.parent-node > .cuenta-id-label,
+.parent-node > .cuenta-name {
+    font-weight: bold;
+}
+
+/* Sublistas */
+.subcuentas-list {
+    list-style: none;
+    padding-left: 25px;
+    margin: 2px 0;
+    border-left: 1px solid rgba(255,255,255,0.1);
+}
+
+/* Línea horizontal */
+.subcuentas-list > .cuenta-node::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 10px;
+    width: 15px;
+    height: 1px;
+    background: rgba(255,255,255,0.1);
+}
+
+/* Hojas */
+.leaf-node {
+    font-size: 14px;
+    color: #cccccc;
+}
+/* 🔧 FIX filas productos Solicitud de Compra */
+.partidas-table tbody tr {
+    height: 40px;
+}
+
+.partidas-table td {
+    vertical-align: middle;
+}
+/* Header en una sola fila */
+.solicitud-header-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 2fr 1fr;
+    gap: 12px;
+    align-items: end;
+}
+
+.solicitud-header-row .header-field {
+    width: 100%;
+}
+/* Placeholders semi transparentes */
+.table-input::placeholder {
+    color: rgba(0, 0, 0, 0.4); /* negro translúcido */
+    font-style: italic;
+}

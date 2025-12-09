@@ -1,35 +1,60 @@
 import React, { useState } from "react";
-// Reutilizamos el layout base y el estilo de los inputs/botones
-import "../styles/Menu.css"; 
-// Usaremos los mismos estilos del asiento para la tabla y el layout de 3 filas
-import "../styles/RegistrarAsiento.css"; 
-import "../styles/LibroDiario.css"; // Estilos específicos del Body
+import "../styles/Menu.css";
+import "../styles/RegistrarAsiento.css";
+import "../styles/LibroDiario.css";
 import LogoEmpresa from "../assets/LogoEmpresa.png";
 import LogoGrupo5 from "../assets/LogoGrupo5.png";
 
 export default function LibroDiario() {
     const [fechaInicio, setFechaInicio] = useState('');
     const [fechaFin, setFechaFin] = useState('');
-    
-    // Datos de ejemplo para el reporte (5 columnas)
-    const reportData = [
-        { fecha: '2025-10-01', descripcion: 'Cobro de facturas', cuenta: 'Caja', debe: '5,000.00', haber: '0.00' },
-        { fecha: '2025-10-01', descripcion: 'Cobro de facturas', cuenta: 'Ventas', debe: '0.00', haber: '5,000.00' },
-        { fecha: '2025-10-02', descripcion: 'Pago de alquiler', cuenta: 'Alquileres', debe: '1,500.00', haber: '0.00' },
-        { fecha: '2025-10-02', descripcion: 'Pago de alquiler', cuenta: 'Banco', debe: '0.00', haber: '1,500.00' },
-    ];
+    const [reportData, setReportData] = useState([]);
 
-    const handleBuscar = () => {
-        alert(`Buscando Libro Diario desde ${fechaInicio} hasta ${fechaFin}`);
-        // Aquí iría la lógica real para cargar los datos del reporte
+    const today = new Date().toISOString().split("T")[0];
+
+    const handleBuscar = async () => {
+        // Validación de fechas
+        if (fechaInicio > today || fechaFin > today) {
+            alert("Las fechas no pueden ser mayores al día de hoy.");
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem("token");
+            console.log("Token usado:", token); // DEBUG: Ver si hay token
+
+            const response = await fetch(
+                `http://localhost:8080/api/asientos/entre-fechas?desde=${fechaInicio}&hasta=${fechaFin}`,
+                {
+                    headers: {
+                        "Authorization": `Bearer ${token}`,
+                        "Content-Type": "application/json" // Buena práctica añadir esto
+                    }
+                }
+            );
+
+            // Si el backend devuelve error (ej. 403 o 500), lanzamos error con el texto
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Error del servidor: ${response.status} - ${errorText}`);
+            }
+
+            const data = await response.json();
+            console.log("Datos recibidos:", data); // DEBUG: Ver los datos
+            setReportData(data);
+
+        } catch (error) {
+            console.error("Detalle del error:", error); // MIRA ESTO EN LA CONSOLA (F12)
+            alert(`Error: ${error.message}`);
+        }
     };
 
     return (
         <div className="page-container">
             <div className="main-content">
-                <div className="asiento-layout-column"> 
-                    
-                    {/* HEADER: Similar al de Registrar Asiento, pero con título diferente */}
+                <div className="asiento-layout-column">
+
+                    {/* HEADER */}
                     <div className="asiento-header">
                         <div className="asiento-logo-wrapper">
                             <img src={LogoEmpresa} alt="Logo Empresa" className="logo-small" />
@@ -37,72 +62,83 @@ export default function LibroDiario() {
                         </div>
                     </div>
 
-                    {/* BODY: Dividido en Filtros y Tabla */}
-                    <div className="asiento-body libro-body"> 
-                        
-                        {/* Filtros de Fecha y Botón de Búsqueda */}
+                    {/* BODY */}
+                    <div className="asiento-body libro-body">
                         <div className="report-filters">
                             <h3 className="filter-title">Seleccionar Período</h3>
                             <div className="filter-controls">
-                                <label className="filter-field">Fecha Inicio: 
-                                    <input 
-                                        type="date" 
-                                        className="input-base date-input" 
+                                <label className="filter-field">Fecha Inicio:
+                                    <input
+                                        type="date"
+                                        className="input-base date-input"
                                         value={fechaInicio}
+                                        max={today}
                                         onChange={(e) => setFechaInicio(e.target.value)}
                                     />
                                 </label>
-                                <label className="filter-field">Fecha Fin: 
-                                    <input 
-                                        type="date" 
-                                        className="input-base date-input" 
+                                <label className="filter-field">Fecha Fin:
+                                    <input
+                                        type="date"
+                                        className="input-base date-input"
                                         value={fechaFin}
+                                        max={today}
                                         onChange={(e) => setFechaFin(e.target.value)}
                                     />
                                 </label>
-                                <button 
+                                <button
                                     className="action-button icon-with-text search-button"
                                     onClick={handleBuscar}
                                 >
-                                    <img src={LogoGrupo5} alt="Icono Buscar" className="icon-small" /> 
+                                    <img src={LogoGrupo5} alt="Icono Buscar" className="icon-small" />
                                     Buscar
                                 </button>
                             </div>
                         </div>
 
-                        {/* Tabla de Reporte */}
-                        <div className="report-table-wrapper">
-                             <h3 className="partidas-title">Resultados del Período</h3>
+                        {/* Tabla con scroll */}
+                        <div className="report-table-wrapper" style={{ maxHeight: "300px", overflowY: "auto" }}>
+                            <h3 className="partidas-title">Resultados del Período</h3>
                             <table className="partidas-table report-table">
                                 <thead>
-                                    <tr>
-                                        <th className="th-date">Fecha</th>
-                                        <th className="th-description">Descripción</th>
-                                        <th className="th-account">Cuenta</th>
-                                        <th className="th-monto">Debe</th>
-                                        <th className="th-monto">Haber</th>
-                                    </tr>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Descripción</th>
+                                    <th>Cuenta</th>
+                                    <th>Debe</th>
+                                    <th>Haber</th>
+                                </tr>
                                 </thead>
                                 <tbody>
-                                    {reportData.map((item, index) => (
-                                        <tr key={index}>
-                                            <td className="td-date">{item.fecha}</td>
-                                            <td className="td-description">{item.descripcion}</td>
-                                            <td className="td-account">{item.cuenta}</td>
-                                            <td className="td-monto">{item.debe}</td>
-                                            <td className="td-monto">{item.haber}</td>
+                                {reportData.map((asiento) => (
+                                    <React.Fragment key={asiento.id}>
+                                        <tr className="asiento-row">
+                                            <td>{asiento.fecha}</td>
+                                            <td>{asiento.descripcion}</td>
+                                            <td colSpan="3">Creado por: {asiento.creador}</td>
                                         </tr>
-                                    ))}
-                                    {/* Nota: En reportes, generalmente no se usan filas vacías de entrada, sino filas de datos cargados. */}
+
+                                        {asiento.detalles.map((det) => (
+                                            <tr key={det.id} className="detalle-row">
+                                                <td></td>
+                                                <td></td>
+                                                <td>{det.cuentaNombre}</td>
+                                                <td>{det.debe}</td>
+                                                <td>{det.haber}</td>
+                                            </tr>
+                                        ))}
+                                    </React.Fragment>
+                                ))}
                                 </tbody>
+
+
                             </table>
                         </div>
                     </div>
 
-                    {/* FOOTER: Solo el botón Volver */}
+                    {/* FOOTER */}
                     <div className="asiento-footer single-button-footer">
                         <button className="action-button icon-with-text back-button-footer">
-                            <img src={LogoGrupo5} alt="Icono Volver" className="icon-small" /> 
+                            <img src={LogoGrupo5} alt="Icono Volver" className="icon-small" />
                             Volver
                         </button>
                     </div>
