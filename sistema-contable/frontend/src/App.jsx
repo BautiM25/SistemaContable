@@ -13,6 +13,12 @@ import AltaCuentas from "./pages/AltaCuentas.jsx";
 import BajaCuentas from "./pages/BajaCuentas.jsx";
 import ModificacionCuentas from "./pages/ModificacionCuentas.jsx";
 import PlanDeCuentas from "./pages/PlanDeCuentas.jsx";
+import GestionProveedores from "./pages/GestionProveedores.jsx";
+import CargaProveedor from "./pages/CargaProveedor.jsx";
+import ModificacionProveedor from "./pages/ModificacionProveedor.jsx";
+import BajaProveedor from "./pages/BajaProveedores.jsx";
+import VerProveedores from "./pages/VerProveedores.jsx";
+import ConsultaProveedor from "./pages/ConsultaProveedor.jsx";
 import VerReportes from "./pages/VerReportes.jsx";
 
 const AdminLayout = ({ onLogout }) => (
@@ -27,6 +33,7 @@ function App() {
   const [token, setToken] = useState(null);
   const [rol, setRol] = useState("");
   const [currentPage, setCurrentPage] = useState("DASHBOARD");
+  const [nextPageState, setNextPageState] = useState(null);
 
   // Al iniciar, leemos localStorage
   /*useEffect(() => {
@@ -53,8 +60,9 @@ function App() {
     setRol("");
   };
 
-  const handlePageChange = (pageName) => {
+  const handlePageChange = (pageName, state = null) => {
     setCurrentPage(pageName);
+    setNextPageState(state); // 👈 Almacena los datos del proveedor
   };
 
   if (!token) {
@@ -96,6 +104,22 @@ function App() {
       //Reportes
       case "VER_REPORTES":
         return <VerReportes onPageChange={handlePageChange} />;
+
+      case "GESTION_PROVEEDORES":
+        return <GestionProveedores onPageChange={handlePageChange} />;
+      case "CARGA_PROVEEDOR":
+        return <CargaProveedor onPageChange={handlePageChange} />;
+      case "MODIFICACION_PROVEEDOR":
+        return <ModificacionProveedor onPageChange={handlePageChange} />;
+      case "BAJA_PROVEEDOR":
+        return <BajaProveedor onPageChange={handlePageChange} />;
+      case "VER_PROVEEDORES":
+        return <VerProveedores onPageChange={handlePageChange} />;
+      case "CONSULTA_PROVEEDOR": // (Consulta de Detalle)
+        return <ConsultaProveedor 
+              onPageChange={handlePageChange} 
+              initialData={nextPageState} // 👈 USA el estado que acabamos de actualizar
+          />;
       // Si la página no coincide con ninguna vista de contenido específica,
       // o si es la página de inicio ("DASHBOARD"), renderizamos el MENÚ.
       case "DASHBOARD":

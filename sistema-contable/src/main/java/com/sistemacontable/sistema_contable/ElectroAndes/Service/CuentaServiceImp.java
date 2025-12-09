@@ -154,6 +154,7 @@ public class CuentaServiceImp implements CuentaService {
             Cuenta padre = cuentaRepositorio.findById(dto.getCuentaPadreId())
                     .orElseThrow(() -> new EntityNotFoundException("Cuenta padre no encontrada"));
             cuenta.setCuentaPadre(padre);
+            padre.setEsHoja(false);
         } else {
             cuenta.setCuentaPadre(null);
         }
