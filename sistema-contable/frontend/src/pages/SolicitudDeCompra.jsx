@@ -17,6 +17,9 @@ const initialItem = {
 };
 
 export default function SolicitudCompraView({ onPageChange }) {
+
+    const today = new Date().toISOString().split("T")[0];
+
     const [division, setDivision] = useState("2 QSA Administración");
     const [centroCosto, setCentroCosto] = useState("Administración");
     const [comentario, setComentario] = useState("");
@@ -29,7 +32,6 @@ export default function SolicitudCompraView({ onPageChange }) {
 
     const addItem = () => setItems([...items, { ...initialItem }]);
 
-    // 🔹 Nueva función para eliminar la última fila
     const removeLastItem = () => {
         if (items.length > 1) {
             setItems(items.slice(0, -1));
@@ -95,6 +97,7 @@ export default function SolicitudCompraView({ onPageChange }) {
                         </div>
 
                         <div className="solicitud-header-row">
+
                             <div className="header-field">
                                 <label>División</label>
                                 <select
@@ -105,6 +108,10 @@ export default function SolicitudCompraView({ onPageChange }) {
                                     <option>2 QSA Administración</option>
                                     <option>3 QSA Finanzas</option>
                                     <option>4 QSA Compras</option>
+                                    <option>5 QSA Producción</option>
+                                    <option>6 QSA Logística</option>
+                                    <option>7 QSA Sistemas</option>
+                                    <option>8 QSA RRHH</option>
                                 </select>
                             </div>
 
@@ -118,6 +125,12 @@ export default function SolicitudCompraView({ onPageChange }) {
                                     <option>Administración</option>
                                     <option>Finanzas</option>
                                     <option>Compras</option>
+                                    <option>Producción</option>
+                                    <option>Logística</option>
+                                    <option>Sistemas</option>
+                                    <option>Recursos Humanos</option>
+                                    <option>Mantenimiento</option>
+                                    <option>Ventas</option>
                                 </select>
                             </div>
 
@@ -135,6 +148,7 @@ export default function SolicitudCompraView({ onPageChange }) {
                                 <input
                                     type="date"
                                     className="input-base"
+                                    min={today}
                                     value={fechaLimiteGeneral}
                                     onChange={(e) => setFechaLimiteGeneral(e.target.value)}
                                 />
@@ -166,7 +180,6 @@ export default function SolicitudCompraView({ onPageChange }) {
                                             className="table-input"
                                             value={item.codigoInterno}
                                             onChange={(e) => updateItem(idx, "codigoInterno", e.target.value)}
-                                            placeholder="001"
                                         />
                                     </td>
                                     <td>
@@ -174,7 +187,6 @@ export default function SolicitudCompraView({ onPageChange }) {
                                             className="table-input"
                                             value={item.descripcion}
                                             onChange={(e) => updateItem(idx, "descripcion", e.target.value)}
-                                            placeholder="Producto A"
                                         />
                                     </td>
                                     <td>
@@ -182,7 +194,6 @@ export default function SolicitudCompraView({ onPageChange }) {
                                             className="table-input"
                                             value={item.concepto}
                                             onChange={(e) => updateItem(idx, "concepto", e.target.value)}
-                                            placeholder="Cpto1"
                                         />
                                     </td>
                                     <td>
@@ -190,7 +201,6 @@ export default function SolicitudCompraView({ onPageChange }) {
                                             className="table-input"
                                             value={item.descripcionConcepto}
                                             onChange={(e) => updateItem(idx, "descripcionConcepto", e.target.value)}
-                                            placeholder="Descripción Cpto"
                                         />
                                     </td>
                                     <td>
@@ -198,6 +208,7 @@ export default function SolicitudCompraView({ onPageChange }) {
                                             type="number"
                                             className="table-input"
                                             value={item.cantidad}
+                                            min={1}
                                             onChange={(e) => updateItem(idx, "cantidad", e.target.value)}
                                         />
                                     </td>
@@ -210,12 +221,15 @@ export default function SolicitudCompraView({ onPageChange }) {
                                             <option>UNIDAD</option>
                                             <option>PIEZA</option>
                                             <option>CAJA</option>
+                                            <option>KILOGRAMO</option>
+                                            <option>LITRO</option>
                                         </select>
                                     </td>
                                     <td>
                                         <input
                                             type="date"
                                             className="table-input"
+                                            min={today}
                                             value={item.fechaLimite}
                                             onChange={(e) => updateItem(idx, "fechaLimite", e.target.value)}
                                         />
@@ -233,13 +247,20 @@ export default function SolicitudCompraView({ onPageChange }) {
                             Agregar
                         </button>
 
-                        <button className="action-button primary-button" onClick={guardarSolicitud} disabled={loading}>
+                        <button
+                            className="action-button primary-button"
+                            onClick={guardarSolicitud}
+                            disabled={loading}
+                        >
                             <img src={IconGrupo5} alt="" />
                             {loading ? "Guardando..." : "Guardar"}
                         </button>
 
-                        {/* 🔹 Nuevo botón para eliminar última fila */}
-                        <button className="action-button danger-button" onClick={removeLastItem} disabled={items.length <= 1}>
+                        <button
+                            className="action-button danger-button"
+                            onClick={removeLastItem}
+                            disabled={items.length <= 1}
+                        >
                             <img src={IconGrupo5} alt="" />
                             Eliminar última fila
                         </button>
@@ -250,12 +271,12 @@ export default function SolicitudCompraView({ onPageChange }) {
                         </button>
                     </div>
 
-                    {/* Resultado */}
                     {resultado && (
                         <div className="asiento-body" style={{ marginTop: 20 }}>
-                            <b>Solicitud #{resultado.numero}</b>
+                            <b>Solicitud guardada correctamente ✔</b>
                         </div>
                     )}
+
                 </div>
             </div>
         </div>
