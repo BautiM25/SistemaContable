@@ -13,6 +13,7 @@ import com.sistemacontable.sistema_contable.dto.CreateDetalleAsientoDto;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -34,6 +35,7 @@ public class AsientoServiceImp implements AsientoService {
     private UsuarioRepository usuarioRepository;
 
     @Override
+    @Transactional
     public Asiento crearAsiento(CreateAsientoDto dto) {
         double totalDebe = 0.0;
         double totalHaber = 0.0;
@@ -137,4 +139,15 @@ public class AsientoServiceImp implements AsientoService {
     public List<Asiento> obtenerPorFechas(LocalDate desde, LocalDate hasta) {
         return asientoRepository.findByFechaBetween(desde, hasta);
     }
+
+    @Override
+    public List<DetalleAsiento> obtenerMayorPorCuentaYFechas(Long cuentaId, LocalDate desde, LocalDate hasta) {
+        // Usa la consulta definida en el repositorio
+        return detalleAsientoRepository.findByCuentaIdAndAsientoFechaBetweenOrderByAsientoFechaAsc(
+                cuentaId, 
+                desde, 
+                hasta
+        );
+    }
+    
 }

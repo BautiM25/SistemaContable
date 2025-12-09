@@ -13,13 +13,13 @@ import AltaCuentas from "./pages/AltaCuentas.jsx";
 import BajaCuentas from "./pages/BajaCuentas.jsx";
 import ModificacionCuentas from "./pages/ModificacionCuentas.jsx";
 import PlanDeCuentas from "./pages/PlanDeCuentas.jsx";
-//import VerReportes from "./pages/VerReportes.jsx";
 import GestionProveedores from "./pages/GestionProveedores.jsx";
 import CargaProveedor from "./pages/CargaProveedor.jsx";
 import ModificacionProveedor from "./pages/ModificacionProveedor.jsx";
 import BajaProveedor from "./pages/BajaProveedores.jsx";
 import VerProveedores from "./pages/VerProveedores.jsx";
 import ConsultaProveedor from "./pages/ConsultaProveedor.jsx";
+import VerReportes from "./pages/VerReportes.jsx";
 
 const AdminLayout = ({ onLogout }) => (
   // Nota: MenuAdministrador debe aceptar 'children' o usar Outlet.

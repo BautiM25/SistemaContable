@@ -2,6 +2,7 @@ package com.sistemacontable.sistema_contable.ElectroAndes.Resource;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -18,8 +19,18 @@ import org.springframework.web.bind.annotation.RestController;
 import com.sistemacontable.sistema_contable.ElectroAndes.Model.Asiento;
 import com.sistemacontable.sistema_contable.ElectroAndes.Service.AsientoService;
 import com.sistemacontable.sistema_contable.ElectroAndes.Util.AsientoMapper;
+import com.sistemacontable.sistema_contable.ElectroAndes.Util.DetalleAsientoMapper;
 import com.sistemacontable.sistema_contable.dto.CreateAsientoDto;
+import com.sistemacontable.sistema_contable.dto.DetalleMayorDto;
 import com.sistemacontable.sistema_contable.dto.ResponseAsientoDto;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import com.sistemacontable.sistema_contable.ElectroAndes.Model.DetalleAsiento;
+
+import java.time.LocalDate;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/asientos")
@@ -31,6 +42,9 @@ public class AsientoController {
 
     @Autowired
     private AsientoMapper asientoMapper;
+
+    @Autowired
+    private DetalleAsientoMapper detalleAsientoMapper;
 
     // Crear asiento contable
     @PostMapping("/create")
@@ -70,6 +84,22 @@ public class AsientoController {
             @RequestParam("hasta") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta) {
         List<Asiento> asientos = asientoService.obtenerPorFechas(desde, hasta);
         List<ResponseAsientoDto> dtos = asientoMapper.toDtoList(asientos);
+        return ResponseEntity.ok(dtos);
+    }
+
+    @GetMapping("/libro-mayor")
+    public ResponseEntity<List<DetalleMayorDto>> obtenerLibroMayor(
+            @RequestParam("cuentaId") Long cuentaId,
+            @RequestParam("desde") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
+            @RequestParam("hasta") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta) {
+        
+        List<DetalleAsiento> detalles = asientoService.obtenerMayorPorCuentaYFechas(cuentaId, desde, hasta);
+        
+          // Convertir a DTOs para evitar recursividad
+        List<DetalleMayorDto> dtos = detalles.stream()
+            .map(detalleAsientoMapper::toMayorDto)
+            .collect(Collectors.toList());
+    
         return ResponseEntity.ok(dtos);
     }
 }
