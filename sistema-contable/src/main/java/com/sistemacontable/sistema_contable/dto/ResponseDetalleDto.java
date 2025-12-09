@@ -1,6 +1,7 @@
 package com.sistemacontable.sistema_contable.dto;
 
 public class ResponseDetalleDto {
+
     private Long id;
     private double debe;
     private double haber;
