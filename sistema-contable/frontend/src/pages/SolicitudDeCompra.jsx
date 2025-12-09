@@ -166,7 +166,7 @@ export default function SolicitudCompraView({ onPageChange }) {
                                             className="table-input"
                                             value={item.codigoInterno}
                                             onChange={(e) => updateItem(idx, "codigoInterno", e.target.value)}
-                                            placeholder="Ej: 001"
+                                            placeholder="001"
                                         />
                                     </td>
                                     <td>
@@ -174,7 +174,7 @@ export default function SolicitudCompraView({ onPageChange }) {
                                             className="table-input"
                                             value={item.descripcion}
                                             onChange={(e) => updateItem(idx, "descripcion", e.target.value)}
-                                            placeholder="Ej: Producto A"
+                                            placeholder="Producto A"
                                         />
                                     </td>
                                     <td>
@@ -182,7 +182,7 @@ export default function SolicitudCompraView({ onPageChange }) {
                                             className="table-input"
                                             value={item.concepto}
                                             onChange={(e) => updateItem(idx, "concepto", e.target.value)}
-                                            placeholder="Ej: Cpto1"
+                                            placeholder="Cpto1"
                                         />
                                     </td>
                                     <td>
@@ -190,7 +190,7 @@ export default function SolicitudCompraView({ onPageChange }) {
                                             className="table-input"
                                             value={item.descripcionConcepto}
                                             onChange={(e) => updateItem(idx, "descripcionConcepto", e.target.value)}
-                                            placeholder="Ej: Descripción Cpto"
+                                            placeholder="Descripción Cpto"
                                         />
                                     </td>
                                     <td>

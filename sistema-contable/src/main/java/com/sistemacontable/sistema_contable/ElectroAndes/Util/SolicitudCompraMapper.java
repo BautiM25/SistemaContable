@@ -1,48 +1,59 @@
 package com.sistemacontable.sistema_contable.ElectroAndes.Util;
 
-import com.sistemacontable.sistema_contable.ElectroAndes.Model.*;
-import com.sistemacontable.sistema_contable.dto.*;
-import com.sistemacontable.sistema_contable.ElectroAndes.Repository.ProductoRepository;
+import com.sistemacontable.sistema_contable.ElectroAndes.Model.DetalleSolicitudCompra;
+import com.sistemacontable.sistema_contable.ElectroAndes.Model.SolicitudCompra;
+import com.sistemacontable.sistema_contable.dto.DetalleSolicitudCompraDTO;
+import com.sistemacontable.sistema_contable.dto.SolicitudCompraDTO;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
 public class SolicitudCompraMapper {
 
-    private final ProductoRepository productoRepository;
-
-    public SolicitudCompraMapper(ProductoRepository productoRepository) {
-        this.productoRepository = productoRepository;
-    }
-
     public SolicitudCompra toEntity(SolicitudCompraDTO dto) {
+
         SolicitudCompra solicitud = new SolicitudCompra();
-        solicitud.setFecha(dto.getFecha());
+        solicitud.setFecha(LocalDate.now());
         solicitud.setDivision(dto.getDivision());
         solicitud.setCentroCosto(dto.getCentroCosto());
         solicitud.setComentario(dto.getComentario());
 
-
-        if (dto.getDetalles() != null) {
-            var detalles = dto.getDetalles().stream().map(detalleDTO -> {
-                DetalleSolicitudCompra detalle = new DetalleSolicitudCompra();
-                detalle.setCantidad(detalleDTO.getCantidad());
-                detalle.setPresentacion(detalleDTO.getPresentacion());
-                detalle.setFechaLimite(detalleDTO.getFechaLimite());
-                detalle.setObservacion(detalleDTO.getObservacion());
-
-                Producto producto = productoRepository.findById(detalleDTO.getProductoId())
-                        .orElseThrow(() -> new RuntimeException("Producto no encontrado: ID " + detalleDTO.getProductoId()));
-                detalle.setProducto(producto);
-                detalle.setSolicitud(solicitud); // muy importante
-
-                return detalle;
-            }).collect(Collectors.toList());
+        if (dto.getItems() != null) {
+            List<DetalleSolicitudCompra> detalles = dto.getItems().stream()
+                    .map(item -> mapDetalle(item, solicitud))
+                    .collect(Collectors.toList());
 
             solicitud.setDetalles(detalles);
         }
 
         return solicitud;
+    }
+
+    private DetalleSolicitudCompra mapDetalle(
+            DetalleSolicitudCompraDTO item,
+            SolicitudCompra solicitud
+    ) {
+        DetalleSolicitudCompra detalle = new DetalleSolicitudCompra();
+
+        detalle.setCantidad(item.getCantidad().doubleValue());
+        detalle.setPresentacion(item.getUnidadMedida());
+
+        // Guardamos toda la info del frontend en observación
+        detalle.setObservacion(
+                item.getCodigoInterno() + " | " +
+                        item.getDescripcion() + " | " +
+                        item.getConcepto() + " | " +
+                        item.getDescripcionConcepto()
+        );
+
+        if (item.getFechaLimite() != null && !item.getFechaLimite().isEmpty()) {
+            detalle.setFechaLimite(LocalDate.parse(item.getFechaLimite()));
+        }
+
+        detalle.setSolicitud(solicitud);
+        return detalle;
     }
 }
