@@ -1,7 +1,5 @@
 package com.sistemacontable.sistema_contable.dto;
 
-import com.sistemacontable.sistema_contable.ElectroAndes.Model.Rol;
-
 public class UpdateUsuarioDto {
     private Long id;
     private String nombreUsuario;

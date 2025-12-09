@@ -1,7 +1,5 @@
 package com.sistemacontable.sistema_contable.dto;
 
-import com.sistemacontable.sistema_contable.ElectroAndes.Model.Rol;
-
 public class CreateUsuarioDto {
     private String nombreUsuario;
     private String contrasenia;

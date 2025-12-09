@@ -1,8 +1,5 @@
 package com.sistemacontable.sistema_contable.dto;
 
-import com.sistemacontable.sistema_contable.ElectroAndes.Model.Usuario;
-import com.sistemacontable.sistema_contable.ElectroAndes.Model.DetalleAsiento;
-
 import java.util.List;
 
 public class CreateAsientoDto {
