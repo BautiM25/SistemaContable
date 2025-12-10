@@ -18,4 +18,6 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
 
     // Puedes necesitar un método para buscar artículos por proveedor si no lo haces por Service
     List<Article> findBySupplier(Supplier supplier);
+
+    List<Article> findByNombreContainingIgnoreCase(String term);
 }

@@ -6,7 +6,6 @@ import com.sistemacontable.sistema_contable.ElectroAndes.Service.ArticleService;
 import com.sistemacontable.sistema_contable.ElectroAndes.Util.ArticleMapper;
 import com.sistemacontable.sistema_contable.dto.ArticleRequestDTO;
 import com.sistemacontable.sistema_contable.dto.ArticleResponseDTO;
-import com.sistemacontable.sistema_contable.dto.ArticleIdRequestDTO; // Asumimos un DTO simple para ID
 
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
