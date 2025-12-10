@@ -21,15 +21,26 @@ const TABS = [
     { key: 'COMENTARIO', label: 'Comentario' }
 ];
 
-// DTO de Mockup mínimo para la búsqueda y visualización del título
-const MOCK_PROVEEDOR = {
-    codigoProveedor: 'P001', 
-    nombre: 'Distribuidora Luka',
-    // Incluir otros campos mínimos necesarios para el DTO
-};
-
 const CATEGORIAS_IVA = ['Responsable Inscripto', 'Responsable no Inscripto', 'Exento', 'Importador / Exportador', 'Responsable Monotributista'];
 const TIPOS_RESPONSABLE = ['Responsable Inscripto Tipo A', 'Responsable Inscripto Con CBU', 'Responsable Inscripto Tipo M'];
+
+// DTO de inicialización completo (necesario para el mapeo)
+const EMPTY_PROVEEDOR_DATA = {
+    id: null, codigoProveedor: '', nombre: '', activado: true,
+    cuitCuil: '', direccion: '', codigoPostal: '', codigoCiudad: '', provincia: '', pais: '', 
+    telefono1: '', telefono2: '', fax: '', email: '', personaContacto: '', transportista: '', 
+    codigoIdentificatorio: '', inscripcionMunicipal: '', ingresosBrutos: '',
+    divisa: '', formaPago: '', descuentoDefecto: 0.0, diaPago: null, totalSaldosFavor: 0.0, 
+    saldoInicialCC: 0.0, subcuenta: '', subctaSaldoFavor: '', categoriaIVA: CATEGORIAS_IVA[0], 
+    inscriptoImpuestosInternos: false, agentePercepcionIVA: false, porcentajePercepcion: 0.0, 
+    porcentajeDescuentoProntoPago: 0.0, porcentajeIVAFletes: 0.0, tipoResponsable: TIPOS_RESPONSABLE[0], 
+    bancoData: [], especificasData: [], comentarios: '',
+};
+
+// MOCK para la lista de búsqueda
+const MOCK_PROVEEDOR_LISTA = {
+    id: 101, codigoProveedor: 'P001', nombre: 'Distribuidora Luka', razonSocial: 'Distribuidora Luka',
+};
 
 // ====================================================================
 // MODAL DE SELECCIÓN DE PROVEEDOR
@@ -39,9 +50,17 @@ const ProveedorModal = ({ proveedoresDisponibles, onSelect, onClose, loading, in
     const [searchTerm, setSearchTerm] = useState(initialSearch || '');
 
     const filteredProveedores = (proveedoresDisponibles || []).filter(prov => {
-        const codigo = prov.codigoProveedor || ''; 
-        const nombre = prov.nombre || '';
-        return codigo.includes(searchTerm) || nombre.toLowerCase().includes(searchTerm.toLowerCase());
+        
+        // 🚨 SOLUCIÓN: Convertir código y nombre a String ANTES de usar .includes()
+        const codigo = String(prov.codigoProveedor) || ''; 
+        const nombre = String(prov.nombre) || '';
+        
+        // Convertimos el término de búsqueda a minúsculas
+        const lowerSearchTerm = searchTerm.toLowerCase();
+
+        // Aplicamos la búsqueda usando toLowerCase() para el nombre
+        return codigo.toLowerCase().includes(lowerSearchTerm) || 
+               nombre.toLowerCase().includes(lowerSearchTerm);
     });
 
     return (
@@ -593,33 +612,85 @@ const FormularioComentario = ({ data, onChange, codigoProveedor, nombreProveedor
 
 export default function ModificacionProveedor({ onPageChange }) {
     const [activeTab, setActiveTab] = useState(TABS[0].key);
-    
     const [proveedorSeleccionado, setProveedorSeleccionado] = useState(null);
     const [proveedorData, setProveedorData] = useState(null); 
-    
     const [showSelectionModal, setShowSelectionModal] = useState(false);
-    const [loadingProveedores, setLoadingProveedores] = useState(false);
-    const [proveedoresDisponibles, setProveedoresDisponibles] = useState([MOCK_PROVEEDOR]);
+    const [loadingProveedores, setLoadingProveedores] = useState(true); // Inicialmente cargando la lista
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [proveedoresDisponibles, setProveedoresDisponibles] = useState([]);
 
-    // 1. Efecto de Carga Inicial de la lista de proveedores (Mockup)
+    // 🚨 FUNCIÓN 1: Cargar la lista de proveedores para el modal (GET Listar)
+    const fetchProveedoresDisponibles = async () => {
+        setLoadingProveedores(true);
+        try {
+            const response = await api.get("/suppliers/actives?page=1&limit=999"); 
+            
+            // --- CRÍTICO: Acceder a 'content' de la respuesta paginada ---
+            const list = response.data.content.map(p => ({
+                // El listado devuelve 'id' (Long) y 'name'
+                id: p.id, 
+                codigoProveedor: p.code || p.id, // Asumimos que "code" o "codigoProveedor" es "id" o no existe
+                nombre: p.name 
+            }));
+            setProveedoresDisponibles(list);
+        } catch (err) {
+            console.error("Error al cargar la lista:", err);
+            // Si falla la API, cargamos un mock que coincida con el formato esperado
+            setProveedoresDisponibles([
+                { id: 101, codigoProveedor: 'M001', nombre: 'Mock Proveedor' }
+            ]); 
+        } finally {
+            setLoadingProveedores(false);
+        }
+    };
+
     useEffect(() => {
-        // Simulación: Carga de lista para el modal
-        setProveedoresDisponibles([MOCK_PROVEEDOR]); 
+        fetchProveedoresDisponibles();
     }, []);
 
-    // 2. Manejo de la Selección del Proveedor
-    const handleProveedorSelect = (prov) => {
-        // Creamos una copia editable de los datos del proveedor
-        setProveedorSeleccionado(prov);
-        setProveedorData({
-            ...prov,
-            // Aseguramos que los arrays dinámicos existan en la copia mutable
-            bancoData: prov.bancoData || [],
-            especificasData: prov.especificasData || [],
-        }); 
-        setShowSelectionModal(false);
+
+    // 🚨 FUNCIÓN 2: Manejo de la Selección (Cargar DTO completo por ID - GET Detalle)
+    const handleProveedorSelect = async (provMin) => {
+        if (!provMin.id) return;
+        
+        setLoadingProveedores(true);
+        setShowSelectionModal(false); // Ocultamos el modal de búsqueda
+
+        try {
+            // Nuevo endpoint: GET /api/suppliers/{idSupplier}
+            const response = await api.get(`/suppliers/${provMin.id}`); 
+            const fullDto = response.data; // Recibimos el DTO simplificado (7 campos)
+            
+            // Mapeo Inverso: DTO Simple (Backend) -> Estado React (Frontend 30+ campos)
+            const mappedData = {
+                // 1. Usamos el DTO vacío como base para no perder los campos de formulario
+                ...EMPTY_PROVEEDOR_DATA, 
+                
+                // 2. Preservamos los datos mínimos del listado (incluyendo el código)
+                codigoProveedor: provMin.codigoProveedor, // CRÍTICO: Preservar el código del listado
+                
+                // 3. Mapeo explícito de los 7 campos devueltos por el detalle
+                id: fullDto.id, 
+                nombre: fullDto.name || '', // Mapeo: name -> nombre
+                direccion: fullDto.address || '',
+                email: fullDto.email || '',
+                telefono1: fullDto.phone || '', // Mapeo: phone -> telefono1
+                
+                // Los demás campos (CUIT, IVA, Descuentos) se quedan con los valores de EMPTY_PROVEEDOR_DATA.
+            };
+
+            setProveedorSeleccionado(mappedData);
+            setProveedorData(mappedData); 
+
+        } catch (err) {
+            console.error("Error al cargar el detalle (GET /suppliers/{id}):", err);
+            alert(`Error al cargar el detalle: ${err.response?.data || 'Proveedor no encontrado.'}`);
+            setProveedorSeleccionado(null); // Reseteamos si falló
+        } finally {
+            setLoadingProveedores(false);
+        }
     };
-    
+
     // 3. Manejo genérico de cambios en los inputs
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -628,19 +699,49 @@ export default function ModificacionProveedor({ onPageChange }) {
             [name]: value
         }));
     };
-
+    
     const handleVolver = () => {
         if (onPageChange) {
             onPageChange("GESTION_PROVEEDORES"); 
         }
     };
     
-    const handleGuardarModificacion = () => {
-        if (!proveedorData || !proveedorData.codigoProveedor) {
-            alert("No hay proveedor seleccionado para guardar.");
+    // 🚨 FUNCIÓN 3: Guardar Modificación (POST /api/suppliers/edit-supplier)
+    const handleGuardarModificacion = async () => {
+        if (!proveedorData || !proveedorData.id) {
+            alert("Error: Proveedor no seleccionado o ID faltante.");
             return;
         }
-        alert(`Guardando modificación para proveedor: ${proveedorData.nombre}. Implementación de API PUT pendiente.`);
+        
+        // El backend espera SupplierEditRequestDTO: { idSupplier, newName, newAddress, newPhone, newEmail, ... }
+        // Nota: Solo usaremos los campos que el controlador mapea explícitamente (name, address, phone, email)
+        const payload = {
+            idSupplier: proveedorData.id,
+            newName: proveedorData.nombre, 
+            newAddress: proveedorData.direccion,
+            newPhone: proveedorData.telefono1, // Usamos telefono1
+            newEmail: proveedorData.email,
+            
+            // CRÍTICO: Los otros 25+ campos no se enviarán porque el EditRequestDTO y Controller NO los manejan.
+        };
+
+        setIsSubmitting(true);
+
+        try {
+            // Nuevo endpoint: POST /api/suppliers/edit-supplier
+            const response = await api.post(`/suppliers/edit-supplier`, payload); 
+            
+            if (response.status === 200) {
+                alert(`✅ Proveedor '${proveedorData.nombre}' actualizado correctamente.`);
+                onPageChange("GESTION_PROVEEDORES");
+            }
+        } catch (err) {
+            console.error("Error al modificar proveedor:", err.response || err);
+            const msg = err.response?.data || 'Error desconocido. Verifique la unicidad de los campos.';
+            alert(`❌ Fallo en la Modificación: ${msg}`);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     // Función para renderizar el contenido de la pestaña activa
@@ -749,10 +850,11 @@ export default function ModificacionProveedor({ onPageChange }) {
                     <div className="asiento-footer">
                         <button 
                             className="action-button icon-with-text primary-button"
-                            onClick={handleGuardarModificacion}
+                            onClick={handleGuardarModificacion} // Llama a la función de envío
+                            disabled={isSubmitting}
                         >
                             <img src={LogoGrupo5} alt="Icono Guardar" className="icon-small" /> 
-                            Guardar Modificación
+                            {isSubmitting ? 'Guardando...' : 'Guardar Modificación'}
                         </button>
                         <button 
                             className="action-button icon-with-text back-button-footer"

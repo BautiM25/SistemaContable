@@ -1,22 +1,25 @@
 import React from "react";
-import "../styles/Menu.css"; // Reutilizamos estilos de menú
-import "../styles/GestionUsuarios.css"; // Reutilizamos estilos de gestión
+import "../styles/Menu.css";
+import "../styles/RegistrarAsiento.css"; 
+import "../styles/GestionUsuarios.css"; 
 import LogoEmpresa from "../assets/LogoEmpresa.png";
 import LogoGrupo5 from "../assets/LogoGrupo5.png";
 
-// Aceptamos onPageChange para la navegación y onLogout si fuera un menú principal
+// Renombramos el componente para ser Gestión de Proveedores
 export default function GestionProveedores({ onPageChange }) {
-    
-    // Función para manejar el clic y cambiar la página
-    const handleMenuClick = (pageName) => {
+
+    // Función para manejar el clic en los botones de acción
+    const handleActionClick = (pageName) => {
         if (onPageChange) {
             onPageChange(pageName);
         }
     };
-
-    // Función para volver al menú principal (DASHBOARD)
+    
+    // Función para manejar el clic en Volver (regresa al menú principal)
     const handleVolver = () => {
-        handleMenuClick("DASHBOARD");
+        if (onPageChange) {
+            onPageChange("DASHBOARD"); 
+        }
     };
 
     return (
@@ -28,28 +31,39 @@ export default function GestionProveedores({ onPageChange }) {
                     <div className="asiento-header">
                         <div className="asiento-logo-wrapper">
                             <img src={LogoEmpresa} alt="Logo Empresa" className="logo-small" />
-                            <h2 className="asiento-title">Gestión de Proveedores</h2>
+                            <h2 className="asiento-title">Gestión de Proveedores</h2> 
                         </div>
                     </div>
 
                     {/* BODY: Contenedor de Botones de Gestión */}
                     <div className="asiento-body gestion-body"> 
-                        <h3 className="partidas-title">Seleccione una acción para Proveedores</h3>
+                        <h3 className="partidas-title">Seleccione una acción</h3>
                         
                         <div className="gestion-buttons-container">
                             
-                            {/* 1. CARGA/ALTA */}
-                            <button 
-                                className="menu-button gestion-button primary-button"
-                                onClick={() => handleMenuClick('CARGA_PROVEEDOR')}
-                            >
-                                <img src={LogoGrupo5} alt="Icono Carga" /> Carga / Alta
-                            </button>
+                            {/* 🚨 1. CONTENEDOR HORIZONTAL para Carga y Activar */}
+                            <div className="horizontal-button-group"> 
+                                {/* Carga / Alta (Mantiene el funcionamiento actual) */}
+                                <button 
+                                    className="menu-button gestion-button primary-button half-width-button"
+                                    onClick={() => handleActionClick('CARGA_PROVEEDOR')} 
+                                >
+                                    <img src={LogoGrupo5} alt="Icono Carga" /> Carga / Alta
+                                </button>
+                                
+                                {/* Nuevo Botón: Activar Proveedor */}
+                                <button 
+                                    className="menu-button gestion-button primary-button half-width-button activate-button"
+                                    onClick={() => handleActionClick('ACTIVAR_PROVEEDOR')} 
+                                >
+                                    <img src={LogoGrupo5} alt="Icono Activar" /> Activar
+                                </button>
+                            </div>
                             
-                            {/* 2. MODIFICACIÓN */}
-                            <button 
+                            {/* 2. MODIFICACIÓN (Mantener si existe en el flujo original) */}
+                             <button 
                                 className="menu-button gestion-button secondary-button"
-                                onClick={() => handleMenuClick('MODIFICACION_PROVEEDOR')}
+                                onClick={() => handleActionClick('MODIFICACION_PROVEEDOR')}
                             >
                                 <img src={LogoGrupo5} alt="Icono Modificación" /> Modificación
                             </button>
@@ -57,7 +71,7 @@ export default function GestionProveedores({ onPageChange }) {
                             {/* 3. BAJA */}
                             <button 
                                 className="menu-button gestion-button danger-button"
-                                onClick={() => handleMenuClick('BAJA_PROVEEDOR')}
+                                onClick={() => handleActionClick('BAJA_PROVEEDOR')} 
                             >
                                 <img src={LogoGrupo5} alt="Icono Baja" /> Baja
                             </button>
@@ -65,8 +79,7 @@ export default function GestionProveedores({ onPageChange }) {
                             {/* 4. VISUALIZACIÓN */}
                             <button 
                                 className="menu-button gestion-button secondary-button"
-                                onClick={() => handleMenuClick('VER_PROVEEDORES')}
-                                style={{ backgroundColor: '#2f8f94' }} // Estilo distintivo
+                                onClick={() => handleActionClick('VER_PROVEEDORES')}
                             >
                                 <img src={LogoGrupo5} alt="Icono Ver" /> Ver Proveedores
                             </button>

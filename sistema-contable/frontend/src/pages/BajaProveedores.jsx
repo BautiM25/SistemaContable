@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-// Importamos api para la eliminación (DELETE)
 import api from "../services/api"; 
 import "../styles/Menu.css"; 
 import "../styles/RegistrarAsiento.css"; 
@@ -12,25 +11,28 @@ import LogoGrupo5 from "../assets/LogoGrupo5.png";
 // CONSTANTES Y MOCKUP
 // ====================================================================
 
-// DTO de Mockup mínimo para la simulación de la búsqueda
+// DTO de Mockup mínimo (debe incluir ID para ser seleccionado)
 const MOCK_PROVEEDOR = {
+    id: 999, // CRÍTICO: Añadimos ID al mock
     codigoProveedor: 'P001', 
-    nombre: 'Distribuidora Luka',
-    // Incluir otros campos mínimos necesarios para el DTO
+    nombre: 'Distribuidora Luka (Mock)',
 };
 
 // ====================================================================
-// MODAL DE SELECCIÓN DE PROVEEDOR (Reutilizado de Modificación)
+// MODAL DE SELECCIÓN DE PROVEEDOR
 // ====================================================================
 
 const ProveedorModal = ({ proveedoresDisponibles, onSelect, onClose, loading, initialSearch }) => {
-    // Simulación de búsqueda de proveedor por código o nombre
     const [searchTerm, setSearchTerm] = useState(initialSearch || '');
 
     const filteredProveedores = (proveedoresDisponibles || []).filter(prov => {
-        const codigo = prov.codigoProveedor || ''; 
-        const nombre = prov.nombre || '';
-        return codigo.includes(searchTerm) || nombre.toLowerCase().includes(searchTerm.toLowerCase());
+        // 🚨 CORRECCIÓN: Aseguramos que el código sea String para usar .includes()
+        const codigo = String(prov.codigoProveedor) || ''; 
+        const nombre = String(prov.nombre) || '';
+        const lowerSearchTerm = searchTerm.toLowerCase();
+        
+        return codigo.toLowerCase().includes(lowerSearchTerm) || 
+               nombre.toLowerCase().includes(lowerSearchTerm);
     });
 
     return (
@@ -54,7 +56,8 @@ const ProveedorModal = ({ proveedoresDisponibles, onSelect, onClose, loading, in
                         filteredProveedores.length > 0 ? (
                             filteredProveedores.map((prov) => (
                                 <div 
-                                    key={prov.codigoProveedor} 
+                                    // 🚨 CRÍTICO: Usar el 'id' como clave
+                                    key={prov.id || prov.codigoProveedor} 
                                     className="list-item clickable-item" 
                                     onClick={() => onSelect(prov)}
                                 >
@@ -65,7 +68,7 @@ const ProveedorModal = ({ proveedoresDisponibles, onSelect, onClose, loading, in
                                 </div>
                             ))
                         ) : (
-                            <div className="list-item no-results">No se encontraron proveedores.</div>
+                            <div className="list-item no-results">No se encontraron proveedores activos.</div>
                         )
                     )}
                 </div>
@@ -91,7 +94,6 @@ const ProveedorModal = ({ proveedoresDisponibles, onSelect, onClose, loading, in
 
 const BajaModal = ({ proveedor, onConfirm, onClose }) => {
     
-    // Mostramos el código y nombre del proveedor seleccionado
     const nombreCompleto = proveedor.codigoProveedor ? `${proveedor.codigoProveedor} - ${proveedor.nombre}` : proveedor.nombre;
 
     return (
@@ -113,7 +115,8 @@ const BajaModal = ({ proveedor, onConfirm, onClose }) => {
                     </button>
                     <button 
                         className="action-button danger-button" 
-                        onClick={() => onConfirm(proveedor.codigoProveedor)} // Enviamos el ID/Código para la API
+                        // 🚨 CRÍTICO: Enviamos el objeto completo 'proveedor'
+                        onClick={() => onConfirm(proveedor)} 
                     >
                         Confirmar Baja
                     </button>
@@ -136,50 +139,75 @@ export default function BajaProveedor({ onPageChange }) {
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
 
-    // Mockup: Lista inicial de proveedores disponibles
-    const [proveedoresDisponibles, setProveedoresDisponibles] = useState([MOCK_PROVEEDOR]); 
+    const [proveedoresDisponibles, setProveedoresDisponibles] = useState([]); 
 
-    // 1. Efecto de Carga Inicial (Mockup)
+    // 🚨 FUNCIÓN 1: Cargar la lista de proveedores activos (GET /suppliers/actives)
+    const fetchProveedoresDisponibles = async () => {
+        setLoadingProveedores(true);
+        try {
+            // Nuevo endpoint de listado activo con paginación
+            const response = await api.get("/suppliers/actives?page=1&limit=999"); 
+            
+            // Mapeamos la respuesta paginada al formato minimalista
+            const list = response.data.content.map(p => ({
+                id: p.id, // ID Long de la base de datos
+                codigoProveedor: p.code,
+                nombre: p.name 
+            }));
+            setProveedoresDisponibles(list);
+        } catch (err) {
+            console.error("Error al cargar la lista de proveedores activos:", err);
+            // Fallback con mock si la API falla
+            setProveedoresDisponibles([MOCK_PROVEEDOR]); 
+        } finally {
+            setLoadingProveedores(false);
+        }
+    };
+
     useEffect(() => {
-        // En una aplicación real, aquí cargarías la lista de proveedores activos
-        // setProveedoresDisponibles(apiData); 
+        fetchProveedoresDisponibles();
     }, []);
 
     // 2. Manejo de la Selección del Proveedor
     const handleProveedorSelect = (prov) => {
+        // 'prov' contiene el id (Long) y el códigoProveedor del listado
         setProveedorSeleccionado(prov);
         setShowSelectionModal(false);
-        setShowConfirmModal(true); // Abrir modal de confirmación inmediatamente
+        setShowConfirmModal(true); 
     };
     
-    // 3. Manejo de la Baja (API CALL)
-    const handleConfirmarBaja = async (codigoProveedor) => {
+    // 🚨 FUNCIÓN 3: Manejo de la Baja (API CALL - POST de Eliminación Lógica)
+    const handleConfirmarBaja = async (proveedor) => {
+        // 🚨 Verificación de ID
+        if (!proveedor.id) { 
+             alert("Error de ID: No se pudo obtener el ID del proveedor para la baja.");
+             return;
+        }
+
         setShowConfirmModal(false);
         setIsDeleting(true);
 
+        // Payload esperado: { idSupplier: Long }
+        const payload = {
+            idSupplier: proveedor.id
+        };
+
         try {
-            // NOTA: Asumimos que el endpoint DELETE utiliza el código de proveedor como path variable
-            // URL esperada: /api/proveedores/{codigoProveedor}
-            // Si el backend usa Long ID, necesitarías obtener el ID primero. Usaremos el código por ahora.
+            // Endpoint: POST /api/suppliers/delete-supplier
+            const response = await api.post("/suppliers/delete-supplier", payload); 
             
-            // Simulación de respuesta 204 No Content
-            await new Promise(resolve => setTimeout(resolve, 1000)); 
-            
-            // const response = await api.delete(`/proveedores/${codigoProveedor}`);
-            // if (response.status === 204) { ... }
-            
-            alert(`✅ Proveedor ${codigoProveedor} dado de baja (lógicamente) con éxito.`);
-            
-            // Actualizar la lista localmente (eliminando el proveedor del estado)
-            setProveedoresDisponibles(prev => prev.filter(p => p.codigoProveedor !== codigoProveedor));
-            
-            // Resetear la vista
-            setProveedorSeleccionado(null);
-            
+            if (response.status === 200) { 
+                alert(`✅ Proveedor ${proveedor.nombre} (ID: ${proveedor.id}) dado de baja lógicamente.`);
+                
+                // Actualizar la lista localmente
+                setProveedoresDisponibles(prev => prev.filter(p => p.id !== proveedor.id));
+                setProveedorSeleccionado(null);
+            }
         } catch (err) {
-            console.error("Error al dar de baja al proveedor:", err);
-            const backendMessage = err.response?.data?.message || 'Error desconocido al conectar con el backend.';
-            alert(`❌ Fallo en la baja:\n${backendMessage}`);
+            console.error("Error al dar de baja al proveedor:", err.response || err);
+            // Mensaje de error desde el body de la respuesta
+            const msg = err.response?.data || 'Error desconocido al procesar la baja lógica.';
+            alert(`❌ Fallo en la baja:\n${msg}`);
         } finally {
             setIsDeleting(false);
         }
@@ -226,16 +254,16 @@ export default function BajaProveedor({ onPageChange }) {
                             <button 
                                 type="button"
                                 className="action-button icon-with-text danger-button search-button-action"
-                                onClick={() => setShowSelectionModal(true)} // Abre el modal de búsqueda
+                                onClick={proveedorSeleccionado ? () => setShowConfirmModal(true) : () => setShowSelectionModal(true)}
                                 disabled={isDeleting}
                             >
                                 <img src={LogoGrupo5} alt="Icono Buscar" className="icon-small" /> 
-                                {isDeleting ? 'Procesando Baja...' : 'Buscar Proveedor'}
+                                {isDeleting ? 'Procesando Baja...' : (proveedorSeleccionado ? 'Confirmar Baja' : 'Buscar Proveedor')}
                             </button>
                             
                             {proveedorSeleccionado && (
                                 <p style={{ color: '#ff6b6b', marginTop: '15px', fontWeight: 'bold' }}>
-                                    Proveedor listo para la baja. Presione el botón de arriba.
+                                    Proveedor listo para la baja. Presione el botón **Confirmar Baja**.
                                 </p>
                             )}
                         </div>

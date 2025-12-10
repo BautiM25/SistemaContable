@@ -107,6 +107,14 @@ public class SupplierServiceImp {
         return supplierRepository.findByActiveTrue(pageable);
     }
 
+    @Transactional(readOnly = true)
+    public Page<Supplier> getAllSuppliersInactive(int page, int limit) {
+        Pageable pageable = PageRequest.of(page > 0 ? page - 1 : 0, limit);
+
+        // Se requiere el método en el Repositorio: findByActiveTrue(Pageable)
+        return supplierRepository.findByActiveFalse(pageable);
+    }
+
     // ===================================================
     // 5. OBTENER DETALLE (static getSupplier)
     // Devuelve la Entidad

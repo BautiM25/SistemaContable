@@ -20,4 +20,6 @@ public interface SupplierRepository extends JpaRepository<Supplier, Long> {
     // Método necesario para listar solo proveedores activos con paginación
     Page<Supplier> findByActiveTrue(Pageable pageable);
 
+    Page<Supplier> findByActiveFalse(Pageable pageable);
+
 }

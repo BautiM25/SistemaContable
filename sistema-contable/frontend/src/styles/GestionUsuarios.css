@@ -152,3 +152,31 @@
     width: 100%;
     text-align: center;
 }
+
+/* --- Estilos para la división de botones (Horizontal) --- */
+
+/* Contenedor que agrupa los botones de Carga y Activar */
+.horizontal-button-group {
+    display: flex;
+    flex-direction: row; /* Alineación horizontal */
+    gap: 15px; /* Espacio entre los dos botones */
+    width: 350px; /* Aseguramos que ocupe el mismo ancho que los botones individuales */
+    /* Alineación central, manteniendo el orden de los gestion-buttons-container */
+    justify-content: center; 
+}
+
+/* Botones que ocupan la mitad del ancho del grupo */
+.half-width-button {
+    width: 167.5px; /* (350px - 15px de gap) / 2 = 167.5px */
+    flex-grow: 0; /* Desactivar flex-grow si ya definimos el ancho en px */
+    flex-shrink: 0;
+}
+
+/* Estilo para el botón Activar si quieres distinguirlo un poco del Alta */
+.activate-button {
+    background: #3c526c; /* Azul/Gris para Activar (distinto al verde de Alta) */
+    border-color: #2b4050;
+}
+.activate-button:hover {
+    background: #465f7c;
+}

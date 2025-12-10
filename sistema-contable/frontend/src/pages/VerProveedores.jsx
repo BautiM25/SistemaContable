@@ -1,52 +1,67 @@
 import React, { useState, useEffect } from "react";
-import api from "../services/api"; // Para futura carga real
+import api from "../services/api";
 import "../styles/Menu.css"; 
 import "../styles/RegistrarAsiento.css"; 
 import "../styles/GestionUsuarios.css"; 
 import "../styles/Tabs.css"; 
-import "../styles/VerProveedores.css"; // Nuevo archivo CSS para la tabla
+import "../styles/VerProveedores.css"; 
 import LogoEmpresa from "../assets/LogoEmpresa.png";
 import LogoGrupo5 from "../assets/LogoGrupo5.png";
 
-// Mockup de Datos de Proveedores (Simulación de la respuesta API)
-const MOCK_PROVEEDORES_LIST = [
-    { codigoProveedor: 'P001', nombre: 'Distribuidora Luka', cuitCuil: '30-12345678-9', pais: 'ARG', telefono1: '4777-1111' },
-    { codigoProveedor: 'P002', nombre: 'Aceros Global S.A.', cuitCuil: '20-98765432-1', pais: 'ARG', telefono1: '4888-2222' },
-    { codigoProveedor: 'P003', nombre: 'Quimicos del Sur', cuitCuil: '33-45678901-2', pais: 'CHL', telefono1: '56-2-123456' },
-];
+// NOTA: MOCKUP eliminado para forzar la carga de la API
 
 export default function VerProveedores({ onPageChange }) {
     const [proveedores, setProveedores] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [showActive, setShowActive] = useState(true); // 🚨 NUEVO ESTADO: true = Activos, false = Inactivos
 
-    useEffect(() => {
-        const fetchProveedores = async () => {
-            // Simulación de carga API
-            // try {
-            //     const response = await api.get("/proveedores"); 
-            //     setProveedores(response.data);
-            // } catch (err) {
-            //     setError("Error al cargar la lista de proveedores.");
-            // } finally {
-            //     setLoading(false);
-            // }
-            
-            // Usamos el mockup para inicializar
-            setProveedores(MOCK_PROVEEDORES_LIST);
-            setLoading(false);
-        };
-        fetchProveedores();
-    }, []);
-
-    // 🚨 CLAVE: Navega a la nueva vista de Consulta con el proveedor seleccionado
-    const handleVerDetalle = (proveedor) => {
-        // En una aplicación real, aquí harías una llamada API para obtener el DTO completo
-        // y lo pasarías al componente de consulta.
+    // Función para obtener los datos de la API según el estado de activo/inactivo
+    const fetchProveedores = async (active) => {
+        setLoading(true);
+        setError(null);
         
-        if (onPageChange) {
-            // Usaremos el estado "CONSULTA_PROVEEDOR" y pasaremos el objeto (o ID)
-            onPageChange("CONSULTA_PROVEEDOR", proveedor); 
+        // Define el endpoint basado en el estado (activos o inactivos)
+        const endpoint = active ? "/suppliers/actives" : "/suppliers/inactives";
+        
+        try {
+            // Usamos un límite alto para obtener toda la lista (asumiendo pocos datos)
+            const response = await api.get(`${endpoint}?page=1&limit=999`); 
+            
+            // Mapeamos la respuesta paginada (SupplierResponseDTO) al formato de la tabla
+            const list = response.data.content.map(p => ({
+                id: p.id, // ID Long para la consulta de detalle
+                codigoProveedor: p.code || 'N/A', // Asumimos que el código es 'code'
+                nombre: p.name,
+                cuitCuil: p.cuit || 'N/D', // Si el DTO no trae CUIT, queda N/D
+                pais: p.country || 'N/D',
+                telefono1: p.phone || 'N/D', // Asumimos que 'phone' mapea a 'telefono1'
+            }));
+            
+            setProveedores(list);
+        } catch (err) {
+            console.error(`Error al cargar ${active ? 'activos' : 'inactivos'}:`, err.response || err);
+            setError(`Error al cargar proveedores. Intente nuevamente. (${err.response?.status})`);
+            setProveedores([]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // 🚨 Efecto de Carga: Se ejecuta al inicio y cada vez que showActive cambia
+    useEffect(() => {
+        fetchProveedores(showActive);
+    }, [showActive]);
+
+
+    // 🚨 CLAVE: Navega a la nueva vista de Consulta (haciendo GET para el detalle completo)
+    const handleVerDetalle = (proveedor) => {
+        if (onPageChange && proveedor.id) {
+            // Pasamos el ID y la página de destino.
+            // La vista de ConsultaProveedor se encargará de hacer el GET por ID.
+            onPageChange("CONSULTA_PROVEEDOR", { id: proveedor.id }); 
+        } else {
+            alert("No se pudo obtener el ID del proveedor para ver el detalle.");
         }
     };
 
@@ -54,6 +69,11 @@ export default function VerProveedores({ onPageChange }) {
         if (onPageChange) {
             onPageChange("GESTION_PROVEEDORES"); 
         }
+    };
+
+    // Función para alternar el estado (toggle)
+    const handleToggle = () => {
+        setShowActive(prev => !prev);
     };
 
     if (loading) return <div className="loading-state">Cargando lista de proveedores...</div>;
@@ -68,13 +88,26 @@ export default function VerProveedores({ onPageChange }) {
                     <div className="asiento-header">
                         <div className="asiento-logo-wrapper">
                             <img src={LogoEmpresa} alt="Logo Empresa" className="logo-small" />
-                            <h2 className="asiento-title">Lista de Proveedores Registrados</h2>
+                            <h2 className="asiento-title">Lista de Proveedores ({showActive ? 'Activos' : 'Inactivos'})</h2>
                         </div>
                     </div>
 
                     {/* BODY: Tabla de Proveedores */}
                     <div className="asiento-body gestion-body form-body"> 
-                        <h3 className="partidas-title">Haga click en una fila para ver el detalle</h3>
+                        
+                        {/* 🚨 TOGGLE ACTIVO / INACTIVO */}
+                        <div className="toggle-container">
+                            <span className={!showActive ? 'active' : ''}>INACTIVOS</span>
+                            <label className="switch">
+                                <input type="checkbox" checked={showActive} onChange={handleToggle} />
+                                <span className="slider round"></span>
+                            </label>
+                            <span className={showActive ? 'active' : ''}>ACTIVOS</span>
+                        </div>
+                        
+                        <h3 className="partidas-title" style={{ marginTop: '15px' }}>
+                            Haga click en una fila para ver el detalle
+                        </h3>
                         
                         <div className="table-list-wrapper">
                             <table className="data-table">
@@ -88,7 +121,7 @@ export default function VerProveedores({ onPageChange }) {
                                 </thead>
                                 <tbody>
                                     {proveedores.map((prov) => (
-                                        <tr key={prov.codigoProveedor} onClick={() => handleVerDetalle(prov)} className="clickable-row">
+                                        <tr key={prov.id || prov.codigoProveedor} onClick={() => handleVerDetalle(prov)} className="clickable-row">
                                             <td>{prov.codigoProveedor}</td>
                                             <td>{prov.nombre}</td>
                                             <td>{prov.cuitCuil}</td>
@@ -97,7 +130,7 @@ export default function VerProveedores({ onPageChange }) {
                                     ))}
                                 </tbody>
                             </table>
-                            {proveedores.length === 0 && <p className="no-data-msg">No hay proveedores registrados.</p>}
+                            {proveedores.length === 0 && <p className="no-data-msg">No hay proveedores {showActive ? 'activos' : 'inactivos'} registrados.</p>}
                         </div>
                     </div>
 
