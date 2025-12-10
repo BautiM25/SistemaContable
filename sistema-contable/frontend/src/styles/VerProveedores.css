@@ -66,3 +66,95 @@
     padding: 20px;
     color: #ccc;
 }
+
+/* --- Estilos para el Toggle Activo/Inactivo --- */
+
+.toggle-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+    font-weight: bold;
+    color: #888; /* Color base para texto inactivo */
+}
+
+.toggle-container span.active {
+    color: #f0f0f0; /* Color brillante para el estado activo */
+}
+
+/* El Switch/Slider estándar de CSS (copiado de un diseño de toggle común) */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #8b2b2b; /* Rojo para Inactivo (OFF) */
+    transition: .4s;
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.4);
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+}
+
+input:checked + .slider {
+    background-color: #3c6c3e; /* Verde para Activo (ON) */
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
+
+/* Rounded sliders (opcional) */
+.slider.round {
+    border-radius: 34px;
+}
+
+.slider.round:before {
+    border-radius: 50%;
+}
+
+/* Estilos de la tabla */
+.table-list-wrapper {
+    /* Agrega un alto fijo y overflow para que la tabla sea scrollable si hay muchas filas */
+    max-height: 50vh; 
+    overflow-y: auto;
+    width: 100%;
+    margin-top: 10px;
+    border: 1px solid #444;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.clickable-row {
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.clickable-row:hover {
+    background-color: #444;
+}

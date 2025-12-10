@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import api from "../services/api"; // Asegúrate de tener este archivo configurado
 import "../styles/Menu.css"; 
 import "../styles/RegistrarAsiento.css"; // Reutilizamos layout base
 import "../styles/GestionUsuarios.css"; // Reutilizamos estilos de formularios
@@ -567,10 +568,10 @@ const FormularioComentario = ({ data, onChange, codigoProveedor, nombreProveedor
     );
 };
 
-
 export default function CargaProveedor({ onPageChange }) {
     // Estado para la pestaña activa
     const [activeTab, setActiveTab] = useState(TABS[0].key);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     
     const CATEGORIAS_IVA = ['Responsable Inscripto', 'Responsable no Inscripto', 'Exento', 'Importador / Exportador', 'Responsable Monotributista'];
     const TIPOS_RESPONSABLE = ['Responsable Inscripto Tipo A', 'Responsable Inscripto Con CBU', 'Responsable Inscripto Tipo M'];
@@ -626,12 +627,54 @@ export default function CargaProveedor({ onPageChange }) {
     
     
     
+    // 🚨 FUNCIÓN CLAVE: Guardar Proveedor (POST /api/suppliers/create-supplier)
+    const handleGuardarProveedor = async () => {
+        // Validamos solo los campos que usaremos en el payload + CUIT, aunque CUIT no se envía.
+        if (!proveedorData.nombre || !proveedorData.direccion || !proveedorData.email) {
+            alert("Debe completar Nombre, Dirección y Email.");
+            return;
+        }
+
+        // 1. Mapeo al DTO Simplificado (SupplierRequestDTO)
+        const payload = {
+            name: proveedorData.nombre, // Mapeo: nombre -> name
+            address: proveedorData.direccion, // Mapeo: direccion -> address
+            phone: proveedorData.telefono1, // Mapeo: telefono1 -> phone (usamos solo el primero)
+            email: proveedorData.email,
+            
+            // NOTA: Los otros 25+ campos (Cuit, IVA, Banco, Comentarios) SERÁN IGNORADOS 
+            // en esta petición, ya que el DTO del backend no los incluye.
+        };
+
+        setIsSubmitting(true);
+
+        try {
+            // 🚨 Endpoint: POST /api/suppliers/create-supplier
+            const response = await api.post("/suppliers/create-supplier", payload); 
+            
+            if (response.status === 201 || response.status === 200) {
+                // El backend devuelve "Proveedor creado correctamente" o 201 CREATED
+                alert(`✅ Proveedor creado con éxito.`);
+                
+                // Volver a la gestión
+                onPageChange("GESTION_PROVEEDORES");
+            }
+        } catch (err) {
+            console.error("Error al crear proveedor:", err.response || err);
+            // El backend devuelve un mensaje en el cuerpo de la respuesta (response.data)
+            const msg = err.response?.data || 'Error desconocido al intentar guardar el proveedor.';
+            alert(`❌ Fallo en el Alta: ${msg}`);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+    
     // Función genérica para manejar cambios en los inputs
     const handleInputChange = (e) => {
-        const { name, value } = e.target;
+        const { name, value, type, checked } = e.target;
         setProveedorData(prev => ({
             ...prev,
-            [name]: value
+            [name]: type === 'checkbox' ? checked : value
         }));
     };
 
@@ -724,14 +767,15 @@ export default function CargaProveedor({ onPageChange }) {
                     </div>
 
                     {/* FOOTER */}
+                    {/* FOOTER */}
                     <div className="asiento-footer">
                         <button 
                             className="action-button icon-with-text primary-button"
-                            onClick={() => alert('Implementar Guardar Proveedor')}
-                            disabled={!proveedorData.nombre}
+                            onClick={handleGuardarProveedor} // Llama a la función de API
+                            disabled={!proveedorData.nombre || isSubmitting}
                         >
                             <img src={LogoGrupo5} alt="Icono Guardar" className="icon-small" /> 
-                            Guardar Proveedor
+                            {isSubmitting ? 'Guardando...' : 'Guardar Proveedor'}
                         </button>
                         <button 
                             className="action-button icon-with-text back-button-footer"

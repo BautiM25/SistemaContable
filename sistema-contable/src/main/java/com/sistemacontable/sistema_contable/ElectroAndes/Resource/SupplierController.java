@@ -1,20 +1,32 @@
 // src/main/java/com.sistemacontable.sistema_contable.ElectroAndes.Resource/SupplierController.java
 package com.sistemacontable.sistema_contable.ElectroAndes.Resource;
 
-import com.sistemacontable.sistema_contable.ElectroAndes.Model.Supplier;
-import com.sistemacontable.sistema_contable.ElectroAndes.Service.SupplierServiceImp;
-import com.sistemacontable.sistema_contable.ElectroAndes.Util.SupplierMapper; // Importamos el Mapper
-import com.sistemacontable.sistema_contable.dto.*; // Importamos los DTOs
-
-import jakarta.persistence.EntityNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.http.ResponseEntity; // Importamos el Mapper
+import org.springframework.web.bind.annotation.CrossOrigin; // Importamos los DTOs
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.sistemacontable.sistema_contable.ElectroAndes.Model.Supplier;
+import com.sistemacontable.sistema_contable.ElectroAndes.Service.SupplierServiceImp;
+import com.sistemacontable.sistema_contable.ElectroAndes.Util.SupplierMapper;
+import com.sistemacontable.sistema_contable.dto.SupplierEditRequestDTO;
+import com.sistemacontable.sistema_contable.dto.SupplierIdRequestDTO;
+import com.sistemacontable.sistema_contable.dto.SupplierRequestDTO;
+import com.sistemacontable.sistema_contable.dto.SupplierResponseDTO;
+
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/suppliers")
+@CrossOrigin(origins = "http://localhost:5173")
 public class SupplierController {
 
     private final SupplierServiceImp supplierService;
@@ -136,6 +148,17 @@ public class SupplierController {
             @RequestParam(defaultValue = "10") int limit
     ) {
         Page<Supplier> supplierPage = supplierService.getAllSuppliersActive(page, limit);
+        Page<SupplierResponseDTO> dtosPage = supplierPage.map(supplierMapper::mapToDto);
+
+        return ResponseEntity.ok(dtosPage);
+    }
+
+    @GetMapping("/inactives")
+    public ResponseEntity<Page<SupplierResponseDTO>> getAllSuppliersInactive(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int limit
+    ) {
+        Page<Supplier> supplierPage = supplierService.getAllSuppliersInactive(page, limit);
         Page<SupplierResponseDTO> dtosPage = supplierPage.map(supplierMapper::mapToDto);
 
         return ResponseEntity.ok(dtosPage);

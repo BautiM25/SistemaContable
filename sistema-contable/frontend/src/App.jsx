@@ -17,6 +17,7 @@ import GestionProveedores from "./pages/GestionProveedores.jsx";
 import CargaProveedor from "./pages/CargaProveedor.jsx";
 import ModificacionProveedor from "./pages/ModificacionProveedor.jsx";
 import BajaProveedor from "./pages/BajaProveedores.jsx";
+import ActivarProveedor from "./pages/ActivarProveedor.jsx";
 import VerProveedores from "./pages/VerProveedores.jsx";
 import ConsultaProveedor from "./pages/ConsultaProveedor.jsx";
 import VerReportes from "./pages/VerReportes.jsx";
@@ -113,6 +114,8 @@ function App() {
         return <ModificacionProveedor onPageChange={handlePageChange} />;
       case "BAJA_PROVEEDOR":
         return <BajaProveedor onPageChange={handlePageChange} />;
+      case "ACTIVAR_PROVEEDOR":
+        return <ActivarProveedor onPageChange={handlePageChange} />;
       case "VER_PROVEEDORES":
         return <VerProveedores onPageChange={handlePageChange} />;
       case "CONSULTA_PROVEEDOR": // (Consulta de Detalle)
