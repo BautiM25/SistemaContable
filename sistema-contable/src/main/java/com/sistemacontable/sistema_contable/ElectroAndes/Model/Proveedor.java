@@ -61,14 +61,8 @@ public class Proveedor {
     // --- ESPECIFICAS ---
     private String producto;
 
-    @Column(name = "variacion_precio")
-    private Double variacionPrecio;
-
     @Column(precision = 19, scale = 2)
     private BigDecimal precio;
-
-    @Column(name = "variacion_descuento")
-    private Double variacionDescuento;
 
     private Double descuento;
 
@@ -208,28 +202,12 @@ public class Proveedor {
         this.producto = producto;
     }
 
-    public Double getVariacionPrecio() {
-        return variacionPrecio;
-    }
-
-    public void setVariacionPrecio(Double variacionPrecio) {
-        this.variacionPrecio = variacionPrecio;
-    }
-
     public BigDecimal getPrecio() {
         return precio;
     }
 
     public void setPrecio(BigDecimal precio) {
         this.precio = precio;
-    }
-
-    public Double getVariacionDescuento() {
-        return variacionDescuento;
-    }
-
-    public void setVariacionDescuento(Double variacionDescuento) {
-        this.variacionDescuento = variacionDescuento;
     }
 
     public Double getDescuento() {
