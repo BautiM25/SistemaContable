@@ -1,9 +1,17 @@
 package com.sistemacontable.sistema_contable.ElectroAndes.Model;
 
-import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "solicitudes_compra")
@@ -22,6 +30,9 @@ public class SolicitudCompra {
 
     @OneToMany(mappedBy = "solicitud", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DetalleSolicitud> detalles = new ArrayList<>();
+
+    @Column(name = "estado")
+    private boolean estado;
 
     // --- CONSTRUCTORES ---
     public SolicitudCompra() {
@@ -58,6 +69,14 @@ public class SolicitudCompra {
 
     public void setDetalles(List<DetalleSolicitud> detalles) {
         this.detalles = detalles;
+    }
+
+    public boolean getEstado() {
+        return estado;
+    }
+
+    public void setEstado(boolean estado) {
+        this.estado = estado;
     }
 
     // Método de conveniencia para agregar detalles
