@@ -5,6 +5,7 @@ import com.sistemacontable.sistema_contable.ElectroAndes.Model.Proveedor;
 import com.sistemacontable.sistema_contable.ElectroAndes.Repository.ArticleRepository;
 import com.sistemacontable.sistema_contable.ElectroAndes.Repository.ProveedorRepository;
 import com.sistemacontable.sistema_contable.ElectroAndes.Service.ArticleService;
+import com.sistemacontable.sistema_contable.dto.ArticleStockWarningDto;
 import com.sistemacontable.sistema_contable.dto.CreateArticleDto;
 import com.sistemacontable.sistema_contable.dto.ResponseArticleDto;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -120,6 +121,28 @@ public class ArticleServiceImp implements ArticleService {
             dto.setIdProveedorHabitual(entity.getProveedorHabitual().getId());
             dto.setNombreProveedorHabitual(entity.getProveedorHabitual().getNombre());
         }
+        return dto;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ArticleStockWarningDto> getBajoStock() {
+        return articleRepository.findArticlesLowStock().stream()
+                .map(this::convertToStockWarningDto)
+                .collect(Collectors.toList());
+    }
+
+    private ArticleStockWarningDto convertToStockWarningDto(Article entity) {
+        ArticleStockWarningDto dto = new ArticleStockWarningDto();
+        dto.setId(entity.getId());
+        dto.setReferencia(entity.getReferencia());
+        dto.setDescripcion(entity.getDescripcion());
+        dto.setStockFisico(entity.getStockFisico());
+        dto.setStockMinimo(entity.getStockMinimo());
+
+        // Lógica pedida: true si es igual, false si es menor (debajo)
+        dto.setEsIgualAlMinimo(entity.getStockFisico().equals(entity.getStockMinimo()));
+
         return dto;
     }
 }
