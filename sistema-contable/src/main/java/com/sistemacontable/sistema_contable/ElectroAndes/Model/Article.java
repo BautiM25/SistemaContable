@@ -1,9 +1,21 @@
 package com.sistemacontable.sistema_contable.ElectroAndes.Model;
 
-import jakarta.persistence.*;
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "articles")
@@ -14,12 +26,22 @@ public class Article {
     private Long id;
 
     // --- 1. DATOS GENERALES ---
-    @Column(unique = true, nullable = false)
+    @Column(name = "reference", unique = true, nullable = false)
     private String referencia;
+
+    @Column(name = "descripcion")
     private String descripcion;
+
+    @Column(name = "familia")
     private String familia;
+
+    @Column(name = "habilitado")
     private boolean habilitado;
+
+    @Column(name = "envase_si_no")
     private boolean envaseSiNo;
+
+    @Column(name = "unidades_por_envase")
     private Integer unidadesPorEnvase;
 
     // --- 2. PRECIO COMPRA ---
@@ -32,10 +54,10 @@ public class Article {
 
     @Column(precision = 19, scale = 2)
     private BigDecimal costoDivisa;
-    
+
     @Column(precision = 19, scale = 2)
     private BigDecimal costoPromedio;
-    
+
     @Column(precision = 19, scale = 2)
     private BigDecimal costoBase;
 
@@ -45,13 +67,13 @@ public class Article {
     // --- 3. PRECIO VENTA ---
     @Enumerated(EnumType.STRING)
     private IvaModality modalidadIvaVenta;
-   
+
     @Column(precision = 19, scale = 2)
     private BigDecimal precioPublico;
-    
+
     @Column(precision = 19, scale = 2)
     private BigDecimal precioMayorista;
-    
+
     private Double descuentoMaximo;
 
     // --- 4. LISTA DE PRECIOS ---
@@ -69,77 +91,198 @@ public class Article {
     @Column(columnDefinition = "TEXT")
     private String comentarios;
 
-    public Article() {}
+    public Article() {
+    }
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Long getId() {
+        return id;
+    }
 
-    public String getReferencia() { return referencia; }
-    public void setReferencia(String referencia) { this.referencia = referencia; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public String getDescripcion() { return descripcion; }
-    public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
+    public String getReferencia() {
+        return referencia;
+    }
 
-    public String getFamilia() { return familia; }
-    public void setFamilia(String familia) { this.familia = familia; }
+    public void setReferencia(String referencia) {
+        this.referencia = referencia;
+    }
 
-    public boolean isHabilitado() { return habilitado; }
-    public void setHabilitado(boolean habilitado) { this.habilitado = habilitado; }
+    public String getDescripcion() {
+        return descripcion;
+    }
 
-    public boolean isEnvaseSiNo() { return envaseSiNo; }
-    public void setEnvaseSiNo(boolean envaseSiNo) { this.envaseSiNo = envaseSiNo; }
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
+    }
 
-    public Integer getUnidadesPorEnvase() { return unidadesPorEnvase; }
-    public void setUnidadesPorEnvase(Integer unidadesPorEnvase) { this.unidadesPorEnvase = unidadesPorEnvase; }
+    public String getFamilia() {
+        return familia;
+    }
 
-    public IvaModality getModalidadIvaCompra() { return modalidadIvaCompra; }
-    public void setModalidadIvaCompra(IvaModality modalidadIvaCompra) { this.modalidadIvaCompra = modalidadIvaCompra; }
+    public void setFamilia(String familia) {
+        this.familia = familia;
+    }
 
-    public Proveedor getProveedorHabitual() { return proveedorHabitual; }
-    public void setProveedorHabitual(Proveedor proveedorHabitual) { this.proveedorHabitual = proveedorHabitual; }
+    public boolean isHabilitado() {
+        return habilitado;
+    }
 
-    public BigDecimal getCostoDivisa() { return costoDivisa; }
-    public void setCostoDivisa(BigDecimal costoDivisa) { this.costoDivisa = costoDivisa; }
+    public void setHabilitado(boolean habilitado) {
+        this.habilitado = habilitado;
+    }
 
-    public BigDecimal getCostoPromedio() { return costoPromedio; }
-    public void setCostoPromedio(BigDecimal costoPromedio) { this.costoPromedio = costoPromedio; }
+    public boolean isEnvaseSiNo() {
+        return envaseSiNo;
+    }
 
-    public BigDecimal getCostoBase() { return costoBase; }
-    public void setCostoBase(BigDecimal costoBase) { this.costoBase = costoBase; }
+    public void setEnvaseSiNo(boolean envaseSiNo) {
+        this.envaseSiNo = envaseSiNo;
+    }
 
-    public Divisa getDivisa() { return divisa; }
-    public void setDivisa(Divisa divisa) { this.divisa = divisa; }
+    public Integer getUnidadesPorEnvase() {
+        return unidadesPorEnvase;
+    }
 
-    public IvaModality getModalidadIvaVenta() { return modalidadIvaVenta; }
-    public void setModalidadIvaVenta(IvaModality modalidadIvaVenta) { this.modalidadIvaVenta = modalidadIvaVenta; }
+    public void setUnidadesPorEnvase(Integer unidadesPorEnvase) {
+        this.unidadesPorEnvase = unidadesPorEnvase;
+    }
 
-    public BigDecimal getPrecioPublico() { return precioPublico; }
-    public void setPrecioPublico(BigDecimal precioPublico) { this.precioPublico = precioPublico; }
+    public IvaModality getModalidadIvaCompra() {
+        return modalidadIvaCompra;
+    }
 
-    public BigDecimal getPrecioMayorista() { return precioMayorista; }
-    public void setPrecioMayorista(BigDecimal precioMayorista) { this.precioMayorista = precioMayorista; }
+    public void setModalidadIvaCompra(IvaModality modalidadIvaCompra) {
+        this.modalidadIvaCompra = modalidadIvaCompra;
+    }
 
-    public Double getDescuentoMaximo() { return descuentoMaximo; }
-    public void setDescuentoMaximo(Double descuentoMaximo) { this.descuentoMaximo = descuentoMaximo; }
+    public Proveedor getProveedorHabitual() {
+        return proveedorHabitual;
+    }
 
-    public String getListaPrecios() { return listaPrecios; }
-    public void setListaPrecios(String listaPrecios) { this.listaPrecios = listaPrecios; }
+    public void setProveedorHabitual(Proveedor proveedorHabitual) {
+        this.proveedorHabitual = proveedorHabitual;
+    }
 
-    public Integer getStockMinimo() { return stockMinimo; }
-    public void setStockMinimo(Integer stockMinimo) { this.stockMinimo = stockMinimo; }
+    public BigDecimal getCostoDivisa() {
+        return costoDivisa;
+    }
 
-    public Integer getStockMaximo() { return stockMaximo; }
-    public void setStockMaximo(Integer stockMaximo) { this.stockMaximo = stockMaximo; }
+    public void setCostoDivisa(BigDecimal costoDivisa) {
+        this.costoDivisa = costoDivisa;
+    }
 
-    public Integer getStockFisico() { return stockFisico; }
-    public void setStockFisico(Integer stockFisico) { this.stockFisico = stockFisico; }
+    public BigDecimal getCostoPromedio() {
+        return costoPromedio;
+    }
 
-    public Integer getStockPendienteRecibir() { return stockPendienteRecibir; }
-    public void setStockPendienteRecibir(Integer stockPendienteRecibir) { this.stockPendienteRecibir = stockPendienteRecibir; }
+    public void setCostoPromedio(BigDecimal costoPromedio) {
+        this.costoPromedio = costoPromedio;
+    }
 
-    public List<ArticuloProveedor> getProveedoresAsociados() { return proveedoresAsociados; }
-    public void setProveedoresAsociados(List<ArticuloProveedor> proveedoresAsociados) { this.proveedoresAsociados = proveedoresAsociados; }
+    public BigDecimal getCostoBase() {
+        return costoBase;
+    }
 
-    public String getComentarios() { return comentarios; }
-    public void setComentarios(String comentarios) { this.comentarios = comentarios; }
+    public void setCostoBase(BigDecimal costoBase) {
+        this.costoBase = costoBase;
+    }
+
+    public Divisa getDivisa() {
+        return divisa;
+    }
+
+    public void setDivisa(Divisa divisa) {
+        this.divisa = divisa;
+    }
+
+    public IvaModality getModalidadIvaVenta() {
+        return modalidadIvaVenta;
+    }
+
+    public void setModalidadIvaVenta(IvaModality modalidadIvaVenta) {
+        this.modalidadIvaVenta = modalidadIvaVenta;
+    }
+
+    public BigDecimal getPrecioPublico() {
+        return precioPublico;
+    }
+
+    public void setPrecioPublico(BigDecimal precioPublico) {
+        this.precioPublico = precioPublico;
+    }
+
+    public BigDecimal getPrecioMayorista() {
+        return precioMayorista;
+    }
+
+    public void setPrecioMayorista(BigDecimal precioMayorista) {
+        this.precioMayorista = precioMayorista;
+    }
+
+    public Double getDescuentoMaximo() {
+        return descuentoMaximo;
+    }
+
+    public void setDescuentoMaximo(Double descuentoMaximo) {
+        this.descuentoMaximo = descuentoMaximo;
+    }
+
+    public String getListaPrecios() {
+        return listaPrecios;
+    }
+
+    public void setListaPrecios(String listaPrecios) {
+        this.listaPrecios = listaPrecios;
+    }
+
+    public Integer getStockMinimo() {
+        return stockMinimo;
+    }
+
+    public void setStockMinimo(Integer stockMinimo) {
+        this.stockMinimo = stockMinimo;
+    }
+
+    public Integer getStockMaximo() {
+        return stockMaximo;
+    }
+
+    public void setStockMaximo(Integer stockMaximo) {
+        this.stockMaximo = stockMaximo;
+    }
+
+    public Integer getStockFisico() {
+        return stockFisico;
+    }
+
+    public void setStockFisico(Integer stockFisico) {
+        this.stockFisico = stockFisico;
+    }
+
+    public Integer getStockPendienteRecibir() {
+        return stockPendienteRecibir;
+    }
+
+    public void setStockPendienteRecibir(Integer stockPendienteRecibir) {
+        this.stockPendienteRecibir = stockPendienteRecibir;
+    }
+
+    public List<ArticuloProveedor> getProveedoresAsociados() {
+        return proveedoresAsociados;
+    }
+
+    public void setProveedoresAsociados(List<ArticuloProveedor> proveedoresAsociados) {
+        this.proveedoresAsociados = proveedoresAsociados;
+    }
+
+    public String getComentarios() {
+        return comentarios;
+    }
+
+    public void setComentarios(String comentarios) {
+        this.comentarios = comentarios;
+    }
 }
