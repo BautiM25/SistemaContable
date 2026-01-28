@@ -45,6 +45,9 @@ public class DetalleSolicitud {
     @Column(name = "accion_duplicar_modificar")
     private String accion; // Para manejar el estado "¿Modificar o Duplicar?"
 
+    @Column(name = "estado")
+    private boolean estado;
+
     // --- CONSTRUCTORES ---
     public DetalleSolicitud() {
     }
@@ -128,5 +131,13 @@ public class DetalleSolicitud {
 
     public void setAccion(String accion) {
         this.accion = accion;
+    }
+
+    public boolean getEstado() {
+        return estado;
+    }
+
+    public void setEstado(boolean estado) {
+        this.estado = estado;
     }
 }
