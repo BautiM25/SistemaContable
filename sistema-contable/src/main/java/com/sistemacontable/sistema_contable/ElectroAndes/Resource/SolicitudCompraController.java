@@ -31,7 +31,7 @@ public class SolicitudCompraController {
 
     @GetMapping
     public ResponseEntity<List<ResponseSolicitudCompraDto>> listar() {
-        var lista = solicitudService.obtenerTodas();
+        var lista = solicitudService.obtenerActivas();
         return ResponseEntity.ok(solicitudMapper.toDtoList(lista));
     }
 

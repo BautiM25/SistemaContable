@@ -51,7 +51,7 @@ public class SolicitudCompraServiceImp implements SolicitudCompraService {
 
     @Override
     public List<SolicitudCompra> obtenerActivas() {
-        return solicitudRepo.findAllWhereEstadoTrue();
+        return solicitudRepo.findByEstadoTrue();
     }
 
     @Override
