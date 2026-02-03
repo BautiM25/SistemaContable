@@ -1,8 +1,10 @@
 package com.sistemacontable.sistema_contable.ElectroAndes.Service;
 
 import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import com.sistemacontable.sistema_contable.ElectroAndes.Model.Article;
 import com.sistemacontable.sistema_contable.ElectroAndes.Model.DetalleSolicitud;
 import com.sistemacontable.sistema_contable.ElectroAndes.Model.SolicitudCompra;
@@ -10,14 +12,17 @@ import com.sistemacontable.sistema_contable.ElectroAndes.Repository.ArticleRepos
 import com.sistemacontable.sistema_contable.ElectroAndes.Repository.SolicitudCompraRepository;
 import com.sistemacontable.sistema_contable.dto.CreateDetalleSolicitudDto;
 import com.sistemacontable.sistema_contable.dto.CreateSolicitudCompraDto;
+
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 
 @Service
 public class SolicitudCompraServiceImp implements SolicitudCompraService {
 
-    @Autowired private SolicitudCompraRepository solicitudRepo;
-    @Autowired private ArticleRepository articleRepo;
+    @Autowired
+    private SolicitudCompraRepository solicitudRepo;
+    @Autowired
+    private ArticleRepository articleRepo;
 
     @Override
     @Transactional
@@ -38,17 +43,24 @@ public class SolicitudCompraServiceImp implements SolicitudCompraService {
             detalle.setEspecificacionesTecnicas(dDto.getEspecificacionesTecnicas());
             detalle.setFechaLimite(dDto.getFechaLimite());
             detalle.setEstado(true);
-            
+
             solicitud.addDetalle(detalle); // Usa el método de conveniencia que creaste
         }
         return solicitudRepo.save(solicitud);
     }
 
-    @Override public List<SolicitudCompra> obtenerTodas() { return solicitudRepo.findAll(); }
-    @Override public SolicitudCompra obtenerPorId(Long id) { 
-        return solicitudRepo.findById(id).orElseThrow(() -> new EntityNotFoundException("No existe")); 
+    @Override
+    public List<SolicitudCompra> obtenerActivas() {
+        return solicitudRepo.findAllWhereEstadoTrue();
     }
-    @Override public void cambiarEstado(Long id, boolean estado) {
+
+    @Override
+    public SolicitudCompra obtenerPorId(Long id) {
+        return solicitudRepo.findById(id).orElseThrow(() -> new EntityNotFoundException("No existe"));
+    }
+
+    @Override
+    public void cambiarEstado(Long id, boolean estado) {
         SolicitudCompra s = obtenerPorId(id);
         s.setEstado(estado);
         solicitudRepo.save(s);
