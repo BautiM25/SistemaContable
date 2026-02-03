@@ -85,4 +85,12 @@ public class ArticleController {
     public List<ArticleStockWarningDto> getBajoStock() {
         return articleService.getBajoStock();
     }
+
+    @PutMapping("/disable/{id}")
+    public ResponseEntity<Void> disable(@PathVariable Long id) {
+        if (articleService.disable(id)) {
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.notFound().build();
+    }
 }

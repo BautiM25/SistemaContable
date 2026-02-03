@@ -1,5 +1,13 @@
 package com.sistemacontable.sistema_contable.ElectroAndes.Service;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.sistemacontable.sistema_contable.ElectroAndes.Model.Article;
 import com.sistemacontable.sistema_contable.ElectroAndes.Model.Proveedor;
 import com.sistemacontable.sistema_contable.ElectroAndes.Repository.ArticleRepository;
@@ -7,13 +15,6 @@ import com.sistemacontable.sistema_contable.ElectroAndes.Repository.ProveedorRep
 import com.sistemacontable.sistema_contable.dto.ArticleStockWarningDto;
 import com.sistemacontable.sistema_contable.dto.CreateArticleDto;
 import com.sistemacontable.sistema_contable.dto.ResponseArticleDto;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class ArticleServiceImp implements ArticleService {
@@ -72,6 +73,16 @@ public class ArticleServiceImp implements ArticleService {
     public boolean delete(Long id) {
         return articleRepository.findById(id).map(article -> {
             articleRepository.delete(article);
+            return true;
+        }).orElse(false);
+    }
+
+    @Override
+    @Transactional
+    public boolean disable(Long id) {
+        return articleRepository.findById(id).map(article -> {
+            article.setHabilitado(false);
+            articleRepository.save(article);
             return true;
         }).orElse(false);
     }

@@ -22,4 +22,6 @@ public interface ArticleService {
     boolean delete(Long id);
 
     List<ArticleStockWarningDto> getBajoStock();
+
+    boolean disable(Long id);
 }
