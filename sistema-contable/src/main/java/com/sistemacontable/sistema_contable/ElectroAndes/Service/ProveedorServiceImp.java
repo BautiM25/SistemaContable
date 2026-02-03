@@ -22,10 +22,11 @@ public class ProveedorServiceImp implements ProveedorService {
     @Override
     @Transactional(readOnly = true)
     public List<ResponseProveedorDto> findAll() {
-        return proveedorRepository.findAll().stream()
+        // Usamos el nuevo método que filtra los activos
+        return proveedorRepository.findAllByActivoTrue().stream() 
                 .map(this::convertToResponseDto)
                 .collect(Collectors.toList());
-    }
+}
 
     @Override
     @Transactional(readOnly = true)
@@ -36,9 +37,10 @@ public class ProveedorServiceImp implements ProveedorService {
     @Override
     @Transactional(readOnly = true)
     public ResponseProveedorDto findByCuit(String cuit) {
-        Proveedor proveedor = proveedorRepository.findByCuitCuil(cuit);
+        // Usamos el método que verifica que esté activo
+        Proveedor proveedor = proveedorRepository.findByCuitCuilAndActivoTrue(cuit);
         return (proveedor != null) ? convertToResponseDto(proveedor) : null;
-    }
+}
 
     @Override
     @Transactional
@@ -61,11 +63,11 @@ public class ProveedorServiceImp implements ProveedorService {
     @Override
     @Transactional
     public boolean delete(Long id) {
-        if (proveedorRepository.existsById(id)) {
-            proveedorRepository.deleteById(id);
+        return proveedorRepository.findById(id).map(proveedor -> {
+            proveedor.setActivo(false); // <--- Cambiamos el estado
+            proveedorRepository.save(proveedor); // <--- Persistimos el cambio
             return true;
-        }
-        return false;
+        }).orElse(false);
     }
 
     // --- MÉTODOS DE MAPEO ---

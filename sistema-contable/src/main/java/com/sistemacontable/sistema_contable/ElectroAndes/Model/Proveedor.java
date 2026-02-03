@@ -69,6 +69,9 @@ public class Proveedor {
     @Column(columnDefinition = "TEXT")
     private String comentario;
 
+    @Column(name = "activo", nullable = false)
+    private boolean activo = true;
+
     // --- CONSTRUCTORES ---
     public Proveedor() {
     }
@@ -224,5 +227,13 @@ public class Proveedor {
 
     public void setComentario(String comentario) {
         this.comentario = comentario;
+    }
+
+    public boolean isActivo() {
+        return activo;
+    }
+
+    public void setActivo(boolean activo) {
+        this.activo = activo;
     }
 }
