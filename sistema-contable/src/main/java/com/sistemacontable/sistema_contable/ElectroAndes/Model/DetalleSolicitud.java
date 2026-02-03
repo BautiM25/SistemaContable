@@ -46,7 +46,7 @@ public class DetalleSolicitud {
     private String accion; // Para manejar el estado "¿Modificar o Duplicar?"
 
     @Column(name = "estado")
-    private boolean estado;
+    private boolean estado; // true = activo, false = inactivo
 
     // --- CONSTRUCTORES ---
     public DetalleSolicitud() {

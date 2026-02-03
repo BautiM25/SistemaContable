@@ -32,7 +32,7 @@ public class SolicitudCompra {
     private List<DetalleSolicitud> detalles = new ArrayList<>();
 
     @Column(name = "estado")
-    private boolean estado;
+    private boolean estado; // true = activa, false = procesada/inactiva
 
     // --- CONSTRUCTORES ---
     public SolicitudCompra() {
