@@ -24,6 +24,15 @@ import VerReportes from "./pages/VerReportes.jsx";
 import SolicitudCompra from "./pages/SolicitudCompra.jsx";
 import GestionComprobantes from "./pages/GestionComprobantes.jsx";
 
+import GestionStock from "./pages/GestionStock.jsx";
+// Descomenta a medida que crees los archivos:
+import AltaArticulo from "./pages/AltaArticulos.jsx";
+// import ModificacionArticulo from "./pages/ModificacionArticulo.jsx";
+// import BajaArticulo from "./pages/BajaArticulo.jsx";
+// import ActivarArticulo from "./pages/ActivarArticulo.jsx";
+// import VerArticulos from "./pages/VerArticulos.jsx";
+
+
 const AdminLayout = ({ onLogout }) => (
   // Nota: MenuAdministrador debe aceptar 'children' o usar Outlet.
   <MenuAdministrador onLogout={onLogout}> 
@@ -131,6 +140,22 @@ function App() {
           />;
       // Si la página no coincide con ninguna vista de contenido específica,
       // o si es la página de inicio ("DASHBOARD"), renderizamos el MENÚ.
+
+      case "GESTION_STOCK": 
+        return <GestionStock onPageChange={handlePageChange} />;
+      case "ALTA_ARTICULO": 
+        return <AltaArticulo onPageChange={handlePageChange} />;
+        /* Una vez creados los componentes, los habilitás así:
+      case "MODIFICACION_ARTICULO": 
+        return <ModificacionArticulo onPageChange={handlePageChange} id={nextPageState?.id} />;
+      case "BAJA_ARTICULO": 
+        return <BajaArticulo onPageChange={handlePageChange} />;
+      case "ACTIVAR_ARTICULO": 
+        return <ActivarArticulo onPageChange={handlePageChange} />;
+      case "VER_ARTICULOS": 
+        return <VerArticulos onPageChange={handlePageChange} />;
+      */
+
       case "DASHBOARD":
       default:
         switch (rol) {

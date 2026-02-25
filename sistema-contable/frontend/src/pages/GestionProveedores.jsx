@@ -61,7 +61,7 @@ export default function GestionProveedores({ onPageChange }) {
                             </div>
                             
                             {/* 2. MODIFICACIÓN (Mantener si existe en el flujo original) */}
-                             <button 
+                            <button 
                                 className="menu-button gestion-button secondary-button"
                                 onClick={() => handleActionClick('MODIFICACION_PROVEEDOR')}
                             >

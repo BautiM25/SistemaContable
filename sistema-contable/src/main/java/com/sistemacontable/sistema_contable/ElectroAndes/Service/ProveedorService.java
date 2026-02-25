@@ -19,4 +19,8 @@ public interface ProveedorService {
     ResponseProveedorDto update(Long id, CreateProveedorDto dto);
 
     boolean delete(Long id);
+
+    boolean activate(Long id);
+
+    List<ResponseProveedorDto> findByStatus(boolean status);
 }

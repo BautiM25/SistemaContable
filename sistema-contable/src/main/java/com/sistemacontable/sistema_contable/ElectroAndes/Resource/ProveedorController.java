@@ -1,17 +1,28 @@
 package com.sistemacontable.sistema_contable.ElectroAndes.Resource;
 
-import com.sistemacontable.sistema_contable.dto.CreateProveedorDto;
-import com.sistemacontable.sistema_contable.dto.ResponseProveedorDto;
-import com.sistemacontable.sistema_contable.ElectroAndes.Service.ProveedorService;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import com.sistemacontable.sistema_contable.ElectroAndes.Service.ProveedorService;
+import com.sistemacontable.sistema_contable.dto.CreateProveedorDto;
+import com.sistemacontable.sistema_contable.dto.ResponseProveedorDto;
 
 @RestController
 @RequestMapping("/api/proveedores")
+@CrossOrigin(origins = "*")
 public class ProveedorController {
 
     @Autowired
@@ -68,4 +79,18 @@ public class ProveedorController {
         }
         return ResponseEntity.notFound().build();
     }
+
+    @PutMapping("/activate/{id}")
+    public ResponseEntity<Void> activate(@PathVariable Long id) {
+        if (proveedorService.activate(id)) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    @GetMapping("/status")
+    public List<ResponseProveedorDto> getByStatus(@RequestParam boolean status) {
+        return proveedorService.findByStatus(status);
+    }
+
 }

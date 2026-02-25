@@ -8,117 +8,67 @@ import LogoEmpresa from "../assets/LogoEmpresa.png";
 import LogoGrupo5 from "../assets/LogoGrupo5.png";
 
 // ====================================================================
-// CONSTANTES Y MOCKUP
+// MODAL DE SELECCIÓN DE PROVEEDOR (Listado de Activos)
 // ====================================================================
+const ProveedorModal = ({ proveedoresDisponibles, onSelect, onClose, loading }) => {
+    const [searchTerm, setSearchTerm] = useState('');
 
-// DTO de Mockup mínimo (debe incluir ID para ser seleccionado)
-const MOCK_PROVEEDOR = {
-    id: 999, // CRÍTICO: Añadimos ID al mock
-    codigoProveedor: 'P001', 
-    nombre: 'Distribuidora Luka (Mock)',
-};
-
-// ====================================================================
-// MODAL DE SELECCIÓN DE PROVEEDOR
-// ====================================================================
-
-const ProveedorModal = ({ proveedoresDisponibles, onSelect, onClose, loading, initialSearch }) => {
-    const [searchTerm, setSearchTerm] = useState(initialSearch || '');
-
-    const filteredProveedores = (proveedoresDisponibles || []).filter(prov => {
-        // 🚨 CORRECCIÓN: Aseguramos que el código sea String para usar .includes()
-        const codigo = String(prov.codigoProveedor) || ''; 
-        const nombre = String(prov.nombre) || '';
-        const lowerSearchTerm = searchTerm.toLowerCase();
-        
-        return codigo.toLowerCase().includes(lowerSearchTerm) || 
-               nombre.toLowerCase().includes(lowerSearchTerm);
+    const filtered = (proveedoresDisponibles || []).filter(prov => {
+        const nombre = String(prov.nombre || '').toLowerCase();
+        const cuit = String(prov.cuitCuil || '').toLowerCase();
+        const search = searchTerm.toLowerCase();
+        return nombre.includes(search) || cuit.includes(search);
     });
 
     return (
         <div className="modal-overlay">
             <div className="modal-content modal-cuenta">
-                <h3 className="modal-title">Seleccionar Proveedor para dar de Baja</h3>
-                
+                <h3 className="modal-title">Seleccionar Proveedor Activo</h3>
                 <input 
                     type="text" 
                     className="input-base large-input" 
-                    placeholder="Buscar por código o nombre..."
-                    value={searchTerm}
+                    placeholder="Buscar por nombre o CUIT..."
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    disabled={loading}
                 />
-
                 <div className="cuenta-list-container">
-                    {loading ? (
-                        <div className="loading-state">Cargando Proveedores...</div>
-                    ) : (
-                        filteredProveedores.length > 0 ? (
-                            filteredProveedores.map((prov) => (
-                                <div 
-                                    // 🚨 CRÍTICO: Usar el 'id' como clave
-                                    key={prov.id || prov.codigoProveedor} 
-                                    className="list-item clickable-item" 
-                                    onClick={() => onSelect(prov)}
-                                >
-                                    <span className="item-code">
-                                        {prov.codigoProveedor ? `${prov.codigoProveedor} -` : ''}
-                                    </span>
-                                    <span className="item-name">{prov.nombre}</span>
-                                </div>
-                            ))
-                        ) : (
-                            <div className="list-item no-results">No se encontraron proveedores activos.</div>
-                        )
-                    )}
+                    {loading ? <div className="loading-state">Cargando...</div> : 
+                        filtered.map(p => (
+                            <div key={p.id} className="list-item clickable-item" onClick={() => onSelect(p)}>
+                                <span className="item-code" style={{ minWidth: '120px' }}>{p.cuitCuil}</span>
+                                <span className="item-name">{p.nombre}</span>
+                            </div>
+                        ))
+                    }
                 </div>
-
                 <div className="modal-actions">
-                    <button 
-                        className="action-button secondary-button" 
-                        onClick={onClose}
-                        disabled={loading}
-                    >
-                        Cerrar
-                    </button>
+                    <button className="action-button secondary-button" onClick={onClose}>Cerrar</button>
                 </div>
             </div>
         </div>
     );
 };
-
 
 // ====================================================================
 // MODAL DE BAJA (Confirmación)
 // ====================================================================
-
-const BajaModal = ({ proveedor, onConfirm, onClose }) => {
-    
-    const nombreCompleto = proveedor.codigoProveedor ? `${proveedor.codigoProveedor} - ${proveedor.nombre}` : proveedor.nombre;
-
+const BajaModal = ({ proveedor, onConfirm, onClose, isDeleting }) => {
     return (
         <div className="modal-overlay">
-            <div className="modal-content">
-                <h3 className="modal-title" style={{ color: '#8b2b2b' }}>Confirmación de Baja de Proveedor</h3>
-                
+            <div className="modal-content" style={{ borderTop: '5px solid #8b2b2b' }}>
+                <h3 className="modal-title" style={{ color: '#8b2b2b' }}>Confirmación de Baja</h3>
                 <div className="modal-details">
-                    <p><strong>Proveedor:</strong> {nombreCompleto}</p>
-                    <p style={{ color: '#ffc107', fontWeight: 'bold' }}>
-                        ¡ADVERTENCIA! Esta acción dará de baja lógicamente al proveedor del sistema.
+                    <p><strong>Proveedor:</strong> {proveedor.nombre}</p>
+                    <p><strong>CUIT:</strong> {proveedor.cuitCuil}</p>
+                    <p style={{ color: '#ffc107', fontWeight: 'bold', marginTop: '15px' }}>
+                        ¡ADVERTENCIA! Esta acción desactivará al proveedor en el sistema.
                     </p>
-                    <p>¿Desea confirmar la eliminación lógica de este proveedor?</p>
                 </div>
-
                 <div className="modal-actions">
-                    <button className="action-button secondary-button" onClick={onClose}>
+                    <button className="action-button secondary-button" onClick={onClose} disabled={isDeleting}>
                         Cancelar
                     </button>
-                    <button 
-                        className="action-button danger-button" 
-                        // 🚨 CRÍTICO: Enviamos el objeto completo 'proveedor'
-                        onClick={() => onConfirm(proveedor)} 
-                    >
-                        Confirmar Baja
+                    <button className="action-button danger-button" onClick={() => onConfirm(proveedor)} disabled={isDeleting}>
+                        {isDeleting ? 'Procesando...' : 'Confirmar Baja'}
                     </button>
                 </div>
             </div>
@@ -126,176 +76,109 @@ const BajaModal = ({ proveedor, onConfirm, onClose }) => {
     );
 };
 
-
 // ====================================================================
-// COMPONENTE PRINCIPAL: BajaProveedor
+// COMPONENTE PRINCIPAL
 // ====================================================================
-
 export default function BajaProveedor({ onPageChange }) {
-    
     const [proveedorSeleccionado, setProveedorSeleccionado] = useState(null);
-    const [loadingProveedores, setLoadingProveedores] = useState(false);
+    const [proveedoresDisponibles, setProveedoresDisponibles] = useState([]); 
+    const [loading, setLoading] = useState(false);
     const [showSelectionModal, setShowSelectionModal] = useState(false);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
 
-    const [proveedoresDisponibles, setProveedoresDisponibles] = useState([]); 
-
-    // 🚨 FUNCIÓN 1: Cargar la lista de proveedores activos (GET /suppliers/actives)
-    const fetchProveedoresDisponibles = async () => {
-        setLoadingProveedores(true);
+    // 🚨 FUNCIÓN 1: Cargar activos (status=true)
+    const fetchActivos = async () => {
+        setLoading(true);
         try {
-            // Nuevo endpoint de listado activo con paginación
-            const response = await api.get("/suppliers/actives?page=1&limit=999"); 
-            
-            // Mapeamos la respuesta paginada al formato minimalista
-            const list = response.data.content.map(p => ({
-                id: p.id, // ID Long de la base de datos
-                codigoProveedor: p.code,
-                nombre: p.name 
-            }));
-            setProveedoresDisponibles(list);
+            // Usamos tu nuevo endpoint de filtrado por estado
+            const response = await api.get("/proveedores/status?status=true");
+            setProveedoresDisponibles(response.data);
         } catch (err) {
-            console.error("Error al cargar la lista de proveedores activos:", err);
-            // Fallback con mock si la API falla
-            setProveedoresDisponibles([MOCK_PROVEEDOR]); 
+            console.error("Error al cargar activos:", err);
         } finally {
-            setLoadingProveedores(false);
+            setLoading(false);
         }
     };
 
-    useEffect(() => {
-        fetchProveedoresDisponibles();
-    }, []);
+    useEffect(() => { fetchActivos(); }, []);
 
-    // 2. Manejo de la Selección del Proveedor
-    const handleProveedorSelect = (prov) => {
-        // 'prov' contiene el id (Long) y el códigoProveedor del listado
-        setProveedorSeleccionado(prov);
-        setShowSelectionModal(false);
-        setShowConfirmModal(true); 
-    };
-    
-    // 🚨 FUNCIÓN 3: Manejo de la Baja (API CALL - POST de Eliminación Lógica)
     const handleConfirmarBaja = async (proveedor) => {
-        // 🚨 Verificación de ID
-        if (!proveedor.id) { 
-             alert("Error de ID: No se pudo obtener el ID del proveedor para la baja.");
-             return;
-        }
-
-        setShowConfirmModal(false);
         setIsDeleting(true);
-
-        // Payload esperado: { idSupplier: Long }
-        const payload = {
-            idSupplier: proveedor.id
-        };
-
         try {
-            // Endpoint: POST /api/suppliers/delete-supplier
-            const response = await api.post("/suppliers/delete-supplier", payload); 
+            // 🚨 ENDPOINT: DELETE /{id}
+            await api.delete(`/proveedores/${proveedor.id}`); 
             
-            if (response.status === 200) { 
-                alert(`✅ Proveedor ${proveedor.nombre} (ID: ${proveedor.id}) dado de baja lógicamente.`);
-                
-                // Actualizar la lista localmente
-                setProveedoresDisponibles(prev => prev.filter(p => p.id !== proveedor.id));
-                setProveedorSeleccionado(null);
-            }
+            alert(`✅ Proveedor ${proveedor.nombre} dado de baja con éxito.`);
+            
+            setProveedorSeleccionado(null);
+            setShowConfirmModal(false);
+            fetchActivos(); // Refrescar lista
         } catch (err) {
-            console.error("Error al dar de baja al proveedor:", err.response || err);
-            // Mensaje de error desde el body de la respuesta
-            const msg = err.response?.data || 'Error desconocido al procesar la baja lógica.';
-            alert(`❌ Fallo en la baja:\n${msg}`);
+            alert("❌ Error en la baja: " + (err.response?.data || "Servidor no disponible"));
         } finally {
             setIsDeleting(false);
         }
     };
 
-    const handleVolver = () => {
-        if (onPageChange) {
-            onPageChange("GESTION_PROVEEDORES"); 
-        }
-    };
-    
-    // 4. Renderizado principal
-    const displayProveedor = proveedorSeleccionado 
-        ? `${proveedorSeleccionado.codigoProveedor} - ${proveedorSeleccionado.nombre}` 
-        : 'Seleccionar Proveedor...';
-
     return (
         <div className="page-container">
             <div className="main-content">
                 <div className="asiento-layout-column"> 
-                    
-                    {/* HEADER */}
                     <div className="asiento-header">
                         <div className="asiento-logo-wrapper">
-                            <img src={LogoEmpresa} alt="Logo Empresa" className="logo-small" />
-                            <h2 className="asiento-title">Baja de Proveedor</h2>
+                            <img src={LogoEmpresa} alt="Logo" className="logo-small" />
+                            <h2 className="asiento-title">Gestión de Bajas</h2>
                         </div>
                     </div>
 
-                    {/* BODY: Interfaz de Selección */}
                     <div className="asiento-body gestion-body form-body"> 
-                        <h3 className="partidas-title">Busque y seleccione el proveedor a dar de baja</h3>
-                        
+                        <h3 className="partidas-title">Seleccione un proveedor para desactivar</h3>
                         <div className="user-form search-form">
-                            <label className="header-field search-field">Proveedor Seleccionado: 
+                            <label className="header-field">Proveedor Seleccionado: 
                                 <div 
                                     className="input-base large-input" 
-                                    style={{ textAlign: 'center', borderColor: proveedorSeleccionado ? '#8b2b2b' : '#888' }}
+                                    style={{ textAlign: 'center', cursor: 'pointer', borderColor: '#8b2b2b' }}
+                                    onClick={() => setShowSelectionModal(true)}
                                 >
-                                    {displayProveedor}
+                                    {proveedorSeleccionado 
+                                        ? `${proveedorSeleccionado.cuitCuil} - ${proveedorSeleccionado.nombre}` 
+                                        : 'Haga clic para buscar...'}
                                 </div>
                             </label>
                             
                             <button 
-                                type="button"
-                                className="action-button icon-with-text danger-button search-button-action"
-                                onClick={proveedorSeleccionado ? () => setShowConfirmModal(true) : () => setShowSelectionModal(true)}
+                                className="action-button danger-button search-button-action"
+                                onClick={() => proveedorSeleccionado ? setShowConfirmModal(true) : setShowSelectionModal(true)}
                                 disabled={isDeleting}
                             >
-                                <img src={LogoGrupo5} alt="Icono Buscar" className="icon-small" /> 
-                                {isDeleting ? 'Procesando Baja...' : (proveedorSeleccionado ? 'Confirmar Baja' : 'Buscar Proveedor')}
+                                <img src={LogoGrupo5} alt="Baja" />
+                                {proveedorSeleccionado ? 'Confirmar Baja' : 'Buscar Proveedor'}
                             </button>
-                            
-                            {proveedorSeleccionado && (
-                                <p style={{ color: '#ff6b6b', marginTop: '15px', fontWeight: 'bold' }}>
-                                    Proveedor listo para la baja. Presione el botón **Confirmar Baja**.
-                                </p>
-                            )}
                         </div>
                     </div>
 
-                    {/* FOOTER: Botón Volver */}
-                    <div className="asiento-footer single-button-footer">
-                        <button 
-                            className="action-button icon-with-text back-button-footer"
-                            onClick={handleVolver} 
-                        >
-                            <img src={LogoGrupo5} alt="Icono Volver" className="icon-small" /> 
+                    <div className="asiento-footer">
+                        <button className="action-button back-button-footer" onClick={() => onPageChange("GESTION_PROVEEDORES")}>
                             Volver
                         </button>
                     </div>
                 </div>
             </div>
 
-            {/* MODAL DE SELECCIÓN */}
             {showSelectionModal && (
                 <ProveedorModal
                     proveedoresDisponibles={proveedoresDisponibles}
-                    loading={loadingProveedores}
-                    onSelect={handleProveedorSelect}
+                    loading={loading}
+                    onSelect={(p) => { setProveedorSeleccionado(p); setShowSelectionModal(false); setShowConfirmModal(true); }}
                     onClose={() => setShowSelectionModal(false)}
                 />
             )}
             
-            {/* MODAL DE CONFIRMACIÓN DE BAJA */}
-            {showConfirmModal && proveedorSeleccionado && (
+            {showConfirmModal && (
                 <BajaModal 
                     proveedor={proveedorSeleccionado} 
+                    isDeleting={isDeleting}
                     onConfirm={handleConfirmarBaja}
                     onClose={() => setShowConfirmModal(false)}
                 />
