@@ -21,7 +21,10 @@ export default function MenuComprador({ onLogout, onPageChange }) {
                 </div>
 
                 <div className="menu-right">
-                    <button className="menu-button">
+                    <button 
+                        className="menu-button"
+                        onClick={() => handleMenuClick('GESTION_COMPROBANTES')}
+                    >
                         <img src={LogoGrupo5} alt="" /> Comprobantes
                     </button>
                     
