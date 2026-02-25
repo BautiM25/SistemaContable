@@ -32,7 +32,10 @@ export default function MenuComprador({ onLogout, onPageChange }) {
                         <img src={LogoGrupo5} alt="" /> Proveedores
                     </button>
                     
-                    <button className="menu-button">
+                    <button 
+                        className="menu-button"
+                        onClick={() => handleMenuClick('GESTION_STOCK')}
+                    >
                         <img src={LogoGrupo5} alt="" /> Stock
                     </button>
                     <button className="menu-button">

@@ -23,10 +23,10 @@ public class ProveedorServiceImp implements ProveedorService {
     @Transactional(readOnly = true)
     public List<ResponseProveedorDto> findAll() {
         // Usamos el nuevo método que filtra los activos
-        return proveedorRepository.findAllByActivoTrue().stream() 
+        return proveedorRepository.findAllByActivoTrue().stream()
                 .map(this::convertToResponseDto)
                 .collect(Collectors.toList());
-}
+    }
 
     @Override
     @Transactional(readOnly = true)
@@ -40,7 +40,7 @@ public class ProveedorServiceImp implements ProveedorService {
         // Usamos el método que verifica que esté activo
         Proveedor proveedor = proveedorRepository.findByCuitCuilAndActivoTrue(cuit);
         return (proveedor != null) ? convertToResponseDto(proveedor) : null;
-}
+    }
 
     @Override
     @Transactional
@@ -110,5 +110,28 @@ public class ProveedorServiceImp implements ProveedorService {
         dto.setSaldoInicialCC(entity.getSaldoInicialCC());
         dto.setBanco(entity.getBanco());
         return dto;
+    }
+
+    @Override
+    @Transactional
+    public boolean activate(Long id) {
+        return proveedorRepository.findById(id).map(proveedor -> {
+            proveedor.setActivo(true); // Activamos el proveedor
+            proveedorRepository.save(proveedor); // Persistimos el cambio
+            return true;
+        }).orElse(false);
+    }
+
+    @Override
+    public List<ResponseProveedorDto> findByStatus(boolean status) {
+        if (status) {
+            return proveedorRepository.findAllByActivoTrue().stream()
+                    .map(this::convertToResponseDto)
+                    .collect(Collectors.toList());
+        } else {
+            return proveedorRepository.findAllByActivoFalse().stream()
+                    .map(this::convertToResponseDto)
+                    .collect(Collectors.toList());
+        }
     }
 }

@@ -1,146 +1,117 @@
 import React, { useState, useEffect } from "react";
 import api from "../services/api";
-import "../styles/Menu.css"; 
 import "../styles/RegistrarAsiento.css"; 
 import "../styles/GestionUsuarios.css"; 
-import "../styles/Tabs.css"; 
 import "../styles/VerProveedores.css"; 
 import LogoEmpresa from "../assets/LogoEmpresa.png";
 import LogoGrupo5 from "../assets/LogoGrupo5.png";
 
-// NOTA: MOCKUP eliminado para forzar la carga de la API
-
 export default function VerProveedores({ onPageChange }) {
     const [proveedores, setProveedores] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [showActive, setShowActive] = useState(true); // 🚨 NUEVO ESTADO: true = Activos, false = Inactivos
+    const [showActive, setShowActive] = useState(true); // true = activos, false = inactivos
 
-    // Función para obtener los datos de la API según el estado de activo/inactivo
-    const fetchProveedores = async (active) => {
+    const fetchProveedores = async () => {
         setLoading(true);
-        setError(null);
-        
-        // Define el endpoint basado en el estado (activos o inactivos)
-        const endpoint = active ? "/suppliers/actives" : "/suppliers/inactives";
-        
         try {
-            // Usamos un límite alto para obtener toda la lista (asumiendo pocos datos)
-            const response = await api.get(`${endpoint}?page=1&limit=999`); 
-            
-            // Mapeamos la respuesta paginada (SupplierResponseDTO) al formato de la tabla
-            const list = response.data.content.map(p => ({
-                id: p.id, // ID Long para la consulta de detalle
-                codigoProveedor: p.code || 'N/A', // Asumimos que el código es 'code'
-                nombre: p.name,
-                cuitCuil: p.cuit || 'N/D', // Si el DTO no trae CUIT, queda N/D
-                pais: p.country || 'N/D',
-                telefono1: p.phone || 'N/D', // Asumimos que 'phone' mapea a 'telefono1'
-            }));
-            
-            setProveedores(list);
+            // 🚨 ENDPOINT CORRECTO: /api/proveedores/status?status=...
+            // Como tu JSON es una lista directa [], usamos response.data
+            const response = await api.get(`/proveedores/status?status=${showActive}`);
+            setProveedores(response.data); 
         } catch (err) {
-            console.error(`Error al cargar ${active ? 'activos' : 'inactivos'}:`, err.response || err);
-            setError(`Error al cargar proveedores. Intente nuevamente. (${err.response?.status})`);
+            console.error("Error al cargar proveedores:", err);
             setProveedores([]);
         } finally {
             setLoading(false);
         }
     };
 
-    // 🚨 Efecto de Carga: Se ejecuta al inicio y cada vez que showActive cambia
     useEffect(() => {
-        fetchProveedores(showActive);
+        fetchProveedores();
     }, [showActive]);
 
-
-    // 🚨 CLAVE: Navega a la nueva vista de Consulta (haciendo GET para el detalle completo)
-    const handleVerDetalle = (proveedor) => {
-        if (onPageChange && proveedor.id) {
-            // Pasamos el ID y la página de destino.
-            // La vista de ConsultaProveedor se encargará de hacer el GET por ID.
-            onPageChange("CONSULTA_PROVEEDOR", { id: proveedor.id }); 
-        } else {
-            alert("No se pudo obtener el ID del proveedor para ver el detalle.");
-        }
-    };
-
-    const handleVolver = () => {
+    const handleVerDetalle = (id) => {
         if (onPageChange) {
-            onPageChange("GESTION_PROVEEDORES"); 
+            onPageChange("CONSULTA_PROVEEDOR", { id }); 
         }
     };
-
-    // Función para alternar el estado (toggle)
-    const handleToggle = () => {
-        setShowActive(prev => !prev);
-    };
-
-    if (loading) return <div className="loading-state">Cargando lista de proveedores...</div>;
-    if (error) return <div className="error-state">{error}</div>;
 
     return (
         <div className="page-container">
             <div className="main-content">
                 <div className="asiento-layout-column"> 
                     
-                    {/* HEADER */}
                     <div className="asiento-header">
                         <div className="asiento-logo-wrapper">
-                            <img src={LogoEmpresa} alt="Logo Empresa" className="logo-small" />
-                            <h2 className="asiento-title">Lista de Proveedores ({showActive ? 'Activos' : 'Inactivos'})</h2>
+                            <img src={LogoEmpresa} alt="Logo" className="logo-small" />
+                            <h2 className="asiento-title">Explorador de Proveedores</h2>
                         </div>
                     </div>
 
-                    {/* BODY: Tabla de Proveedores */}
-                    <div className="asiento-body gestion-body form-body"> 
-                        
-                        {/* 🚨 TOGGLE ACTIVO / INACTIVO */}
-                        <div className="toggle-container">
-                            <span className={!showActive ? 'active' : ''}>INACTIVOS</span>
-                            <label className="switch">
-                                <input type="checkbox" checked={showActive} onChange={handleToggle} />
-                                <span className="slider round"></span>
-                            </label>
-                            <span className={showActive ? 'active' : ''}>ACTIVOS</span>
+                    <div className="asiento-body"> 
+                        <div className="list-controls" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>
+                            <h3 className="partidas-title" style={{ border: 'none' }}>
+                                Listado de cuentas {showActive ? 'Activas' : 'Inactivas'}
+                            </h3>
+
+                            <div className="toggle-wrapper">
+                                <span className={`label-toggle ${!showActive ? 'selected' : ''}`}>Inactivos</span>
+                                <label className="switch">
+                                    <input 
+                                        type="checkbox" 
+                                        checked={showActive} 
+                                        onChange={() => setShowActive(!showActive)} 
+                                    />
+                                    <span className="slider round"></span>
+                                </label>
+                                <span className={`label-toggle ${showActive ? 'selected' : ''}`}>Activos</span>
+                            </div>
                         </div>
                         
-                        <h3 className="partidas-title" style={{ marginTop: '15px' }}>
-                            Haga click en una fila para ver el detalle
-                        </h3>
-                        
-                        <div className="table-list-wrapper">
-                            <table className="data-table">
+                        <div className="table-wrapper-scroll" style={{ flexGrow: 1, overflowY: 'auto' }}>
+                            <table className="bancos-table" style={{ width: '100%' }}>
                                 <thead>
                                     <tr>
-                                        <th style={{ width: '15%' }}>Código</th>
-                                        <th style={{ width: '40%' }}>Nombre</th>
-                                        <th style={{ width: '25%' }}>CUIT/CUIL</th>
-                                        <th style={{ width: '20%' }}>Teléfono</th>
+                                        <th>Nombre</th>
+                                        <th>CUIT/CUIL</th>
+                                        <th>Rubro</th>
+                                        <th>Email</th>
+                                        <th>Banco</th>
+                                        <th>Acción</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {proveedores.map((prov) => (
-                                        <tr key={prov.id || prov.codigoProveedor} onClick={() => handleVerDetalle(prov)} className="clickable-row">
-                                            <td>{prov.codigoProveedor}</td>
-                                            <td>{prov.nombre}</td>
-                                            <td>{prov.cuitCuil}</td>
-                                            <td>{prov.telefono1}</td>
-                                        </tr>
-                                    ))}
+                                    {loading ? (
+                                        <tr><td colSpan="6" style={{ textAlign: 'center' }}>Cargando...</td></tr>
+                                    ) : proveedores.length > 0 ? (
+                                        proveedores.map((prov) => (
+                                            <tr key={prov.id}>
+                                                <td style={{ fontWeight: 'bold' }}>{prov.nombre}</td>
+                                                <td>{prov.cuitCuil}</td>
+                                                <td><span className="badge-rubro">{prov.rubro}</span></td>
+                                                <td>{prov.mail}</td>
+                                                <td>{prov.banco || 'N/A'}</td>
+                                                <td>
+                                                    <button 
+                                                        className="action-button primary-button" 
+                                                        style={{ padding: '5px 10px', fontSize: '11px' }}
+                                                        onClick={() => handleVerDetalle(prov.id)}
+                                                    >
+                                                        VER FICHA
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr><td colSpan="6" style={{ textAlign: 'center' }}>No hay proveedores {showActive ? 'activos' : 'inactivos'}.</td></tr>
+                                    )}
                                 </tbody>
                             </table>
-                            {proveedores.length === 0 && <p className="no-data-msg">No hay proveedores {showActive ? 'activos' : 'inactivos'} registrados.</p>}
                         </div>
                     </div>
 
-                    {/* FOOTER: Botón Volver */}
-                    <div className="asiento-footer single-button-footer">
-                        <button 
-                            className="action-button icon-with-text back-button-footer"
-                            onClick={handleVolver} 
-                        >
-                            <img src={LogoGrupo5} alt="Icono Volver" className="icon-small" /> 
+                    <div className="asiento-footer">
+                        <button className="action-button secondary-button" onClick={() => onPageChange("GESTION_PROVEEDORES")}>
                             Volver
                         </button>
                     </div>

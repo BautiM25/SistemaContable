@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import api from "../services/api"; 
-import "../styles/Menu.css"; 
 import "../styles/RegistrarAsiento.css"; 
 import "../styles/GestionUsuarios.css"; 
 import "../styles/Modal.css"; 
@@ -8,288 +7,158 @@ import LogoEmpresa from "../assets/LogoEmpresa.png";
 import LogoGrupo5 from "../assets/LogoGrupo5.png";
 
 // ====================================================================
-// CONSTANTES Y MOCKUP
+// MODAL DE SELECCIÓN (LISTADO)
 // ====================================================================
+const ProveedorInactivoModal = ({ proveedoresDisponibles, onSelect, onClose, loading }) => {
+    const [searchTerm, setSearchTerm] = useState('');
 
-const MOCK_PROVEEDOR_INACTIVO = {
-    id: 998, 
-    codigoProveedor: 'P002', 
-    nombre: 'Proveedor Inactivo Demo',
-};
-
-// ====================================================================
-// MODAL DE SELECCIÓN DE PROVEEDOR (Adaptado para INACTIVOS)
-// ====================================================================
-
-const ProveedorInactivoModal = ({ proveedoresDisponibles, onSelect, onClose, loading, initialSearch }) => {
-    const [searchTerm, setSearchTerm] = useState(initialSearch || '');
-
-    const filteredProveedores = (proveedoresDisponibles || []).filter(prov => {
-        const codigo = String(prov.codigoProveedor) || ''; 
-        const nombre = String(prov.nombre) || '';
-        const lowerSearchTerm = searchTerm.toLowerCase();
-        
-        return codigo.toLowerCase().includes(lowerSearchTerm) || 
-               nombre.toLowerCase().includes(lowerSearchTerm);
-    });
+    const filtered = (proveedoresDisponibles || []).filter(prov => 
+        prov.nombre.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        prov.cuitCuil.includes(searchTerm)
+    );
 
     return (
         <div className="modal-overlay">
             <div className="modal-content modal-cuenta">
-                <h3 className="modal-title">Seleccionar Proveedor para Activar</h3>
-                
+                <h3 className="modal-title">Seleccionar Proveedor Inactivo</h3>
                 <input 
                     type="text" 
                     className="input-base large-input" 
-                    placeholder="Buscar por código o nombre (Inactivos)..."
-                    value={searchTerm}
+                    placeholder="Buscar por nombre o CUIT..."
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    disabled={loading}
                 />
-
                 <div className="cuenta-list-container">
-                    {loading ? (
-                        <div className="loading-state">Cargando Proveedores Inactivos...</div>
-                    ) : (
-                        filteredProveedores.length > 0 ? (
-                            filteredProveedores.map((prov) => (
-                                <div 
-                                    key={prov.id || prov.codigoProveedor} 
-                                    className="list-item clickable-item" 
-                                    onClick={() => onSelect(prov)}
-                                >
-                                    <span className="item-code">
-                                        {prov.codigoProveedor ? `${prov.codigoProveedor} -` : ''}
-                                    </span>
-                                    <span className="item-name">{prov.nombre}</span>
-                                </div>
-                            ))
-                        ) : (
-                            <div className="list-item no-results">No se encontraron proveedores inactivos.</div>
-                        )
-                    )}
+                    {loading ? <div className="loading-state">Cargando...</div> : 
+                        filtered.map(p => (
+                            <div key={p.id} className="list-item clickable-item" onClick={() => onSelect(p)}>
+                                <span className="item-code">{p.cuitCuil}</span>
+                                <span className="item-name">{p.nombre}</span>
+                            </div>
+                        ))
+                    }
                 </div>
-
                 <div className="modal-actions">
-                    <button 
-                        className="action-button secondary-button" 
-                        onClick={onClose}
-                        disabled={loading}
-                    >
-                        Cerrar
-                    </button>
+                    <button className="action-button secondary-button" onClick={onClose}>Cancelar</button>
                 </div>
             </div>
         </div>
     );
 };
 
-
 // ====================================================================
-// MODAL DE ACTIVACIÓN (Confirmación)
+// COMPONENTE PRINCIPAL
 // ====================================================================
-
-const ActivarModal = ({ proveedor, onConfirm, onClose }) => {
-    
-    const nombreCompleto = proveedor.codigoProveedor ? `${proveedor.codigoProveedor} - ${proveedor.nombre}` : proveedor.nombre;
-
-    return (
-        <div className="modal-overlay">
-            <div className="modal-content">
-                <h3 className="modal-title" style={{ color: '#3c6c3e' }}>Confirmación de Activación de Proveedor</h3>
-                
-                <div className="modal-details">
-                    <p><strong>Proveedor:</strong> {nombreCompleto}</p>
-                    <p style={{ color: '#3c6c3e', fontWeight: 'bold' }}>
-                        Esta acción reactivará al proveedor, permitiendo su uso en el sistema.
-                    </p>
-                    <p>¿Desea confirmar la activación de este proveedor?</p>
-                </div>
-
-                <div className="modal-actions">
-                    <button className="action-button secondary-button" onClick={onClose}>
-                        Cancelar
-                    </button>
-                    <button 
-                        className="action-button primary-button" // Usamos primary para Alta/Activación
-                        onClick={() => onConfirm(proveedor)} 
-                    >
-                        Confirmar Activación
-                    </button>
-                </div>
-            </div>
-        </div>
-    );
-};
-
-
-// ====================================================================
-// COMPONENTE PRINCIPAL: ActivarProveedor
-// ====================================================================
-
 export default function ActivarProveedor({ onPageChange }) {
-    
-    const [proveedorSeleccionado, setProveedorSeleccionado] = useState(null);
-    const [loadingProveedores, setLoadingProveedores] = useState(false);
-    const [showSelectionModal, setShowSelectionModal] = useState(false);
-    const [showConfirmModal, setShowConfirmModal] = useState(false);
-    const [isActivating, setIsActivating] = useState(false); // Estado de activación
+    const [inactivos, setInactivos] = useState([]);
+    const [seleccionado, setSeleccionado] = useState(null);
+    const [showSelection, setShowSelection] = useState(false);
+    const [showConfirm, setShowConfirm] = useState(false); // <--- Paso adicional de seguridad
+    const [loading, setLoading] = useState(false);
 
-    const [proveedoresDisponibles, setProveedoresDisponibles] = useState([]); 
-
-    // 🚨 FUNCIÓN 1: Cargar la lista de proveedores INACTIVOS (GET /suppliers/inactives)
-    const fetchProveedoresDisponibles = async () => {
-        setLoadingProveedores(true);
+    // 1. Cargar inactivos al montar el componente
+    const cargarInactivos = async () => {
+        setLoading(true);
         try {
-            // CRÍTICO: Usamos el endpoint para listar inactivos
-            const response = await api.get("/suppliers/inactives?page=1&limit=999"); 
-            
-            const list = response.data.content.map(p => ({
-                id: p.id, 
-                codigoProveedor: p.code,
-                nombre: p.name 
-            }));
-            setProveedoresDisponibles(list);
+            const res = await api.get("/proveedores/status?status=false");
+            setInactivos(res.data);
         } catch (err) {
-            console.error("Error al cargar la lista de proveedores inactivos:", err);
-            setProveedoresDisponibles([MOCK_PROVEEDOR_INACTIVO]); 
+            console.error("Error al cargar inactivos", err);
         } finally {
-            setLoadingProveedores(false);
+            setLoading(false);
         }
     };
 
-    useEffect(() => {
-        fetchProveedoresDisponibles();
-    }, []);
+    useEffect(() => { cargarInactivos(); }, []);
 
-    // 2. Manejo de la Selección del Proveedor
-    const handleProveedorSelect = (prov) => {
-        setProveedorSeleccionado(prov);
-        setShowSelectionModal(false);
-        setShowConfirmModal(true); 
+    // 2. Al elegir uno en el listado, NO activamos aún, solo mostramos confirmación
+    const handleSelect = (p) => {
+        setSeleccionado(p);
+        setShowSelection(false);
+        setShowConfirm(true); // Abrimos el "paso más"
     };
-    
-    // 🚨 FUNCIÓN 3: Manejo de la ACTIVACIÓN (API CALL - POST /active-supplier)
-    const handleConfirmarActivacion = async (proveedor) => {
-        if (!proveedor.id) { 
-             alert("Error de ID: No se pudo obtener el ID del proveedor para la activación.");
-             return;
-        }
 
-        setShowConfirmModal(false);
-        setIsActivating(true); // Usamos el estado de activación
-
-        // Payload esperado: { idSupplier: Long }
-        const payload = {
-            idSupplier: proveedor.id
-        };
-
+    // 3. Ejecutar la activación real (PUT /activate/{id})
+    const ejecutarActivacion = async () => {
         try {
-            // Endpoint: POST /api/suppliers/active-supplier
-            const response = await api.post("/suppliers/active-supplier", payload); 
+            // Mandamos el ID en la URL como pide el @PathVariable
+            await api.put(`/proveedores/activate/${seleccionado.id}`);
             
-            if (response.status === 200) { 
-                alert(`✅ Proveedor ${proveedor.nombre} (ID: ${proveedor.id}) activado con éxito.`);
-                
-                // Actualizar la lista localmente (removiendo de la lista de inactivos)
-                setProveedoresDisponibles(prev => prev.filter(p => p.id !== proveedor.id));
-                setProveedorSeleccionado(null);
-            }
+            alert(`✅ ${seleccionado.nombre} reactivado con éxito.`);
+            
+            // Limpiamos y refrescamos
+            setSeleccionado(null);
+            setShowConfirm(false);
+            cargarInactivos(); 
         } catch (err) {
-            console.error("Error al activar al proveedor:", err.response || err);
-            const msg = err.response?.data || 'Error desconocido al procesar la activación.';
-            alert(`❌ Fallo en la Activación:\n${msg}`);
-        } finally {
-            setIsActivating(false);
+            alert("❌ No se pudo activar al proveedor.");
         }
     };
-
-    const handleVolver = () => {
-        if (onPageChange) {
-            onPageChange("GESTION_PROVEEDORES"); 
-        }
-    };
-    
-    // 4. Renderizado principal
-    const displayProveedor = proveedorSeleccionado 
-        ? `${proveedorSeleccionado.codigoProveedor} - ${proveedorSeleccionado.nombre}` 
-        : 'Seleccionar Proveedor Inactivo...';
 
     return (
         <div className="page-container">
             <div className="main-content">
-                <div className="asiento-layout-column"> 
-                    
-                    {/* HEADER */}
+                <div className="asiento-layout-column">
                     <div className="asiento-header">
                         <div className="asiento-logo-wrapper">
-                            <img src={LogoEmpresa} alt="Logo Empresa" className="logo-small" />
-                            <h2 className="asiento-title">Activación de Proveedor (Alta Lógica)</h2>
+                            <img src={LogoEmpresa} alt="Logo" className="logo-small" />
+                            <h2 className="asiento-title">Reactivación de Proveedores</h2>
                         </div>
                     </div>
 
-                    {/* BODY: Interfaz de Selección */}
-                    <div className="asiento-body gestion-body form-body"> 
-                        <h3 className="partidas-title">Busque y seleccione el proveedor inactivo a reactivar</h3>
+                    <div className="asiento-body gestion-body form-body">
+                        <h3 className="partidas-title">Mantenimiento de Proveedores</h3>
                         
                         <div className="user-form search-form">
-                            <label className="header-field search-field">Proveedor Inactivo Seleccionado: 
-                                <div 
-                                    className="input-base large-input" 
-                                    style={{ textAlign: 'center', borderColor: proveedorSeleccionado ? '#3c6c3e' : '#888' }}
-                                >
-                                    {displayProveedor}
-                                </div>
-                            </label>
-                            
+                            <p>Utilice esta herramienta para dar de alta lógica a proveedores suspendidos.</p>
                             <button 
-                                type="button"
-                                className="action-button icon-with-text primary-button search-button-action"
-                                onClick={proveedorSeleccionado ? () => setShowConfirmModal(true) : () => setShowSelectionModal(true)}
-                                disabled={isActivating}
+                                className="action-button primary-button" 
+                                onClick={() => setShowSelection(true)}
+                                style={{ width: '100%', maxWidth: '300px' }}
                             >
-                                <img src={LogoGrupo5} alt="Icono Activar" className="icon-small" /> 
-                                {isActivating ? 'Procesando Activación...' : (proveedorSeleccionado ? 'Confirmar Activación' : 'Buscar Inactivos')}
+                                <img src={LogoGrupo5} alt="search" />
+                                BUSCAR PROVEEDORES INACTIVOS
                             </button>
-                            
-                            {proveedorSeleccionado && (
-                                <p style={{ color: '#3c6c3e', marginTop: '15px', fontWeight: 'bold' }}>
-                                    Proveedor listo para ser activado. Presione el botón de arriba.
-                                </p>
-                            )}
                         </div>
                     </div>
 
-                    {/* FOOTER: Botón Volver */}
-                    <div className="asiento-footer single-button-footer">
-                        <button 
-                            className="action-button icon-with-text back-button-footer"
-                            onClick={handleVolver} 
-                        >
-                            <img src={LogoGrupo5} alt="Icono Volver" className="icon-small" /> 
+                    <div className="asiento-footer">
+                        <button className="action-button back-button-footer" onClick={() => onPageChange("GESTION_PROVEEDORES")}>
                             Volver
                         </button>
                     </div>
                 </div>
             </div>
 
-            {/* MODAL DE SELECCIÓN */}
-            {showSelectionModal && (
-                <ProveedorInactivoModal // Usamos el modal adaptado
-                    proveedoresDisponibles={proveedoresDisponibles}
-                    loading={loadingProveedores}
-                    onSelect={handleProveedorSelect}
-                    onClose={() => setShowSelectionModal(false)}
+            {/* MODAL 1: SELECCIÓN */}
+            {showSelection && (
+                <ProveedorInactivoModal 
+                    proveedoresDisponibles={inactivos} 
+                    loading={loading}
+                    onSelect={handleSelect}
+                    onClose={() => setShowSelection(false)}
                 />
             )}
-            
-            {/* MODAL DE CONFIRMACIÓN DE ACTIVACIÓN */}
-            {showConfirmModal && proveedorSeleccionado && (
-                <ActivarModal 
-                    proveedor={proveedorSeleccionado} 
-                    onConfirm={handleConfirmarActivacion}
-                    onClose={() => setShowConfirmModal(false)}
-                />
+
+            {/* MODAL 2: CONFIRMACIÓN (El "Paso más") */}
+            {showConfirm && (
+                <div className="modal-overlay">
+                    <div className="modal-content" style={{ maxWidth: '400px', textAlign: 'center' }}>
+                        <h3 className="modal-title" style={{ color: '#3c6c3e' }}>¿Confirmar Activación?</h3>
+                        <p style={{ margin: '20px 0', fontSize: '16px' }}>
+                            Está por activar al proveedor: <br/>
+                            <strong>{seleccionado.nombre}</strong> <br/>
+                            <small>(CUIT: {seleccionado.cuitCuil})</small>
+                        </p>
+                        <div className="modal-actions" style={{ flexDirection: 'column', gap: '10px' }}>
+                            <button className="action-button primary-button" onClick={ejecutarActivacion} style={{ width: '100%' }}>
+                                SÍ, ACTIVAR AHORA
+                            </button>
+                            <button className="action-button secondary-button" onClick={() => setShowConfirm(false)} style={{ width: '100%' }}>
+                                NO, CANCELAR
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );

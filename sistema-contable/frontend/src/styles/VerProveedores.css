@@ -1,93 +1,48 @@
 /* --- VerProveedores.css --- */
 
-/* Contenedor principal de la lista de la tabla */
-.table-list-wrapper {
-    /* Asegura que el wrapper ocupe el espacio principal y tenga scroll si es necesario */
-    flex-grow: 1; 
-    min-height: 100px;
-    overflow-y: auto; /* Permite el scroll interno para la lista */
-    width: 90%; 
-    margin: 20px auto;
-    border: 1px solid #444;
-    border-radius: 6px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    background-color: #2e2e2e; /* Fondo ligeramente más claro que el main-content */
+/* 1. CONTROLES DE LISTADO (Título + Toggle) */
+.list-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 5%;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    margin-bottom: 15px;
+    flex-shrink: 0; /* No se encoge */
 }
 
-/* Estilo general para todas las tablas de datos en esta vista */
-.data-table {
-    width: 100%;
-    border-collapse: separate; 
-    border-spacing: 0;
-    color: #f0f0f0;
-    table-layout: fixed; /* Asegura que los anchos definidos en <th> funcionen */
-}
-
-/* Encabezados de la tabla (Cejas) */
-.data-table thead th {
-    background: #3a3a3a;
-    color: #ffffff;
-    padding: 12px 10px;
-    text-align: left;
-    font-weight: 600;
-    position: sticky; /* Fija el encabezado si la tabla tiene scroll */
-    top: 0;
-    z-index: 10;
-    border-bottom: 2px solid #1e90ff; /* Resaltar el borde inferior */
-}
-
-/* Filas del cuerpo */
-.data-table tbody tr {
-    transition: background-color 0.2s;
-    border-bottom: 1px solid #3d3d3d;
-}
-
-/* Estilo para hacer las filas cliqueables y dar feedback visual */
-.data-table tbody tr.clickable-row {
-    cursor: pointer;
-}
-
-.data-table tbody tr.clickable-row:hover {
-    background: #1e90ff20; /* Resaltado suave y azul al pasar el mouse */
-}
-
-/* Estilo de las celdas */
-.data-table td {
-    padding: 10px;
-    text-align: left;
-    white-space: nowrap; /* Evita que el contenido largo se envuelva */
-    overflow: hidden;
-    text-overflow: ellipsis; /* Puntos suspensivos si el texto es demasiado largo */
-}
-
-/* Mensaje si no hay datos */
-.no-data-msg {
-    text-align: center;
-    padding: 20px;
-    color: #ccc;
-}
-
-/* --- Estilos para el Toggle Activo/Inactivo --- */
-
-.toggle-container {
+/* 2. DISEÑO DEL TOGGLE / SWITCH */
+.toggle-wrapper {
     display: flex;
     align-items: center;
-    gap: 15px;
-    margin-bottom: 20px;
+    gap: 12px;
+    background: #1a1a1a;
+    padding: 6px 15px;
+    border-radius: 20px;
+    border: 1px solid #444;
+}
+
+.label-toggle {
+    font-size: 13px;
     font-weight: bold;
-    color: #888; /* Color base para texto inactivo */
+    color: #666;
+    transition: color 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
-.toggle-container span.active {
-    color: #f0f0f0; /* Color brillante para el estado activo */
+.label-toggle.selected {
+    color: #1e90ff; /* Color primario azul */
+    text-shadow: 0 0 8px rgba(30, 144, 255, 0.4);
 }
 
-/* El Switch/Slider estándar de CSS (copiado de un diseño de toggle común) */
+/* El Switch */
 .switch {
     position: relative;
     display: inline-block;
-    width: 60px;
-    height: 34px;
+    width: 44px;
+    height: 22px;
 }
 
 .switch input {
@@ -99,35 +54,31 @@
 .slider {
     position: absolute;
     cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: #8b2b2b; /* Rojo para Inactivo (OFF) */
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #8b2b2b; /* Rojo para Inactivos */
     transition: .4s;
-    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.4);
 }
 
 .slider:before {
     position: absolute;
     content: "";
-    height: 26px;
-    width: 26px;
-    left: 4px;
-    bottom: 4px;
+    height: 16px;
+    width: 16px;
+    left: 3px;
+    bottom: 3px;
     background-color: white;
     transition: .4s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.4);
 }
 
 input:checked + .slider {
-    background-color: #3c6c3e; /* Verde para Activo (ON) */
+    background-color: #3c6c3e; /* Verde para Activos */
 }
 
 input:checked + .slider:before {
-    transform: translateX(26px);
+    transform: translateX(22px);
 }
 
-/* Rounded sliders (opcional) */
 .slider.round {
     border-radius: 34px;
 }
@@ -136,25 +87,88 @@ input:checked + .slider:before {
     border-radius: 50%;
 }
 
-/* Estilos de la tabla */
-.table-list-wrapper {
-    /* Agrega un alto fijo y overflow para que la tabla sea scrollable si hay muchas filas */
-    max-height: 50vh; 
+/* 3. VISOR DE TABLA (Scrollable) */
+.table-wrapper-scroll {
+    flex-grow: 1; /* Ocupa el espacio restante del body */
+    min-height: 0; /* Obligatorio para que el scroll funcione en flex */
     overflow-y: auto;
-    width: 100%;
-    margin-top: 10px;
+    overflow-x: hidden;
+    background: #252525;
     border: 1px solid #444;
+    border-radius: 8px;
+    box-shadow: inset 0 4px 10px rgba(0,0,0,0.5);
 }
 
-.data-table {
+/* 4. ESTILOS DE LA TABLA (Basados en bancos-table para consistencia) */
+.bancos-table {
     width: 100%;
     border-collapse: collapse;
+    color: #f0f0f0;
+    font-size: 14px;
+    table-layout: fixed; /* Columnas estables */
 }
 
-.clickable-row {
-    cursor: pointer;
-    transition: background-color 0.2s;
+.bancos-table thead th {
+    background: #333;
+    color: #1e90ff;
+    padding: 15px 10px;
+    text-align: left;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    border-bottom: 2px solid #444;
 }
-.clickable-row:hover {
-    background-color: #444;
+
+.bancos-table tbody tr {
+    border-bottom: 1px solid #333;
+    transition: background 0.2s;
+}
+
+.bancos-table tbody tr:hover {
+    background: rgba(30, 144, 255, 0.1); /* Resaltado azul suave */
+}
+
+.bancos-table td {
+    padding: 12px 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 5. COMPONENTES INTERNOS (Badges y Botones) */
+.badge-rubro {
+    background: #3a3a3a;
+    color: #aaa;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: bold;
+    border: 1px solid #555;
+    display: inline-block;
+}
+
+.bancos-table tr:hover .badge-rubro {
+    border-color: #1e90ff;
+    color: #f0f0f0;
+}
+
+/* Botón pequeño dentro de tabla */
+.bancos-table .action-button.primary-button {
+    padding: 6px 12px;
+    font-size: 11px;
+    height: auto;
+    width: auto;
+    min-width: 80px;
+}
+
+/* Mensaje sin datos */
+.no-data-msg {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+    font-style: italic;
+    font-size: 16px;
 }
