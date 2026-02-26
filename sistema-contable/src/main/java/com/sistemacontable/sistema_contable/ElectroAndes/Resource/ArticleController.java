@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.sistemacontable.sistema_contable.ElectroAndes.Service.ArticleService;
@@ -95,4 +96,18 @@ public class ArticleController {
         }
         return ResponseEntity.notFound().build();
     }
+
+    @PutMapping("/enable/{id}")
+    public ResponseEntity<Void> enable(@PathVariable Long id) {
+        if (articleService.enable(id)) {
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    @GetMapping("/status")
+    public List<ResponseArticleDto> getByStatus(@RequestParam boolean status) {
+        return articleService.findByStatus(status);
+    }
+
 }

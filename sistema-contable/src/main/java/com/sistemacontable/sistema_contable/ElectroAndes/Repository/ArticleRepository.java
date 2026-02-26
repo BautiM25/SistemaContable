@@ -19,4 +19,8 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
     // Buscamos artículos donde el stock físico sea menor o igual al mínimo
     @Query("SELECT a FROM Article a WHERE a.stockFisico <= a.stockMinimo")
     List<Article> findArticlesLowStock();
+
+    List<Article> findByHabilitadoTrue();
+
+    List<Article> findByHabilitadoFalse();
 }

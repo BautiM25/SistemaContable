@@ -24,4 +24,8 @@ public interface ArticleService {
     List<ArticleStockWarningDto> getBajoStock();
 
     boolean disable(Long id);
+
+    boolean enable(Long id);
+
+    List<ResponseArticleDto> findByStatus(boolean activo);
 }
