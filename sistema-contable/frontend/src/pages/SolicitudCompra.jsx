@@ -1,89 +1,173 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from "../services/api";
 import LogoEmpresa from "../assets/LogoEmpresa.png";
 import LogoGrupo5 from '../assets/LogoGrupo5.png';
 
 import "../styles/Menu.css";
 import "../styles/RegistrarAsiento.css"; 
 import "../styles/GestionUsuarios.css"; 
+import "../styles/Modal.css";
 
-const API_URL = "http://localhost:8080/api";
+// ====================================================================
+// MODAL DE BÚSQUEDA DE ARTÍCULOS
+// ====================================================================
+const BuscarArticuloModal = ({ onSelect, onClose }) => {
+    const [articulos, setArticulos] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [loading, setLoading] = useState(true);
 
+    useEffect(() => {
+        const fetchArticulos = async () => {
+            try {
+                const res = await api.get("/articulos");
+                setArticulos(res.data);
+            } catch (err) {
+                console.error("Error al cargar artículos:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchArticulos();
+    }, []);
+
+    const filtered = articulos.filter(a => 
+        a.descripcion?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        a.referencia?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    return (
+        <div className="modal-overlay">
+            <div className="modal-content modal-cuenta" style={{ width: '600px', maxWidth: '90%' }}>
+                <h3 className="modal-title">Seleccionar Artículo de Inventario</h3>
+                <input 
+                    type="text" 
+                    className="input-base large-input" 
+                    placeholder="Filtrar por descripción o referencia..."
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    autoFocus
+                />
+                <div className="cuenta-list-container" style={{ maxHeight: '400px' }}>
+                    {loading ? (
+                        <div style={{color:'white', textAlign:'center', padding: '20px'}}>Cargando artículos...</div>
+                    ) : filtered.length > 0 ? (
+                        filtered.map(a => (
+                            <div key={a.id} className="list-item clickable-item" onClick={() => onSelect(a)}>
+                                <span className="item-code" style={{ minWidth: '100px' }}>
+                                    {a.referencia || `REF-${a.id}`}
+                                </span>
+                                <span className="item-name" style={{ flex: 2 }}>{a.descripcion}</span>
+                                <span className="item-code" style={{ color: '#4caf50' }}>{a.medida || '-'}</span>
+                            </div>
+                        ))
+                    ) : (
+                        <div style={{color:'#999', textAlign:'center', padding: '20px'}}>No se encontraron artículos</div>
+                    )}
+                </div>
+                <div className="modal-actions">
+                    <button className="action-button secondary-button" onClick={onClose}>Cancelar</button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+// ====================================================================
+// COMPONENTE PRINCIPAL: SOLICITUD DE COMPRA
+// ====================================================================
 const SolicitudCompra = ({ onPageChange }) => {
     const [solicitudes, setSolicitudes] = useState([]);
-    const [articulosDB, setArticulosDB] = useState([]);
     const [searchTerm, setSearchTerm] = useState(''); 
     const [view, setView] = useState('list'); 
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
+    const [showModal, setShowModal] = useState(false);
     
     const [solicitudSeleccionada, setSolicitudSeleccionada] = useState(null);
 
     const [nuevaSolicitud, setNuevaSolicitud] = useState({
         numeroSolicitud: '',
-        fechaEmision: new Date().toISOString().split('T')[0],
         detalles: []
     });
 
-    const [itemActual, setItemActual] = useState({ 
-        idArticulo: '', 
-        nombreArticulo: '', 
-        cantidad: 1
+    const [itemActual, setItemActual] = useState({
+        idArticulo: null,
+        descripcion: '',
+        especificacionesTecnicas: '',
+        cantidad: 1,
+        medida: '',
+        observaciones: '',
+        fechaLimite: '',
+        accion: 'normal'
     });
 
-    const [showProductSelector, setShowProductSelector] = useState(false);
-    const [productSearch, setProductSearch] = useState('');
-
-    // Cargar datos reales de la BD
     useEffect(() => {
         cargarSolicitudes();
-        cargarArticulos();
     }, []);
 
     const cargarSolicitudes = async () => {
         setLoading(true);
-        setError(null);
         try {
-            const res = await axios.get(`${API_URL}/solicitudes`);
+            const res = await api.get("/solicitudes");
+            console.log("Solicitudes recibidas:", res.data);
             setSolicitudes(res.data);
-        } catch (err) { 
-            console.error("Error cargando solicitudes:", err);
-            setError("No se pudieron cargar las solicitudes");
+        } catch (err) {
+            console.error("Error al obtener solicitudes:", err);
         } finally {
             setLoading(false);
         }
     };
 
-    const cargarArticulos = async () => {
-        try {
-            const res = await axios.get(`${API_URL}/articulos`);
-            setArticulosDB(res.data);
-        } catch (err) { 
-            console.error("Error cargando artículos:", err);
-            setError("No se pudieron cargar los artículos");
-        }
-    };
-
-    const seleccionarProducto = (producto) => {
+    const handleSelectArticulo = (art) => {
         setItemActual({
             ...itemActual,
-            idArticulo: producto.id,
-            nombreArticulo: producto.nombre
+            idArticulo: art.id,
+            descripcion: art.descripcion,
+            medida: art.medida || '',
+            especificacionesTecnicas: '',
+            observaciones: ''
         });
-        setShowProductSelector(false);
-        setProductSearch('');
+        setShowModal(false);
     };
 
     const agregarDetalle = () => {
         if (!itemActual.idArticulo || itemActual.cantidad <= 0) {
-            alert('Seleccione un producto y cantidad válida');
+            alert("Por favor seleccione un artículo y una cantidad válida.");
             return;
         }
+
+        const detalleDto = {
+            idArticulo: itemActual.idArticulo,
+            descripcion: itemActual.descripcion,
+            especificacionesTecnicas: itemActual.especificacionesTecnicas,
+            cantidad: itemActual.cantidad,
+            medida: itemActual.medida,
+            observaciones: itemActual.observaciones,
+            fechaLimite: itemActual.fechaLimite || null,
+            accion: itemActual.accion === 'normal' ? null : itemActual.accion
+        };
+        
+        let nuevosDetalles = [...nuevaSolicitud.detalles];
+        
+        if (itemActual.accion === 'Modificar' && nuevosDetalles.length > 0) {
+            nuevosDetalles[nuevosDetalles.length - 1] = detalleDto;
+        } else {
+            nuevosDetalles.push(detalleDto);
+        }
+        
         setNuevaSolicitud({
             ...nuevaSolicitud,
-            detalles: [...nuevaSolicitud.detalles, { ...itemActual }]
+            detalles: nuevosDetalles
         });
-        setItemActual({ idArticulo: '', nombreArticulo: '', cantidad: 1 });
+        
+        setItemActual({
+            idArticulo: null,
+            descripcion: '',
+            especificacionesTecnicas: '',
+            cantidad: 1,
+            medida: '',
+            observaciones: '',
+            fechaLimite: '',
+            accion: 'normal'
+        });
     };
 
     const eliminarDetalle = (index) => {
@@ -96,494 +180,354 @@ const SolicitudCompra = ({ onPageChange }) => {
 
     const handleCrearSolicitud = async () => {
         if (!nuevaSolicitud.numeroSolicitud) {
-            alert('Ingrese un número de solicitud');
+            alert("Ingrese un número de solicitud.");
             return;
         }
         if (nuevaSolicitud.detalles.length === 0) {
-            alert('Agregue al menos un producto a la solicitud');
+            alert("Agregue al menos un artículo a la solicitud.");
             return;
         }
-
+        
         setLoading(true);
-        setError(null);
         try {
-            await axios.post(`${API_URL}/solicitudes/create`, nuevaSolicitud);
-            alert("Solicitud creada exitosamente");
-            await cargarSolicitudes(); // Recargar la lista
+            await api.post("/solicitudes/create", nuevaSolicitud);
+            alert("✅ Solicitud guardada exitosamente.");
+            cargarSolicitudes();
             setView('list');
             setNuevaSolicitud({ 
                 numeroSolicitud: '', 
-                fechaEmision: new Date().toISOString().split('T')[0], 
                 detalles: [] 
             });
-        } catch (err) { 
-            console.error("Error al crear solicitud:", err);
-            setError(err.response?.data?.message || "Error al guardar la solicitud");
+        } catch (err) {
+            alert("❌ Error al guardar.");
+            console.error(err);
         } finally {
             setLoading(false);
         }
     };
 
-    // Filtrar productos según búsqueda
-    const productosFiltrados = articulosDB.filter(p => 
-        p.nombre?.toLowerCase().includes(productSearch.toLowerCase()) ||
-        p.id?.toString().includes(productSearch)
-    );
+    const formatearFecha = (fecha) => {
+        if (!fecha) return 'Sin fecha';
+        try {
+            return new Date(fecha).toLocaleDateString('es-ES');
+        } catch {
+            return 'Fecha inválida';
+        }
+    };
 
     return (
-        <div className="page-container" style={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-            <div className="main-content" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+        <div className="page-container" style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+            <div className="main-content" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                 
                 {/* HEADER */}
-                <div className="asiento-header" style={{ 
-                    flexShrink: 0,
-                    background: 'linear-gradient(145deg, #2a2a2a 0%, #1e1e1e 100%)',
-                    borderBottom: '3px solid #3c6c3e'
-                }}>
+                <div className="asiento-header" style={{ flexShrink: 0 }}>
                     <div className="asiento-logo-wrapper">
                         <img src={LogoEmpresa} alt="Logo" className="logo-small" />
-                        <h2 className="asiento-title" style={{ fontSize: '28px', fontWeight: '400' }}>
-                            {view === 'detail' ? `📋 Detalle: ${solicitudSeleccionada?.numeroSolicitud}` : "📦 Gestión de Solicitudes"}
+                        <h2 className="asiento-title">
+                            {view === 'detail' ? `Detalle: Solicitud #${solicitudSeleccionada?.numeroSolicitud}` : 
+                             view === 'create' ? "➕ Nueva Solicitud de Compra" : "📋 Gestión de Solicitudes"}
                         </h2>
                     </div>
-                    <div style={{ display: 'flex', gap: '15px', marginTop: '10px', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <div style={{ display: 'flex', gap: '10px' }}>
+                    <div style={{ display: 'flex', gap: '10px', marginTop: '10px', justifyContent: 'space-between' }}>
+                        <div style={{ display: 'flex', gap: '5px' }}>
                             <button 
                                 className={`action-button ${view === 'list' ? 'primary-button' : 'secondary-button'}`} 
-                                onClick={() => {
-                                    setView('list');
-                                    setError(null);
-                                }}
-                                style={{ minWidth: '120px' }}
+                                onClick={() => setView('list')}
                             >
-                                📋 LISTADO
+                                LISTADO
                             </button>
                             <button 
                                 className={`action-button ${view === 'create' ? 'primary-button' : 'secondary-button'}`} 
-                                onClick={() => {
-                                    setView('create');
-                                    setError(null);
-                                }}
-                                style={{ minWidth: '120px' }}
+                                onClick={() => setView('create')}
                             >
-                                ➕ NUEVA
+                                NUEVA
                             </button>
                         </div>
                         {view === 'list' && (
-                            <div style={{ position: 'relative' }}>
-                                <input 
-                                    className="input-base" 
-                                    placeholder="🔍 Buscar solicitud..." 
-                                    value={searchTerm} 
-                                    onChange={(e) => setSearchTerm(e.target.value)} 
-                                    style={{ 
-                                        width: '250px', 
-                                        borderRadius: '25px',
-                                        padding: '10px 20px',
-                                        background: 'rgba(255,255,255,0.1)'
-                                    }} 
-                                />
-                            </div>
+                            <input 
+                                className="input-base" 
+                                placeholder="Buscar..." 
+                                value={searchTerm} 
+                                onChange={(e) => setSearchTerm(e.target.value)} 
+                                style={{ width: '200px' }} 
+                            />
                         )}
                     </div>
                 </div>
 
-                {/* CUERPO CON SCROLL */}
-                <div className="asiento-body" style={{ 
-                    flex: 1, 
-                    overflowY: 'auto', 
-                    marginTop: '15px',
-                    padding: '20px',
-                    background: 'rgba(20,20,20,0.95)'
-                }}>
+                {/* CUERPO */}
+                <div className="asiento-body" style={{ flex: 1, overflowY: 'auto', padding: '15px' }}>
                     
-                    {/* Mensaje de error */}
-                    {error && (
-                        <div style={{
-                            background: '#8b2b2b',
-                            color: 'white',
-                            padding: '15px',
-                            borderRadius: '8px',
-                            marginBottom: '20px',
-                            textAlign: 'center'
-                        }}>
-                            ⚠️ {error}
-                        </div>
-                    )}
-
-                    {/* Indicador de carga */}
-                    {loading && view === 'list' && (
-                        <div style={{ textAlign: 'center', padding: '40px', color: '#ccc' }}>
-                            ⏳ Cargando solicitudes...
-                        </div>
-                    )}
-
-                    {/* VISTA LISTADO - SOLO DATOS REALES */}
-                    {view === 'list' && !loading && (
+                    {/* ===== LISTADO ===== */}
+                    {view === 'list' && (
                         <div>
-                            {solicitudes.length === 0 ? (
-                                <div style={{ 
-                                    textAlign: 'center', 
-                                    padding: '60px', 
-                                    color: '#ccc',
-                                    background: '#2a2a2a',
-                                    borderRadius: '10px'
-                                }}>
-                                    <div style={{ fontSize: '48px', marginBottom: '20px' }}>📭</div>
-                                    <h3>No hay solicitudes registradas</h3>
-                                    <p>Comienza creando una nueva solicitud</p>
-                                    <button 
-                                        className="action-button primary-button"
-                                        onClick={() => setView('create')}
-                                        style={{ marginTop: '20px', padding: '12px 30px' }}
-                                    >
-                                        ➕ Crear primera solicitud
-                                    </button>
+                            {loading ? (
+                                <div style={{ textAlign: 'center', padding: '40px' }}>Cargando...</div>
+                            ) : solicitudes.length === 0 ? (
+                                <div style={{ textAlign: 'center', padding: '60px' }}>
+                                    No hay solicitudes
                                 </div>
                             ) : (
-                                <table className="partidas-table" style={{ 
-                                    borderRadius: '10px',
-                                    overflow: 'hidden',
-                                    boxShadow: '0 4px 15px rgba(0,0,0,0.3)'
-                                }}>
+                                <table className="partidas-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
                                     <thead>
-                                        <tr style={{ background: '#2a2a2a' }}>
-                                            <th style={{ padding: '15px' }}>ID</th>
-                                            <th style={{ padding: '15px' }}>N° Solicitud</th>
-                                            <th style={{ padding: '15px' }}>Fecha</th>
-                                            <th style={{ padding: '15px' }}>Estado</th>
-                                            <th style={{ padding: '15px' }}>Acción</th>
+                                        <tr style={{ background: '#333' }}>
+                                            <th style={{ padding: '10px', textAlign: 'left' }}>ID</th>
+                                            <th style={{ padding: '10px', textAlign: 'left' }}>N° Solicitud</th>
+                                            <th style={{ padding: '10px', textAlign: 'left' }}>Fecha</th>
+                                            <th style={{ padding: '10px', textAlign: 'left' }}>Estado</th>
+                                            <th style={{ padding: '10px', textAlign: 'left' }}>Items</th>
+                                            <th style={{ padding: '10px', textAlign: 'left' }}>Acción</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {solicitudes
-                                            .filter(s => s.numeroSolicitud?.toLowerCase().includes(searchTerm.toLowerCase()) || searchTerm === '')
+                                            .filter(s => s.numeroSolicitud?.toLowerCase().includes(searchTerm.toLowerCase()))
                                             .map(s => (
-                                            <tr key={s.id} style={{ 
-                                                background: '#333',
-                                                borderBottom: '1px solid #444',
-                                                transition: '0.3s',
-                                                cursor: 'pointer'
-                                            }}
-                                            onClick={() => { setSolicitudSeleccionada(s); setView('detail'); }}
-                                            >
-                                                <td style={{ padding: '12px 15px' }}>#{s.id}</td>
-                                                <td style={{ padding: '12px 15px', fontWeight: 'bold' }}>{s.numeroSolicitud || 'SIN N°'}</td>
-                                                <td style={{ padding: '12px 15px' }}>{s.fechaEmision ? new Date(s.fechaEmision).toLocaleDateString() : 'Pendiente'}</td>
-                                                <td style={{ padding: '12px 15px' }}>
-                                                    <span style={{ 
-                                                        background: s.estado === 'Aprobada' ? '#4caf50' : '#ffd700',
-                                                        color: '#333',
-                                                        padding: '4px 12px',
-                                                        borderRadius: '20px',
-                                                        fontSize: '12px',
-                                                        fontWeight: 'bold'
-                                                    }}>
-                                                        {s.estado || 'Pendiente'}
-                                                    </span>
-                                                </td>
-                                                <td style={{ padding: '12px 15px' }}>
-                                                    <button 
-                                                        className="action-button primary-button" 
-                                                        style={{ 
-                                                            padding: '8px 20px',
-                                                            minWidth: '80px',
-                                                            fontSize: '14px'
-                                                        }}
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            setSolicitudSeleccionada(s); 
-                                                            setView('detail');
-                                                        }}
-                                                    >
-                                                        VER
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))}
+                                                <tr key={s.id} style={{ borderBottom: '1px solid #444' }}>
+                                                    <td style={{ padding: '10px' }}>#{s.id}</td>
+                                                    <td style={{ padding: '10px' }}>{s.numeroSolicitud || 'S/N'}</td>
+                                                    <td style={{ padding: '10px' }}>{formatearFecha(s.fechaEmisionOC)}</td>
+                                                    <td style={{ padding: '10px' }}>
+                                                        <span style={{ 
+                                                            background: s.estado ? '#4caf50' : '#ffd700',
+                                                            color: '#333',
+                                                            padding: '2px 8px',
+                                                            borderRadius: '12px',
+                                                            fontSize: '12px'
+                                                        }}>
+                                                            {s.estado ? 'ACTIVA' : 'PENDIENTE'}
+                                                        </span>
+                                                    </td>
+                                                    <td style={{ padding: '10px' }}>{s.detalles?.length || 0}</td>
+                                                    <td style={{ padding: '10px' }}>
+                                                        <button 
+                                                            className="action-button primary-button" 
+                                                            style={{ padding: '5px 15px' }}
+                                                            onClick={() => { setSolicitudSeleccionada(s); setView('detail'); }}
+                                                        >
+                                                            VER
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            ))}
                                     </tbody>
                                 </table>
                             )}
                         </div>
                     )}
 
-                    {/* VISTA DETALLE - SOLO DATOS REALES */}
+                    {/* ===== DETALLE ===== */}
                     {view === 'detail' && solicitudSeleccionada && (
-                        <div className="user-form" style={{ maxWidth: '800px', margin: '0 auto' }}>
-                            <div style={{ 
-                                background: '#2a2a2a',
-                                padding: '20px',
-                                borderRadius: '10px',
-                                marginBottom: '20px'
-                            }}>
-                                <h3 style={{ color: '#3c6c3e', margin: '0 0 10px 0' }}>
-                                    Solicitud #{solicitudSeleccionada.numeroSolicitud}
-                                </h3>
-                                <p style={{ color: '#ccc', margin: '5px 0' }}>
-                                    <strong>ID:</strong> {solicitudSeleccionada.id}
-                                </p>
-                                <p style={{ color: '#ccc', margin: '5px 0' }}>
-                                    <strong>Fecha:</strong> {solicitudSeleccionada.fechaEmision ? new Date(solicitudSeleccionada.fechaEmision).toLocaleDateString() : 'No especificada'}
-                                </p>
-                                <p style={{ color: '#ccc', margin: '5px 0' }}>
-                                    <strong>Estado:</strong> <span style={{ 
-                                        background: solicitudSeleccionada.estado === 'Aprobada' ? '#4caf50' : '#ffd700',
-                                        color: '#333',
-                                        padding: '4px 12px',
-                                        borderRadius: '20px',
-                                        fontSize: '12px',
-                                        fontWeight: 'bold',
-                                        marginLeft: '10px'
-                                    }}>{solicitudSeleccionada.estado || 'Pendiente'}</span>
-                                </p>
+                        <div>
+                            <div style={{ background: '#333', padding: '15px', borderRadius: '8px', marginBottom: '20px' }}>
+                                <h3>Solicitud #{solicitudSeleccionada.numeroSolicitud}</h3>
+                                <p><strong>ID:</strong> {solicitudSeleccionada.id}</p>
+                                <p><strong>Fecha:</strong> {formatearFecha(solicitudSeleccionada.fechaEmisionOC)}</p>
+                                <p><strong>Estado:</strong> {solicitudSeleccionada.estado ? 'ACTIVA' : 'PENDIENTE'}</p>
                             </div>
 
-                            <table className="partidas-table" style={{ borderRadius: '10px', overflow: 'hidden' }}>
+                            <table className="partidas-table">
                                 <thead>
-                                    <tr style={{ background: '#2a2a2a' }}>
-                                        <th style={{ padding: '15px' }}>ID Art.</th>
-                                        <th style={{ padding: '15px' }}>Nombre</th>
-                                        <th style={{ padding: '15px' }}>Cantidad</th>
+                                    <tr>
+                                        <th>Referencia</th>
+                                        <th>Descripción</th>
+                                        <th>Cantidad</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {solicitudSeleccionada.detalles && solicitudSeleccionada.detalles.length > 0 ? (
-                                        solicitudSeleccionada.detalles.map((d, i) => {
-                                            // Buscar el nombre del artículo en la base de datos si no viene en el detalle
-                                            const articulo = articulosDB.find(a => a.id === d.idArticulo);
-                                            return (
-                                                <tr key={i} style={{ background: '#333', borderBottom: '1px solid #444' }}>
-                                                    <td style={{ padding: '12px 15px' }}>#{d.idArticulo}</td>
-                                                    <td style={{ padding: '12px 15px' }}>
-                                                        {d.nombreArticulo || articulo?.nombre || 'Producto no encontrado'}
-                                                    </td>
-                                                    <td style={{ padding: '12px 15px', fontWeight: 'bold' }}>{d.cantidad}</td>
-                                                </tr>
-                                            );
-                                        })
-                                    ) : (
-                                        <tr>
-                                            <td colSpan="3" style={{ padding: '30px', textAlign: 'center', color: '#999' }}>
-                                                No hay productos en esta solicitud
-                                            </td>
+                                    {solicitudSeleccionada.detalles?.map((d, i) => (
+                                        <tr key={i}>
+                                            <td>{d.articuloReferencia || 'S/N'}</td>
+                                            <td>{d.articuloDescripcion || 'Sin descripción'}</td>
+                                            <td>{d.cantidad}</td>
                                         </tr>
-                                    )}
+                                    ))}
                                 </tbody>
                             </table>
 
                             <button 
                                 className="action-button secondary-button" 
-                                style={{ 
-                                    marginTop: '20px',
-                                    padding: '12px',
-                                    width: '200px',
-                                    margin: '20px auto 0'
-                                }} 
+                                style={{ marginTop: '20px' }}
                                 onClick={() => setView('list')}
                             >
-                                ← VOLVER
+                                VOLVER
                             </button>
                         </div>
                     )}
 
-                    {/* VISTA CREAR - SELECTOR CON PRODUCTOS REALES */}
+                    {/* ===== CREACIÓN (COMPLETO) ===== */}
                     {view === 'create' && (
-                        <div className="user-form" style={{ 
-                            maxWidth: '900px', 
-                            margin: '0 auto',
-                            width: '100%'
-                        }}>
+                        <div className="user-form" style={{ maxWidth: '100%' }}>
+                            {/* Número de solicitud */}
                             <div style={{ 
-                                display: 'grid', 
-                                gridTemplateColumns: '1fr 1fr',
-                                gap: '20px',
-                                marginBottom: '20px'
+                                background: '#2a2a2a', 
+                                padding: '20px', 
+                                borderRadius: '8px', 
+                                marginBottom: '20px',
+                                borderLeft: '4px solid #3c6c3e'
                             }}>
-                                <div className="header-field">
-                                    <label style={{ color: '#ccc', marginBottom: '5px' }}>N° Solicitud *</label>
-                                    <input 
-                                        className="input-base" 
-                                        placeholder="Ej: SOL-001" 
-                                        value={nuevaSolicitud.numeroSolicitud} 
-                                        onChange={e => setNuevaSolicitud({...nuevaSolicitud, numeroSolicitud: e.target.value})}
-                                        style={{ padding: '12px', background: '#333' }}
-                                        required
-                                    />
-                                </div>
-                                <div className="header-field">
-                                    <label style={{ color: '#ccc', marginBottom: '5px' }}>Fecha de Emisión</label>
-                                    <input 
-                                        type="date" 
-                                        className="input-base" 
-                                        value={nuevaSolicitud.fechaEmision} 
-                                        onChange={e => setNuevaSolicitud({...nuevaSolicitud, fechaEmision: e.target.value})}
-                                        style={{ padding: '12px', background: '#333' }}
-                                    />
-                                </div>
+                                <label style={{ color: '#aaa', fontSize: '11px', display: 'block', marginBottom: '5px' }}>
+                                    NÚMERO DE SOLICITUD *
+                                </label>
+                                <input 
+                                    className="input-base" 
+                                    placeholder="Ej: SOL-2024-001" 
+                                    value={nuevaSolicitud.numeroSolicitud} 
+                                    onChange={e => setNuevaSolicitud({...nuevaSolicitud, numeroSolicitud: e.target.value})}
+                                    style={{ width: '100%' }}
+                                />
                             </div>
 
-                            {/* SELECTOR DE PRODUCTOS - SOLO DE LA BD */}
+                            {/* Panel de ingreso de artículos */}
                             <div style={{ 
-                                background: '#2a2a2a',
-                                padding: '20px',
-                                borderRadius: '10px',
-                                marginBottom: '20px'
+                                background: '#1a1a1a', 
+                                padding: '20px', 
+                                borderRadius: '8px', 
+                                marginBottom: '20px',
+                                border: '1px solid #3c6c3e'
                             }}>
-                                <h3 style={{ color: '#3c6c3e', margin: '0 0 15px 0' }}>Agregar Producto</h3>
+                                <h3 style={{ color: '#3c6c3e', margin: '0 0 15px 0', fontSize: '16px' }}>
+                                    ➕ Agregar Artículo
+                                </h3>
                                 
-                                {articulosDB.length === 0 ? (
-                                    <div style={{ textAlign: 'center', padding: '20px', color: '#999' }}>
-                                        No hay artículos disponibles en la base de datos
-                                    </div>
-                                ) : (
-                                    <>
-                                        <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
-                                            <div style={{ flex: 2, position: 'relative' }}>
-                                                <input
-                                                    className="input-base"
-                                                    placeholder="Buscar producto por nombre o ID..."
-                                                    value={itemActual.nombreArticulo || productSearch}
-                                                    onClick={() => setShowProductSelector(true)}
-                                                    onChange={(e) => {
-                                                        setProductSearch(e.target.value);
-                                                        setShowProductSelector(true);
-                                                        // Limpiar selección actual
-                                                        if (itemActual.idArticulo) {
-                                                            setItemActual({ idArticulo: '', nombreArticulo: '', cantidad: 1 });
-                                                        }
-                                                    }}
-                                                    style={{ 
-                                                        width: '100%',
-                                                        padding: '12px',
-                                                        background: '#333',
-                                                        cursor: 'pointer'
-                                                    }}
-                                                />
-                                                
-                                                {showProductSelector && productosFiltrados.length > 0 && (
-                                                    <div style={{
-                                                        position: 'absolute',
-                                                        top: '100%',
-                                                        left: 0,
-                                                        right: 0,
-                                                        maxHeight: '300px',
-                                                        overflowY: 'auto',
-                                                        background: '#333',
-                                                        border: '2px solid #3c6c3e',
-                                                        borderRadius: '0 0 8px 8px',
-                                                        zIndex: 1000,
-                                                        boxShadow: '0 4px 15px rgba(0,0,0,0.3)'
-                                                    }}>
-                                                        {productosFiltrados.map(producto => (
-                                                            <div
-                                                                key={producto.id}
-                                                                onClick={() => seleccionarProducto(producto)}
-                                                                style={{
-                                                                    padding: '12px 15px',
-                                                                    borderBottom: '1px solid #444',
-                                                                    cursor: 'pointer',
-                                                                    transition: '0.3s',
-                                                                    display: 'flex',
-                                                                    justifyContent: 'space-between',
-                                                                    alignItems: 'center'
-                                                                }}
-                                                                onMouseEnter={(e) => e.currentTarget.style.background = '#3c6c3e'}
-                                                                onMouseLeave={(e) => e.currentTarget.style.background = '#333'}
-                                                            >
-                                                                <div>
-                                                                    <span style={{ 
-                                                                        background: '#444',
-                                                                        padding: '2px 8px',
-                                                                        borderRadius: '4px',
-                                                                        marginRight: '10px',
-                                                                        fontSize: '12px'
-                                                                    }}>
-                                                                        #{producto.id}
-                                                                    </span>
-                                                                    <span style={{ fontWeight: 'bold' }}>{producto.nombre}</span>
-                                                                </div>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                )}
-                                            </div>
-                                            
-                                            <input 
-                                                className="input-base" 
-                                                style={{ 
-                                                    width: '120px',
-                                                    padding: '12px',
-                                                    background: '#333'
-                                                }} 
-                                                type="number" 
-                                                min="1"
-                                                placeholder="Cant." 
-                                                value={itemActual.cantidad} 
-                                                onChange={e => setItemActual({...itemActual, cantidad: parseInt(e.target.value) || 1})} 
-                                            />
-                                            
-                                            <button 
-                                                className="action-button primary-button" 
-                                                onClick={agregarDetalle}
-                                                style={{ 
-                                                    padding: '12px 25px',
-                                                    background: '#3c6c3e',
-                                                    minWidth: '120px'
-                                                }}
-                                                disabled={!itemActual.idArticulo}
-                                            >
-                                                ➕ AGREGAR
-                                            </button>
-                                        </div>
-                                        
-                                        {productSearch && productosFiltrados.length === 0 && (
-                                            <div style={{ marginTop: '10px', color: '#999', textAlign: 'center' }}>
-                                                No se encontraron productos con "{productSearch}"
-                                            </div>
+                                {/* Selector de artículo */}
+                                <div style={{ marginBottom: '15px' }}>
+                                    <label style={{ color: '#aaa', fontSize: '11px', display: 'block', marginBottom: '5px' }}>
+                                        ARTÍCULO *
+                                    </label>
+                                    <div 
+                                        className="input-base" 
+                                        style={{ 
+                                            cursor: 'pointer', 
+                                            background: '#222', 
+                                            padding: '12px',
+                                            border: itemActual.idArticulo ? '1px solid #3c6c3e' : '1px solid #444'
+                                        }}
+                                        onClick={() => setShowModal(true)}
+                                    >
+                                        {itemActual.idArticulo ? (
+                                            <span style={{ color: 'white' }}>
+                                                {itemActual.descripcion}
+                                            </span>
+                                        ) : (
+                                            <span style={{ color: '#888' }}>🔍 Haga clic para buscar artículo...</span>
                                         )}
-                                    </>
-                                )}
+                                    </div>
+                                </div>
+
+                                {/* Campos del artículo */}
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '10px', marginBottom: '10px' }}>
+                                    <div>
+                                        <label style={{ color: '#aaa', fontSize: '11px' }}>CANTIDAD</label>
+                                        <input 
+                                            className="input-base" 
+                                            type="number" 
+                                            min="0.01"
+                                            step="0.01"
+                                            value={itemActual.cantidad} 
+                                            onChange={e => setItemActual({...itemActual, cantidad: parseFloat(e.target.value) || 1})}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label style={{ color: '#aaa', fontSize: '11px' }}>MEDIDA</label>
+                                        <input 
+                                            className="input-base" 
+                                            placeholder="UN, KG, LT" 
+                                            value={itemActual.medida} 
+                                            onChange={e => setItemActual({...itemActual, medida: e.target.value})}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label style={{ color: '#aaa', fontSize: '11px' }}>FECHA LÍMITE</label>
+                                        <input 
+                                            type="date" 
+                                            className="input-base" 
+                                            value={itemActual.fechaLimite} 
+                                            onChange={e => setItemActual({...itemActual, fechaLimite: e.target.value})}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label style={{ color: '#aaa', fontSize: '11px' }}>ACCIÓN</label>
+                                        <select 
+                                            className="input-base"
+                                            value={itemActual.accion}
+                                            onChange={e => setItemActual({...itemActual, accion: e.target.value})}
+                                        >
+                                            <option value="normal">Normal</option>
+                                            <option value="Modificar">Modificar</option>
+                                            <option value="Duplicar">Duplicar</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div style={{ marginBottom: '10px' }}>
+                                    <label style={{ color: '#aaa', fontSize: '11px' }}>ESPECIFICACIONES TÉCNICAS</label>
+                                    <textarea 
+                                        className="input-base" 
+                                        placeholder="Especificaciones técnicas..." 
+                                        value={itemActual.especificacionesTecnicas} 
+                                        onChange={e => setItemActual({...itemActual, especificacionesTecnicas: e.target.value})}
+                                        rows="2"
+                                        style={{ width: '100%' }}
+                                    />
+                                </div>
+
+                                <div style={{ marginBottom: '15px' }}>
+                                    <label style={{ color: '#aaa', fontSize: '11px' }}>OBSERVACIONES</label>
+                                    <textarea 
+                                        className="input-base" 
+                                        placeholder="Observaciones..." 
+                                        value={itemActual.observaciones} 
+                                        onChange={e => setItemActual({...itemActual, observaciones: e.target.value})}
+                                        rows="2"
+                                        style={{ width: '100%' }}
+                                    />
+                                </div>
+
+                                <button 
+                                    className="action-button primary-button" 
+                                    onClick={agregarDetalle}
+                                    disabled={!itemActual.idArticulo}
+                                    style={{ width: '100%', padding: '10px' }}
+                                >
+                                    AÑADIR ARTÍCULO
+                                </button>
                             </div>
 
-                            {/* TABLA DE DETALLES */}
-                            <div style={{ 
-                                background: '#2a2a2a',
-                                padding: '20px',
-                                borderRadius: '10px',
-                                marginBottom: '20px'
-                            }}>
+                            {/* Tabla de detalles */}
+                            <div style={{ background: '#2a2a2a', padding: '20px', borderRadius: '8px' }}>
                                 <h3 style={{ color: '#3c6c3e', margin: '0 0 15px 0' }}>
-                                    Productos Agregados ({nuevaSolicitud.detalles.length})
+                                    Artículos ({nuevaSolicitud.detalles.length})
                                 </h3>
                                 
                                 {nuevaSolicitud.detalles.length === 0 ? (
                                     <div style={{ textAlign: 'center', padding: '30px', color: '#999' }}>
-                                        No hay productos agregados aún
+                                        No hay artículos agregados
                                     </div>
                                 ) : (
-                                    <table className="partidas-table" style={{ borderRadius: '8px', overflow: 'hidden' }}>
+                                    <table className="partidas-table" style={{ width: '100%' }}>
                                         <thead>
-                                            <tr style={{ background: '#1e1e1e' }}>
-                                                <th style={{ padding: '12px' }}>ID</th>
-                                                <th style={{ padding: '12px' }}>Nombre</th>
-                                                <th style={{ padding: '12px' }}>Cant.</th>
-                                                <th style={{ padding: '12px' }}>Acción</th>
+                                            <tr>
+                                                <th>Descripción</th>
+                                                <th>Cant.</th>
+                                                <th>Medida</th>
+                                                <th>Acción</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             {nuevaSolicitud.detalles.map((d, i) => (
-                                                <tr key={i} style={{ background: '#333', borderBottom: '1px solid #444' }}>
-                                                    <td style={{ padding: '10px 12px' }}>#{d.idArticulo}</td>
-                                                    <td style={{ padding: '10px 12px', fontWeight: 'bold' }}>{d.nombreArticulo}</td>
-                                                    <td style={{ padding: '10px 12px' }}>{d.cantidad}</td>
-                                                    <td style={{ padding: '10px 12px' }}>
+                                                <tr key={i}>
+                                                    <td>{d.descripcion}</td>
+                                                    <td>{d.cantidad}</td>
+                                                    <td>{d.medida || '-'}</td>
+                                                    <td>
                                                         <button 
                                                             onClick={() => eliminarDetalle(i)}
                                                             style={{
                                                                 background: '#8b2b2b',
                                                                 border: 'none',
                                                                 color: 'white',
-                                                                padding: '4px 10px',
+                                                                padding: '2px 8px',
                                                                 borderRadius: '4px',
                                                                 cursor: 'pointer'
                                                             }}
@@ -598,46 +542,39 @@ const SolicitudCompra = ({ onPageChange }) => {
                                 )}
                             </div>
 
+                            {/* Botón guardar */}
                             <button 
                                 className="action-button primary-button" 
                                 style={{ 
-                                    background: '#3c6c3e',
-                                    padding: '15px',
-                                    fontSize: '18px',
-                                    fontWeight: 'bold',
-                                    width: '100%'
+                                    background: '#2e7d32', 
+                                    marginTop: '20px', 
+                                    width: '100%', 
+                                    padding: '15px'
                                 }} 
                                 onClick={handleCrearSolicitud} 
                                 disabled={loading || nuevaSolicitud.detalles.length === 0}
                             >
-                                {loading ? '⏳ GUARDANDO...' : '✅ REGISTRAR SOLICITUD'}
+                                {loading ? "GUARDANDO..." : "GUARDAR SOLICITUD"}
                             </button>
                         </div>
                     )}
                 </div>
 
                 {/* FOOTER */}
-                <div className="asiento-footer" style={{ 
-                    flexShrink: 0, 
-                    marginTop: '15px',
-                    borderTop: '2px solid #3c6c3e',
-                    padding: '15px 20px'
-                }}>
-                    <button 
-                        className="action-button secondary-button" 
-                        onClick={() => onPageChange("DASHBOARD")}
-                        style={{
-                            padding: '12px 30px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '10px'
-                        }}
-                    >
-                        <img src={LogoGrupo5} alt="Volver" className="icon-small" /> 
-                        ⬅️ Volver al Inicio
+                <div className="asiento-footer" style={{ flexShrink: 0 }}>
+                    <button className="action-button secondary-button" onClick={() => onPageChange("DASHBOARD")}>
+                        <img src={LogoGrupo5} alt="Volver" className="icon-small" /> Volver al Inicio
                     </button>
                 </div>
             </div>
+
+            {/* MODAL */}
+            {showModal && (
+                <BuscarArticuloModal 
+                    onSelect={handleSelectArticulo} 
+                    onClose={() => setShowModal(false)} 
+                />
+            )}
         </div>
     );
 };
