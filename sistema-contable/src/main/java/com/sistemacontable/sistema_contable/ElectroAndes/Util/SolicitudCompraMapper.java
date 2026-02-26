@@ -25,6 +25,12 @@ public class SolicitudCompraMapper {
             rd.setCantidad(d.getCantidad());
             rd.setMedida(d.getMedida());
             rd.setEstado(d.getEstado());
+            
+            // 📌 CAMPOS FALTANTES - AGREGADOS AHORA
+            rd.setEspecificacionesTecnicas(d.getEspecificacionesTecnicas());
+            rd.setObservaciones(d.getObservaciones());
+            rd.setFechaLimite(d.getFechaLimite());
+            
             return rd;
         }).collect(Collectors.toList());
 

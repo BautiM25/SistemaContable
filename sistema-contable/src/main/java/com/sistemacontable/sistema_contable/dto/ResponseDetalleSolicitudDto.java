@@ -1,5 +1,7 @@
 package com.sistemacontable.sistema_contable.dto;
 
+import java.time.LocalDate;
+
 public class ResponseDetalleSolicitudDto {
     private Long id;
     private String articuloReferencia;
@@ -7,6 +9,11 @@ public class ResponseDetalleSolicitudDto {
     private Double cantidad;
     private String medida;
     private boolean estado;
+    
+    // 📌 NUEVOS CAMPOS
+    private String especificacionesTecnicas;
+    private String observaciones;
+    private LocalDate fechaLimite;
     
     public Long getId() {
         return id;
@@ -44,5 +51,24 @@ public class ResponseDetalleSolicitudDto {
     public void setEstado(boolean estado) {
         this.estado = estado;
     }
-
+    
+    // 📌 GETTERS Y SETTERS NUEVOS
+    public String getEspecificacionesTecnicas() {
+        return especificacionesTecnicas;
+    }
+    public void setEspecificacionesTecnicas(String especificacionesTecnicas) {
+        this.especificacionesTecnicas = especificacionesTecnicas;
+    }
+    public String getObservaciones() {
+        return observaciones;
+    }
+    public void setObservaciones(String observaciones) {
+        this.observaciones = observaciones;
+    }
+    public LocalDate getFechaLimite() {
+        return fechaLimite;
+    }
+    public void setFechaLimite(LocalDate fechaLimite) {
+        this.fechaLimite = fechaLimite;
+    }
 }
