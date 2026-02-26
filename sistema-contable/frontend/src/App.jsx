@@ -21,6 +21,8 @@ import ActivarProveedor from "./pages/ActivarProveedor.jsx";
 import VerProveedores from "./pages/VerProveedores.jsx";
 import ConsultaProveedor from "./pages/ConsultaProveedor.jsx";
 import VerReportes from "./pages/VerReportes.jsx";
+import SolicitudCompra from "./pages/SolicitudCompra.jsx";
+import GestionComprobantes from "./pages/GestionComprobantes.jsx";
 
 import GestionStock from "./pages/GestionStock.jsx";
 // Descomenta a medida que crees los archivos:
@@ -86,6 +88,10 @@ function App() {
     
     switch (currentPage) {
       // Vistas Contables
+      case "SOLICITUD_COMPRA":
+        return <SolicitudCompra onPageChange={handlePageChange} />;
+      case "GESTION_COMPROBANTES":
+        return <GestionComprobantes onPageChange={handlePageChange} />;
       case "REGISTRAR_ASIENTO":
         return <RegistrarAsiento onPageChange={handlePageChange} />;
       case "PLAN_DE_CUENTAS":
