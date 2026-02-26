@@ -27,10 +27,11 @@ import GestionComprobantes from "./pages/GestionComprobantes.jsx";
 import GestionStock from "./pages/GestionStock.jsx";
 // Descomenta a medida que crees los archivos:
 import AltaArticulo from "./pages/AltaArticulos.jsx";
-// import ModificacionArticulo from "./pages/ModificacionArticulo.jsx";
+import ModificacionArticulo from "./pages/ModificacionArticulos.jsx";
 import BajaArticulos from "./pages/BajaArticulos.jsx";
 import ActivarArticulo from "./pages/ActivarArticulo.jsx";
-// import VerArticulos from "./pages/VerArticulos.jsx";
+import VerArticulos from "./pages/VerArticulos.jsx";
+import ConsultaArticulo from "./pages/ConsultaArticulo.jsx";
 
 
 const AdminLayout = ({ onLogout }) => (
@@ -149,14 +150,15 @@ function App() {
         return <ActivarArticulo onPageChange={handlePageChange} />;
       case "BAJA_ARTICULO": 
         return <BajaArticulos onPageChange={handlePageChange} />;
-        /* Una vez creados los componentes, los habilitás así:
       case "MODIFICACION_ARTICULO": 
         return <ModificacionArticulo onPageChange={handlePageChange} id={nextPageState?.id} />;
-      
-      
       case "VER_ARTICULOS": 
         return <VerArticulos onPageChange={handlePageChange} />;
-      */
+      case "CONSULTA_ARTICULO":
+        return <ConsultaArticulo 
+              onPageChange={handlePageChange} 
+              id={nextPageState?.id} // 👈 PASAMOS SOLO EL ID, no todo el objeto
+          />;
 
       case "DASHBOARD":
       default:

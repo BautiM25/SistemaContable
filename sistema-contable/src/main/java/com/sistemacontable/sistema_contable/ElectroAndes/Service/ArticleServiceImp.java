@@ -135,6 +135,7 @@ public class ArticleServiceImp implements ArticleService {
         dto.setHabilitado(entity.isHabilitado());
         dto.setPrecioPublico(entity.getPrecioPublico());
         dto.setStockFisico(entity.getStockFisico());
+        dto.setStockMinimo(entity.getStockMinimo());
         dto.setComentarios(entity.getComentarios());
 
         if (entity.getProveedorHabitual() != null) {
