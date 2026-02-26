@@ -52,7 +52,7 @@ public class ArticleServiceImp implements ArticleService {
         Article article = new Article();
         mapDtoToEntity(dto, article);
         // Inicializamos stocks en 0 para nuevos artículos
-        article.setStockFisico(0);
+        article.setStockFisico(dto.getStockFisico() != null ? dto.getStockFisico() : 0);
         article.setStockPendienteRecibir(0);
 
         Article saved = articleRepository.save(article);

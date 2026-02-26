@@ -6,7 +6,6 @@ import "../styles/Modal.css";
 import LogoEmpresa from "../assets/LogoEmpresa.png";
 import LogoGrupo5 from "../assets/LogoGrupo5.png";
 
-// 🚨 CORRECCIÓN: Valores exactos del Enum en Java
 const IVA_MODALITIES = [
     { value: 'GENERAL', label: 'IVA General (21%)' },
     { value: 'REDUCIDO', label: 'IVA Reducido (10.5%)' },
@@ -78,22 +77,28 @@ export default function AltaArticulos({ onPageChange }) {
     const [formData, setFormData] = useState({
         referencia: '', descripcion: '', familia: '',
         habilitado: true, envaseSiNo: false, unidadesPorEnvase: 1,
-        modalidadIvaCompra: 'GENERAL', // 🚨 Corregido: valor por defecto válido
-        modalidadIvaVenta: 'GENERAL',  // 🚨 Corregido: valor por defecto válido
+        modalidadIvaCompra: 'GENERAL',
+        modalidadIvaVenta: 'GENERAL',
         idProveedorHabitual: null,
         costoDivisa: 0, costoBase: 0, divisa: 'ARS',
         precioPublico: 0, precioMayorista: 0, descuentoMaximo: 0,
-        listaPrecios: '', stockMinimo: 0, stockMaximo: 0, comentarios: ''
+        listaPrecios: '', 
+        stockFisico: 0, // 🚨 Valor por defecto: 0
+        stockMinimo: 0, // 🚨 Valor por defecto: 0
+        stockMaximo: 1000, // 🚨 Valor por defecto: 1000
+        comentarios: ''
     });
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
-        const numericFields = ['unidadesPorEnvase', 'costoDivisa', 'costoBase', 'precioPublico', 'precioMayorista', 'descuentoMaximo', 'stockMinimo', 'stockMaximo'];
+        const numericFields = ['unidadesPorEnvase', 'costoDivisa', 'costoBase', 'precioPublico', 'precioMayorista', 'descuentoMaximo', 'stockFisico', 'stockMinimo', 'stockMaximo'];
         
         setFormData(prev => ({
             ...prev,
+            // 🚨 Lógica: Si el campo es numérico y está vacío, permitimos el string vacío para poder borrar.
+            // Si tiene valor, lo parseamos a número.
             [name]: type === 'checkbox' ? checked : 
-                    numericFields.includes(name) ? parseFloat(value) || 0 : value
+                    numericFields.includes(name) ? (value === "" ? "" : parseFloat(value)) : value
         }));
     };
 
@@ -110,13 +115,19 @@ export default function AltaArticulos({ onPageChange }) {
         }
 
         setIsSubmitting(true);
+        // 🚨 Limpieza antes de enviar: Convertir vacíos en 0 para el Backend
+        const finalData = { ...formData };
+        ['stockFisico', 'stockMinimo', 'stockMaximo'].forEach(key => {
+            if (finalData[key] === "") finalData[key] = 0;
+        });
+
         try {
-            await api.post("/articulos", formData);
+            await api.post("/articulos", finalData);
             alert("✅ Artículo registrado correctamente.");
             onPageChange("GESTION_STOCK");
         } catch (err) {
             console.error("Error al guardar:", err.response?.data);
-            alert("❌ Error al guardar: " + (err.response?.data?.message || "Revise los campos numéricos y Enums."));
+            alert("❌ Error al guardar.");
         } finally {
             setIsSubmitting(false);
         }
@@ -164,59 +175,18 @@ export default function AltaArticulos({ onPageChange }) {
                                     </select>
                                 </label>
                             </div>
-                            <div className="input-row three-columns">
-                                <label className="header-field">Costo Divisa:
-                                    <input type="number" className="input-base" name="costoDivisa" value={formData.costoDivisa} onChange={handleChange} />
-                                </label>
-                                <label className="header-field">Costo Base:
-                                    <input type="number" className="input-base" name="costoBase" value={formData.costoBase} onChange={handleChange} />
-                                </label>
-                                <label className="header-field">IVA Compra:
-                                    <select className="input-base" name="modalidadIvaCompra" value={formData.modalidadIvaCompra} onChange={handleChange}>
-                                        {IVA_MODALITIES.map(m => (
-                                            <option key={m.value} value={m.value}>{m.label}</option>
-                                        ))}
-                                    </select>
-                                </label>
-                            </div>
 
-                            <h3 className="partidas-title" style={{ marginTop: '20px' }}>Precios de Venta</h3>
+                            <h3 className="partidas-title" style={{ marginTop: '20px' }}>Precios y Stock</h3>
+                            {/* 🚨 Fila de Stocks: Mínimo, Actual (Físico) y Máximo */}
                             <div className="input-row three-columns">
-                                <label className="header-field">P. Público:
-                                    <input type="number" className="input-base" name="precioPublico" value={formData.precioPublico} onChange={handleChange} />
-                                </label>
-                                <label className="header-field">P. Mayorista:
-                                    <input type="number" className="input-base" name="precioMayorista" value={formData.precioMayorista} onChange={handleChange} />
-                                </label>
-                                <label className="header-field">IVA Venta:
-                                    <select className="input-base" name="modalidadIvaVenta" value={formData.modalidadIvaVenta} onChange={handleChange}>
-                                        {IVA_MODALITIES.map(m => (
-                                            <option key={m.value} value={m.value}>{m.label}</option>
-                                        ))}
-                                    </select>
-                                </label>
-                            </div>
-
-                            <h3 className="partidas-title" style={{ marginTop: '20px' }}>Stock y Logística</h3>
-                            <div className="input-row three-columns">
-                                <label className="header-field" style={{ flexDirection: 'row', alignItems: 'center', gap: '8px' }}>
-                                    <input type="checkbox" name="envaseSiNo" checked={formData.envaseSiNo} onChange={handleChange} />
-                                    ¿Envase?
-                                </label>
-                                <label className="header-field">Unidades/Envase:
-                                    <input type="number" className="input-base" name="unidadesPorEnvase" value={formData.unidadesPorEnvase} onChange={handleChange} disabled={!formData.envaseSiNo} />
-                                </label>
-                                <label className="header-field" style={{ flexDirection: 'row', alignItems: 'center', gap: '8px' }}>
-                                    <input type="checkbox" name="habilitado" checked={formData.habilitado} onChange={handleChange} />
-                                    Habilitado
-                                </label>
-                            </div>
-                            <div className="input-row">
                                 <label className="header-field">Stock Mínimo:
-                                    <input type="number" className="input-base" name="stockMinimo" value={formData.stockMinimo} onChange={handleChange} />
+                                    <input type="number" className="input-base no-spinners" name="stockMinimo" value={formData.stockMinimo} onChange={handleChange} />
+                                </label>
+                                <label className="header-field">Stock Actual:
+                                    <input type="number" className="input-base no-spinners" name="stockFisico" value={formData.stockFisico} onChange={handleChange} />
                                 </label>
                                 <label className="header-field">Stock Máximo:
-                                    <input type="number" className="input-base" name="stockMaximo" value={formData.stockMaximo} onChange={handleChange} />
+                                    <input type="number" className="input-base no-spinners" name="stockMaximo" value={formData.stockMaximo} onChange={handleChange} />
                                 </label>
                             </div>
 

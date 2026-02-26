@@ -23,6 +23,7 @@ public class CreateArticleDto {
     private BigDecimal precioMayorista;
     private Double descuentoMaximo;
     private String listaPrecios;
+    private Integer stockFisico; // Aunque no se envíe, lo inicializamos en el servicio
     private Integer stockMinimo;
     private Integer stockMaximo;
     private String comentarios;
@@ -157,6 +158,14 @@ public class CreateArticleDto {
 
     public void setListaPrecios(String listaPrecios) {
         this.listaPrecios = listaPrecios;
+    }
+
+    public Integer getStockFisico() {
+        return stockFisico;
+    }
+
+    public void setStockFisico(Integer stockFisico) {
+        this.stockFisico = stockFisico;
     }
 
     public Integer getStockMinimo() {
