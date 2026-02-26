@@ -134,11 +134,15 @@ function App() {
         return <ActivarProveedor onPageChange={handlePageChange} />;
       case "VER_PROVEEDORES":
         return <VerProveedores onPageChange={handlePageChange} />;
-      case "CONSULTA_PROVEEDOR": // (Consulta de Detalle)
-        return <ConsultaProveedor 
-              onPageChange={handlePageChange} 
-              initialData={nextPageState} // 👈 USA el estado que acabamos de actualizar
-          />;
+      // En App.jsx
+      case "CONSULTA_PROVEEDOR": 
+          return (
+              <ConsultaProveedor 
+                  onPageChange={handlePageChange} 
+                  // 🚨 CAMBIO AQUÍ: Enviamos específicamente el id del objeto que guardamos
+                  id={nextPageState?.id} 
+              />
+          );
       // Si la página no coincide con ninguna vista de contenido específica,
       // o si es la página de inicio ("DASHBOARD"), renderizamos el MENÚ.
 

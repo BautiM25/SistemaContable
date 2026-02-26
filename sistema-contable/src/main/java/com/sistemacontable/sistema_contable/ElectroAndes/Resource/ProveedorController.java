@@ -49,6 +49,11 @@ public class ProveedorController {
         return dto != null ? ResponseEntity.ok(dto) : ResponseEntity.notFound().build();
     }
 
+    @GetMapping("/familia/{familia}")
+    public List<ResponseProveedorDto> getByFamilia(@PathVariable("familia") String familia) {
+        return proveedorService.findByFamilia(familia);
+    }
+
     // 4. CREAR NUEVO PROVEEDOR
     @PostMapping
     public ResponseEntity<ResponseProveedorDto> create(@RequestBody CreateProveedorDto createDto) {
@@ -91,6 +96,11 @@ public class ProveedorController {
     @GetMapping("/status")
     public List<ResponseProveedorDto> getByStatus(@RequestParam boolean status) {
         return proveedorService.findByStatus(status);
+    }
+
+    @GetMapping("/rubros")
+    public List<String> getAllRubros() {
+        return proveedorService.getRubrosDisponibles();
     }
 
 }
