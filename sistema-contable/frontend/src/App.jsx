@@ -26,8 +26,8 @@ import GestionStock from "./pages/GestionStock.jsx";
 // Descomenta a medida que crees los archivos:
 import AltaArticulo from "./pages/AltaArticulos.jsx";
 // import ModificacionArticulo from "./pages/ModificacionArticulo.jsx";
-// import BajaArticulo from "./pages/BajaArticulo.jsx";
-// import ActivarArticulo from "./pages/ActivarArticulo.jsx";
+import BajaArticulos from "./pages/BajaArticulos.jsx";
+import ActivarArticulo from "./pages/ActivarArticulo.jsx";
 // import VerArticulos from "./pages/VerArticulos.jsx";
 
 
@@ -139,13 +139,15 @@ function App() {
         return <GestionStock onPageChange={handlePageChange} />;
       case "ALTA_ARTICULO": 
         return <AltaArticulo onPageChange={handlePageChange} />;
+      case "ACTIVAR_ARTICULO": 
+        return <ActivarArticulo onPageChange={handlePageChange} />;
+      case "BAJA_ARTICULO": 
+        return <BajaArticulos onPageChange={handlePageChange} />;
         /* Una vez creados los componentes, los habilitás así:
       case "MODIFICACION_ARTICULO": 
         return <ModificacionArticulo onPageChange={handlePageChange} id={nextPageState?.id} />;
-      case "BAJA_ARTICULO": 
-        return <BajaArticulo onPageChange={handlePageChange} />;
-      case "ACTIVAR_ARTICULO": 
-        return <ActivarArticulo onPageChange={handlePageChange} />;
+      
+      
       case "VER_ARTICULOS": 
         return <VerArticulos onPageChange={handlePageChange} />;
       */
