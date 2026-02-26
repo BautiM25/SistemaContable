@@ -87,6 +87,16 @@ public class ArticleServiceImp implements ArticleService {
         }).orElse(false);
     }
 
+    @Override
+    @Transactional
+    public boolean enable(Long id) {
+        return articleRepository.findById(id).map(article -> {
+            article.setHabilitado(true);
+            articleRepository.save(article);
+            return true;
+        }).orElse(false);
+    }
+
     // --- MÉTODOS AUXILIARES DE MAPEO ---
     private void mapDtoToEntity(CreateArticleDto dto, Article entity) {
         entity.setReferencia(dto.getReferencia());
@@ -154,5 +164,19 @@ public class ArticleServiceImp implements ArticleService {
         dto.setEsIgualAlMinimo(entity.getStockFisico().equals(entity.getStockMinimo()));
 
         return dto;
+    }
+
+    @Override
+    @Transactional
+    public List<ResponseArticleDto> findByStatus(boolean activo) {
+        if (activo) {
+            return articleRepository.findByHabilitadoTrue().stream()
+                    .map(this::convertToResponseDto)
+                    .collect(Collectors.toList());
+        } else {
+            return articleRepository.findByHabilitadoFalse().stream()
+                    .map(this::convertToResponseDto)
+                    .collect(Collectors.toList());
+        }
     }
 }
