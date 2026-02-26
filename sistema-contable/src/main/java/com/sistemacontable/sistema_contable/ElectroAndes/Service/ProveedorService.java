@@ -14,6 +14,8 @@ public interface ProveedorService {
 
     ResponseProveedorDto findByCuit(String cuit);
 
+    List<ResponseProveedorDto> findByFamilia(String familia);
+
     ResponseProveedorDto save(CreateProveedorDto dto);
 
     ResponseProveedorDto update(Long id, CreateProveedorDto dto);
@@ -23,4 +25,6 @@ public interface ProveedorService {
     boolean activate(Long id);
 
     List<ResponseProveedorDto> findByStatus(boolean status);
+
+    List<String> getRubrosDisponibles();
 }

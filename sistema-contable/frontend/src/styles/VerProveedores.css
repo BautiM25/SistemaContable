@@ -9,7 +9,7 @@
     background: rgba(0, 0, 0, 0.2);
     border-radius: 8px;
     margin-bottom: 15px;
-    flex-shrink: 0; /* No se encoge */
+    flex-shrink: 0; 
 }
 
 /* 2. DISEÑO DEL TOGGLE / SWITCH */
@@ -33,11 +33,10 @@
 }
 
 .label-toggle.selected {
-    color: #1e90ff; /* Color primario azul */
+    color: #1e90ff; 
     text-shadow: 0 0 8px rgba(30, 144, 255, 0.4);
 }
 
-/* El Switch */
 .switch {
     position: relative;
     display: inline-block;
@@ -55,7 +54,7 @@
     position: absolute;
     cursor: pointer;
     top: 0; left: 0; right: 0; bottom: 0;
-    background-color: #8b2b2b; /* Rojo para Inactivos */
+    background-color: #8b2b2b; 
     transition: .4s;
 }
 
@@ -72,7 +71,7 @@
 }
 
 input:checked + .slider {
-    background-color: #3c6c3e; /* Verde para Activos */
+    background-color: #3c6c3e; 
 }
 
 input:checked + .slider:before {
@@ -89,8 +88,8 @@ input:checked + .slider:before {
 
 /* 3. VISOR DE TABLA (Scrollable) */
 .table-wrapper-scroll {
-    flex-grow: 1; /* Ocupa el espacio restante del body */
-    min-height: 0; /* Obligatorio para que el scroll funcione en flex */
+    flex-grow: 1; 
+    min-height: 0; 
     overflow-y: auto;
     overflow-x: hidden;
     background: #252525;
@@ -99,13 +98,13 @@ input:checked + .slider:before {
     box-shadow: inset 0 4px 10px rgba(0,0,0,0.5);
 }
 
-/* 4. ESTILOS DE LA TABLA (Basados en bancos-table para consistencia) */
+/* 4. ESTILOS DE LA TABLA */
 .bancos-table {
     width: 100%;
     border-collapse: collapse;
     color: #f0f0f0;
     font-size: 14px;
-    table-layout: fixed; /* Columnas estables */
+    table-layout: fixed; 
 }
 
 .bancos-table thead th {
@@ -128,7 +127,7 @@ input:checked + .slider:before {
 }
 
 .bancos-table tbody tr:hover {
-    background: rgba(30, 144, 255, 0.1); /* Resaltado azul suave */
+    background: rgba(30, 144, 255, 0.1); 
 }
 
 .bancos-table td {
@@ -138,7 +137,7 @@ input:checked + .slider:before {
     text-overflow: ellipsis;
 }
 
-/* 5. COMPONENTES INTERNOS (Badges y Botones) */
+/* 5. COMPONENTES INTERNOS */
 .badge-rubro {
     background: #3a3a3a;
     color: #aaa;
@@ -155,7 +154,6 @@ input:checked + .slider:before {
     color: #f0f0f0;
 }
 
-/* Botón pequeño dentro de tabla */
 .bancos-table .action-button.primary-button {
     padding: 6px 12px;
     font-size: 11px;
@@ -164,11 +162,42 @@ input:checked + .slider:before {
     min-width: 80px;
 }
 
-/* Mensaje sin datos */
-.no-data-msg {
-    text-align: center;
-    padding: 40px;
-    color: #666;
-    font-style: italic;
-    font-size: 16px;
+/* 🚨 6. CORRECCIÓN DE DESPLEGABLES (Select/Options) */
+
+/* El contenedor del select */
+select.input-base {
+    background-color: #2a2a2a; /* Fondo oscuro consistente */
+    color: #f0f0f0;            /* Texto claro */
+    border: 1px solid #444;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+/* Forzar el fondo de las opciones para evitar el "blanco sobre blanco" */
+select.input-base option {
+    background-color: #2a2a2a; /* Fondo oscuro para el menú desplegable */
+    color: #f0f0f0;            /* Texto claro para las opciones */
+    padding: 10px;
+}
+
+/* Estilo para los botones de modo segmentados */
+.mode-btn {
+    background: #333;
+    border: none;
+    color: #888;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: bold;
+    transition: 0.3s;
+    border-radius: 4px;
+}
+
+.mode-btn.selected-blue { background: #1e90ff; color: white; }
+.mode-btn.selected-red { background: #8b2b2b; color: white; }
+.mode-btn.selected-orange { background: #d35400; color: white; }
+
+.mode-btn:hover:not(.selected-blue):not(.selected-red):not(.selected-orange) {
+    background: #444;
 }

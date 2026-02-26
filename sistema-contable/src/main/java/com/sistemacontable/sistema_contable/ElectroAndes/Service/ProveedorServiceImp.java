@@ -43,6 +43,14 @@ public class ProveedorServiceImp implements ProveedorService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<ResponseProveedorDto> findByFamilia(String familia) {
+        return proveedorRepository.findAllByRubroIgnoreCaseAndActivoTrue(familia).stream()
+                .map(this::convertToResponseDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     @Transactional
     public ResponseProveedorDto save(CreateProveedorDto dto) {
         Proveedor proveedor = new Proveedor();
@@ -133,5 +141,11 @@ public class ProveedorServiceImp implements ProveedorService {
                     .map(this::convertToResponseDto)
                     .collect(Collectors.toList());
         }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<String> getRubrosDisponibles() {
+        return proveedorRepository.findDistinctRubros();
     }
 }

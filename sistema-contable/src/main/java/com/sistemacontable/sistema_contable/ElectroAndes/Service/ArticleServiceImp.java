@@ -52,7 +52,7 @@ public class ArticleServiceImp implements ArticleService {
         Article article = new Article();
         mapDtoToEntity(dto, article);
         // Inicializamos stocks en 0 para nuevos artículos
-        article.setStockFisico(0);
+        article.setStockFisico(dto.getStockFisico() != null ? dto.getStockFisico() : 0);
         article.setStockPendienteRecibir(0);
 
         Article saved = articleRepository.save(article);
@@ -135,6 +135,7 @@ public class ArticleServiceImp implements ArticleService {
         dto.setHabilitado(entity.isHabilitado());
         dto.setPrecioPublico(entity.getPrecioPublico());
         dto.setStockFisico(entity.getStockFisico());
+        dto.setStockMinimo(entity.getStockMinimo());
         dto.setComentarios(entity.getComentarios());
 
         if (entity.getProveedorHabitual() != null) {

@@ -11,6 +11,7 @@ public class ResponseArticleDto {
     private boolean habilitado;
     private BigDecimal precioPublico;
     private Integer stockFisico;
+    private Integer stockMinimo;
     private Long idProveedorHabitual;
     private String nombreProveedorHabitual;
     private String comentarios;
@@ -73,6 +74,14 @@ public class ResponseArticleDto {
 
     public void setStockFisico(Integer stockFisico) {
         this.stockFisico = stockFisico;
+    }
+
+    public Integer getStockMinimo() {
+        return stockMinimo;
+    }
+
+    public void setStockMinimo(Integer stockMinimo) {
+        this.stockMinimo = stockMinimo;
     }
 
     public Long getIdProveedorHabitual() {

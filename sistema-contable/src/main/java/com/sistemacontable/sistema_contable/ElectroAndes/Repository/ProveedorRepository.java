@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import com.sistemacontable.sistema_contable.ElectroAndes.Model.Proveedor;
@@ -20,8 +21,14 @@ public interface ProveedorRepository extends JpaRepository<Proveedor, Long> {
     // Opcional: Para buscar un ID específico solo si no está borrado
     Optional<Proveedor> findByIdAndActivoTrue(Long id);
 
+    // Método para buscar por familia (rubro) solo activos
+    List<Proveedor> findAllByRubroIgnoreCaseAndActivoTrue(String rubro);
+
     // Método para buscar por estado (activo/inactivo)
     List<Proveedor> findAllByActivoTrue();
 
     List<Proveedor> findAllByActivoFalse();
+
+    @Query("SELECT DISTINCT p.rubro FROM Proveedor p WHERE p.activo = true")
+    List<String> findDistinctRubros();
 }
