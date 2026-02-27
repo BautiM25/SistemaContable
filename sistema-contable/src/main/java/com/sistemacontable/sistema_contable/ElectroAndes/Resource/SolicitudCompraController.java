@@ -46,6 +46,13 @@ public class SolicitudCompraController {
         return ResponseEntity.ok(solicitudMapper.toDtoList(lista));
     }
 
+    // 📌 NUEVO: Endpoint para traer TODAS las solicitudes
+    @GetMapping("/todas")
+    public ResponseEntity<List<ResponseSolicitudCompraDto>> listarTodas() {
+        var lista = solicitudService.obtenerTodas();
+        return ResponseEntity.ok(solicitudMapper.toDtoList(lista));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<?> obtenerPorId(@PathVariable Long id) {
         try {
@@ -56,7 +63,6 @@ public class SolicitudCompraController {
         }
     }
 
-    // 4. OBTENER POR NÚMERO DE SOLICITUD
     @GetMapping("/numero/{numero}")
     public ResponseEntity<?> obtenerPorNumero(@PathVariable String numero) {
         try {

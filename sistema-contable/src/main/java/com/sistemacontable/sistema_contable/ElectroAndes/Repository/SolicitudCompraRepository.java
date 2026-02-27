@@ -9,6 +9,8 @@ import com.sistemacontable.sistema_contable.ElectroAndes.Model.SolicitudCompra;
 @Repository
 public interface SolicitudCompraRepository extends JpaRepository<SolicitudCompra, Long> {
     Optional<SolicitudCompra> findByNumeroSolicitud(String numeroSolicitud);
-
     List<SolicitudCompra> findByEstadoTrue();
+    
+    // 📌 NUEVO: Método para traer todas sin filtrar por estado
+    List<SolicitudCompra> findAll();
 }

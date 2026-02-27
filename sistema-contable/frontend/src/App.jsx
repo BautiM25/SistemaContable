@@ -23,9 +23,9 @@ import ConsultaProveedor from "./pages/ConsultaProveedor.jsx";
 import VerReportes from "./pages/VerReportes.jsx";
 import SolicitudCompra from "./pages/SolicitudCompra.jsx";
 import GestionComprobantes from "./pages/GestionComprobantes.jsx";
+import OrdenCompra from "./pages/OrdenCompra.jsx";
 
 import GestionStock from "./pages/GestionStock.jsx";
-// Descomenta a medida que crees los archivos:
 import AltaArticulo from "./pages/AltaArticulos.jsx";
 import ModificacionArticulo from "./pages/ModificacionArticulos.jsx";
 import BajaArticulos from "./pages/BajaArticulos.jsx";
@@ -33,14 +33,11 @@ import ActivarArticulo from "./pages/ActivarArticulo.jsx";
 import VerArticulos from "./pages/VerArticulos.jsx";
 import ConsultaArticulo from "./pages/ConsultaArticulo.jsx";
 
-
 const AdminLayout = ({ onLogout }) => (
-  // Nota: MenuAdministrador debe aceptar 'children' o usar Outlet.
   <MenuAdministrador onLogout={onLogout}> 
     <Outlet /> 
   </MenuAdministrador>
 );
-
 
 function App() {
   const [token, setToken] = useState(null);
@@ -75,7 +72,7 @@ function App() {
 
   const handlePageChange = (pageName, state = null) => {
     setCurrentPage(pageName);
-    setNextPageState(state); // 👈 Almacena los datos del proveedor
+    setNextPageState(state); // 👈 Almacena los datos
   };
 
   if (!token) {
@@ -84,13 +81,12 @@ function App() {
 
   // Función que decide qué componente de contenido mostrar
   const renderContent = (rol) => {
-    // Primero, definimos qué componente de PÁGINA se debe renderizar.
-    // La variable 'onPageChange' se pasa a TODAS las vistas de contenido.
-    
     switch (currentPage) {
       // Vistas Contables
       case "SOLICITUD_COMPRA":
         return <SolicitudCompra onPageChange={handlePageChange} />;
+      case "ORDEN_COMPRA":
+        return <OrdenCompra onPageChange={handlePageChange} />;
       case "GESTION_COMPROBANTES":
         return <GestionComprobantes onPageChange={handlePageChange} />;
       case "REGISTRAR_ASIENTO":
@@ -100,7 +96,6 @@ function App() {
       
       // Gestión de Usuarios
       case "GESTION_USUARIOS":
-        // Nota: GESTION_USUARIOS es la página de índice (botones), no un formulario.
         return <GestionDeUsuarios onPageChange={handlePageChange} />;
       case "ALTA_USUARIO":
         return <AltaUsuarios onPageChange={handlePageChange} />;
@@ -118,10 +113,11 @@ function App() {
       case "MODIFICACION_CUENTA":
         return <ModificacionCuentas onPageChange={handlePageChange} />;
       
-      //Reportes
+      // Reportes
       case "VER_REPORTES":
         return <VerReportes onPageChange={handlePageChange} />;
 
+      // Gestión de Proveedores
       case "GESTION_PROVEEDORES":
         return <GestionProveedores onPageChange={handlePageChange} />;
       case "CARGA_PROVEEDOR":
@@ -134,18 +130,15 @@ function App() {
         return <ActivarProveedor onPageChange={handlePageChange} />;
       case "VER_PROVEEDORES":
         return <VerProveedores onPageChange={handlePageChange} />;
-      // En App.jsx
       case "CONSULTA_PROVEEDOR": 
-          return (
-              <ConsultaProveedor 
-                  onPageChange={handlePageChange} 
-                  // 🚨 CAMBIO AQUÍ: Enviamos específicamente el id del objeto que guardamos
-                  id={nextPageState?.id} 
-              />
-          );
-      // Si la página no coincide con ninguna vista de contenido específica,
-      // o si es la página de inicio ("DASHBOARD"), renderizamos el MENÚ.
+        return (
+          <ConsultaProveedor 
+            onPageChange={handlePageChange} 
+            id={nextPageState?.id} 
+          />
+        );
 
+      // Gestión de Stock / Artículos
       case "GESTION_STOCK": 
         return <GestionStock onPageChange={handlePageChange} />;
       case "ALTA_ARTICULO": 
@@ -160,10 +153,11 @@ function App() {
         return <VerArticulos onPageChange={handlePageChange} />;
       case "CONSULTA_ARTICULO":
         return <ConsultaArticulo 
-              onPageChange={handlePageChange} 
-              id={nextPageState?.id} // 👈 PASAMOS SOLO EL ID, no todo el objeto
-          />;
+          onPageChange={handlePageChange} 
+          id={nextPageState?.id} 
+        />;
 
+      // Dashboard / Menú principal
       case "DASHBOARD":
       default:
         switch (rol) {
@@ -178,7 +172,6 @@ function App() {
         }
     }
   };
-
 
   console.log("Token:", token, "Rol normalizado:", rol);
   

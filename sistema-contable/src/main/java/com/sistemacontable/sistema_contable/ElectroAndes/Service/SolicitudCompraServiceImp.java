@@ -1,6 +1,7 @@
 package com.sistemacontable.sistema_contable.ElectroAndes.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -44,7 +45,7 @@ public class SolicitudCompraServiceImp implements SolicitudCompraService {
             detalle.setFechaLimite(dDto.getFechaLimite());
             detalle.setEstado(true);
 
-            solicitud.addDetalle(detalle); // Usa el método de conveniencia que creaste
+            solicitud.addDetalle(detalle);
         }
         return solicitudRepo.save(solicitud);
     }
@@ -52,6 +53,12 @@ public class SolicitudCompraServiceImp implements SolicitudCompraService {
     @Override
     public List<SolicitudCompra> obtenerActivas() {
         return solicitudRepo.findByEstadoTrue();
+    }
+
+    // 📌 NUEVO: Obtener todas las solicitudes (activas e inactivas)
+    @Override
+    public List<SolicitudCompra> obtenerTodas() {
+        return solicitudRepo.findAll();
     }
 
     @Override
