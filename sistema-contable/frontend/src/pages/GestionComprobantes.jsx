@@ -26,7 +26,7 @@ export default function GestionComprobantes({ onPageChange }) {
             <div className="main-content">
                 <div className="asiento-layout-column"> 
                     
-                    {/* HEADER idéntico al de Proveedores */}
+                    {/* HEADER */}
                     <div className="asiento-header">
                         <div className="asiento-logo-wrapper">
                             <img src={LogoEmpresa} alt="Logo Empresa" className="logo-small" />
@@ -40,7 +40,7 @@ export default function GestionComprobantes({ onPageChange }) {
                         
                         <div className="gestion-buttons-container">
                             
-                            {/* Solicitud de Compra (Botón Principal) */}
+                            {/* Solicitud de Compra */}
                             <button 
                                 className="menu-button gestion-button primary-button"
                                 onClick={() => handleActionClick('SOLICITUD_COMPRA')} 
@@ -48,11 +48,10 @@ export default function GestionComprobantes({ onPageChange }) {
                                 <img src={LogoGrupo5} alt="Icono Solicitud" /> Solicitud de Compra
                             </button>
                             
-                            {/* Orden de Compra (Inactivo por ahora pero con el estilo secundario) */}
+                            {/* Orden de Compra - AHORA ACTIVO */}
                             <button 
                                 className="menu-button gestion-button secondary-button"
-                                style={{ opacity: 0.6, cursor: 'not-allowed' }}
-                                onClick={() => {}} // No hace nada por ahora
+                                onClick={() => handleActionClick('ORDEN_COMPRA')}
                             >
                                 <img src={LogoGrupo5} alt="Icono Orden" /> Orden de Compra
                             </button>

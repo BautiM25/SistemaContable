@@ -76,7 +76,9 @@ const BuscarArticuloModal = ({ onSelect, onClose }) => {
 // ====================================================================
 const SolicitudCompra = ({ onPageChange }) => {
     const [solicitudes, setSolicitudes] = useState([]);
+    const [ordenes, setOrdenes] = useState([]);
     const [searchTerm, setSearchTerm] = useState(''); 
+    const [filtroEstado, setFiltroEstado] = useState('todas'); // 'todas', 'activas', 'inactivas'
     const [view, setView] = useState('list'); 
     const [loading, setLoading] = useState(false);
     const [showModal, setShowModal] = useState(false);
@@ -99,9 +101,19 @@ const SolicitudCompra = ({ onPageChange }) => {
 
     useEffect(() => {
         cargarSolicitudes();
+        cargarOrdenes();
     }, []);
 
-    // Obtener fecha de hoy en formato YYYY-MM-DD para el input date
+    const cargarOrdenes = async () => {
+        try {
+            const res = await api.get("/ordenes");
+            console.log("Órdenes cargadas:", res.data);
+            setOrdenes(res.data);
+        } catch (err) {
+            console.error("Error al cargar órdenes:", err);
+        }
+    };
+
     const getTodayDate = () => {
         const today = new Date();
         const year = today.getFullYear();
@@ -110,7 +122,6 @@ const SolicitudCompra = ({ onPageChange }) => {
         return `${year}-${month}-${day}`;
     };
 
-    // Generar número de solicitud basado en el ID más alto
     const generarNumeroSolicitud = () => {
         const fecha = new Date();
         const año = fecha.getFullYear();
@@ -139,14 +150,28 @@ const SolicitudCompra = ({ onPageChange }) => {
     const cargarSolicitudes = async () => {
         setLoading(true);
         try {
-            const res = await api.get("/solicitudes");
-            console.log("Solicitudes recibidas:", JSON.stringify(res.data, null, 2));
+            // Usar el nuevo endpoint que trae TODAS las solicitudes
+            const res = await api.get("/solicitudes/todas");
+            console.log("Todas las solicitudes:", res.data);
             setSolicitudes(res.data);
         } catch (err) {
             console.error("Error al obtener solicitudes:", err);
         } finally {
             setLoading(false);
         }
+    };
+
+    // Verificar si una solicitud tiene orden asociada
+    const tieneOrden = (solicitudId, solicitudNumero) => {
+        if (!ordenes || ordenes.length === 0) return false;
+        
+        // Buscar por ID de solicitud o por número de solicitud
+        const encontrada = ordenes.some(o => 
+            o.solicitudNumero === solicitudNumero || 
+            o.solicitudNumero === solicitudId?.toString()
+        );
+        
+        return encontrada;
     };
 
     const handleSelectArticulo = (art) => {
@@ -231,6 +256,17 @@ const SolicitudCompra = ({ onPageChange }) => {
         }
     };
 
+    // Función para determinar el color de fondo según el estado
+    const getBackgroundColor = (solicitud) => {
+        if (!solicitud.estado) {
+            return '#ffebee'; // Rojo muy claro para inactivas
+        }
+        if (tieneOrden(solicitud.id, solicitud.numeroSolicitud)) {
+            return '#e8f4fd'; // Azul claro para activas con orden
+        }
+        return 'white'; // Blanco para activas sin orden
+    };
+
     return (
         <div className="page-container" style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
             <div className="main-content" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -284,67 +320,139 @@ const SolicitudCompra = ({ onPageChange }) => {
                     {view === 'list' && (
                         <div>
                             {loading ? (
-                                <div style={{ textAlign: 'center', padding: '40px', color: '#000' }}>Cargando...</div>
+                                <div style={{ textAlign: 'center', padding: '40px', color: '#000' }}>Cargando solicitudes...</div>
                             ) : solicitudes.length === 0 ? (
                                 <div style={{ textAlign: 'center', padding: '60px', color: '#000' }}>
                                     No hay solicitudes
                                 </div>
                             ) : (
-                                <table className="partidas-table" style={{ width: '100%', borderCollapse: 'collapse', background: 'white' }}>
-                                    <thead>
-                                        <tr style={{ background: '#f0f0f0' }}>
-                                            <th style={{ padding: '10px', textAlign: 'left', color: '#000', borderBottom: '2px solid #ccc' }}>ID</th>
-                                            <th style={{ padding: '10px', textAlign: 'left', color: '#000', borderBottom: '2px solid #ccc' }}>N° Solicitud</th>
-                                            <th style={{ padding: '10px', textAlign: 'left', color: '#000', borderBottom: '2px solid #ccc' }}>Fecha</th>
-                                            <th style={{ padding: '10px', textAlign: 'left', color: '#000', borderBottom: '2px solid #ccc' }}>Estado</th>
-                                            <th style={{ padding: '10px', textAlign: 'left', color: '#000', borderBottom: '2px solid #ccc' }}>Items</th>
-                                            <th style={{ padding: '10px', textAlign: 'left', color: '#000', borderBottom: '2px solid #ccc' }}>Acción</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {solicitudes
-                                            .filter(s => s.numeroSolicitud?.toLowerCase().includes(searchTerm.toLowerCase()))
-                                            .map(s => (
-                                                <tr key={s.id} style={{ borderBottom: '1px solid #ccc' }}>
-                                                    <td style={{ padding: '10px', color: '#000' }}>#{s.id}</td>
-                                                    <td style={{ padding: '10px', color: '#000' }}>{s.numeroSolicitud || 'S/N'}</td>
-                                                    <td style={{ padding: '10px', color: '#000' }}>{formatearFecha(s.fechaEmisionOC)}</td>
-                                                    <td style={{ padding: '10px' }}>
-                                                        <span style={{ 
-                                                            background: s.estado ? '#4caf50' : '#ffd700',
-                                                            color: '#000',
-                                                            padding: '2px 8px',
-                                                            borderRadius: '12px',
-                                                            fontSize: '12px',
-                                                            fontWeight: 'bold'
+                                <div>
+                                    {/* Filtros por estado - SOLO LOS BOTONES, SIN LEGENDA */}
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px', alignItems: 'center' }}>
+                                        <div style={{ display: 'flex', gap: '10px' }}>
+                                            <button 
+                                                className={`action-button ${filtroEstado === 'todas' ? 'primary-button' : 'secondary-button'}`}
+                                                onClick={() => setFiltroEstado('todas')}
+                                                style={{ padding: '5px 15px' }}
+                                            >
+                                                Todas
+                                            </button>
+                                            <button 
+                                                className={`action-button ${filtroEstado === 'activas' ? 'primary-button' : 'secondary-button'}`}
+                                                onClick={() => setFiltroEstado('activas')}
+                                                style={{ padding: '5px 15px' }}
+                                            >
+                                                Activas
+                                            </button>
+                                            <button 
+                                                className={`action-button ${filtroEstado === 'inactivas' ? 'primary-button' : 'secondary-button'}`}
+                                                onClick={() => setFiltroEstado('inactivas')}
+                                                style={{ padding: '5px 15px' }}
+                                            >
+                                                Inactivas
+                                            </button>
+                                        </div>
+                                        {/* LEGENDA ELIMINADA */}
+                                    </div>
+
+                                    <table className="partidas-table" style={{ width: '100%', borderCollapse: 'collapse', background: 'white' }}>
+                                        <thead>
+                                            <tr style={{ background: '#f0f0f0' }}>
+                                                <th style={{ padding: '10px', textAlign: 'left', color: '#000', borderBottom: '2px solid #ccc' }}>ID</th>
+                                                <th style={{ padding: '10px', textAlign: 'left', color: '#000', borderBottom: '2px solid #ccc' }}>N° Solicitud</th>
+                                                <th style={{ padding: '10px', textAlign: 'left', color: '#000', borderBottom: '2px solid #ccc' }}>Fecha</th>
+                                                <th style={{ padding: '10px', textAlign: 'left', color: '#000', borderBottom: '2px solid #ccc' }}>Estado</th>
+                                                <th style={{ padding: '10px', textAlign: 'left', color: '#000', borderBottom: '2px solid #ccc' }}>Items</th>
+                                                <th style={{ padding: '10px', textAlign: 'left', color: '#000', borderBottom: '2px solid #ccc' }}>Orden Generada</th>
+                                                <th style={{ padding: '10px', textAlign: 'left', color: '#000', borderBottom: '2px solid #ccc' }}>Acción</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {solicitudes
+                                                .filter(s => {
+                                                    // Filtro por búsqueda
+                                                    const matchesSearch = s.numeroSolicitud?.toLowerCase().includes(searchTerm.toLowerCase());
+                                                    // Filtro por estado
+                                                    const matchesEstado = 
+                                                        filtroEstado === 'todas' ? true :
+                                                        filtroEstado === 'activas' ? s.estado === true :
+                                                        filtroEstado === 'inactivas' ? s.estado === false : true;
+                                                    return matchesSearch && matchesEstado;
+                                                })
+                                                .map(s => {
+                                                    const tieneOrdenAsociada = tieneOrden(s.id, s.numeroSolicitud);
+                                                    const backgroundColor = getBackgroundColor(s);
+                                                    
+                                                    return (
+                                                        <tr key={s.id} style={{ 
+                                                            borderBottom: '1px solid #ccc',
+                                                            backgroundColor: backgroundColor
                                                         }}>
-                                                            {s.estado ? 'ACTIVA' : 'PENDIENTE'}
-                                                        </span>
-                                                    </td>
-                                                    <td style={{ padding: '10px', color: '#000' }}>{s.detalles?.length || 0}</td>
-                                                    <td style={{ padding: '10px' }}>
-                                                        <button 
-                                                            className="action-button primary-button" 
-                                                            style={{ padding: '5px 15px', background: '#3c6c3e', color: 'white' }}
-                                                            onClick={() => { 
-                                                                console.log("Solicitud seleccionada:", s);
-                                                                console.log("Detalles:", s.detalles);
-                                                                setSolicitudSeleccionada(s); 
-                                                                setView('detail'); 
-                                                            }}
-                                                        >
-                                                            VER
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                    </tbody>
-                                </table>
+                                                            <td style={{ padding: '10px', color: '#000' }}>#{s.id}</td>
+                                                            <td style={{ padding: '10px', color: '#000', fontWeight: 'bold' }}>{s.numeroSolicitud || 'S/N'}</td>
+                                                            <td style={{ padding: '10px', color: '#000' }}>{formatearFecha(s.fechaEmisionOC)}</td>
+                                                            <td style={{ padding: '10px' }}>
+                                                                <span style={{ 
+                                                                    background: s.estado ? '#4caf50' : '#f44336',
+                                                                    color: '#000',
+                                                                    padding: '2px 8px',
+                                                                    borderRadius: '12px',
+                                                                    fontSize: '12px',
+                                                                    fontWeight: 'bold'
+                                                                }}>
+                                                                    {s.estado ? 'ACTIVA' : 'INACTIVA'}
+                                                                </span>
+                                                            </td>
+                                                            <td style={{ padding: '10px', color: '#000' }}>{s.detalles?.length || 0}</td>
+                                                            <td style={{ padding: '10px' }}>
+                                                                {tieneOrdenAsociada ? (
+                                                                    <span style={{ 
+                                                                        background: '#2196f3',
+                                                                        color: 'white',
+                                                                        padding: '2px 8px',
+                                                                        borderRadius: '12px',
+                                                                        fontSize: '12px',
+                                                                        fontWeight: 'bold'
+                                                                    }}>
+                                                                        SÍ
+                                                                    </span>
+                                                                ) : (
+                                                                    <span style={{ 
+                                                                        background: '#9e9e9e',
+                                                                        color: 'white',
+                                                                        padding: '2px 8px',
+                                                                        borderRadius: '12px',
+                                                                        fontSize: '12px'
+                                                                    }}>
+                                                                        NO
+                                                                    </span>
+                                                                )}
+                                                            </td>
+                                                            <td style={{ padding: '10px' }}>
+                                                                <button 
+                                                                    className="action-button primary-button" 
+                                                                    style={{ padding: '5px 15px', background: '#3c6c3e', color: 'white' }}
+                                                                    onClick={() => { 
+                                                                        console.log("Solicitud seleccionada:", s);
+                                                                        console.log("Detalles:", s.detalles);
+                                                                        setSolicitudSeleccionada(s); 
+                                                                        setView('detail'); 
+                                                                    }}
+                                                                >
+                                                                    VER
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })}
+                                        </tbody>
+                                    </table>
+                                </div>
                             )}
                         </div>
                     )}
 
-                    {/* ===== DETALLE (sin observaciones) ===== */}
+                    {/* ===== DETALLE ===== */}
                     {view === 'detail' && solicitudSeleccionada && (
                         <div>
                             {/* Cabecera con fondo más claro */}
@@ -358,7 +466,7 @@ const SolicitudCompra = ({ onPageChange }) => {
                                 <h3 style={{ color: '#000', margin: '0 0 15px 0' }}>
                                     Solicitud #{solicitudSeleccionada.numeroSolicitud}
                                 </h3>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '15px' }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '15px' }}>
                                     <div>
                                         <strong style={{ color: '#000' }}>ID:</strong>
                                         <span style={{ color: '#000', marginLeft: '5px' }}>{solicitudSeleccionada.id}</span>
@@ -370,7 +478,7 @@ const SolicitudCompra = ({ onPageChange }) => {
                                     <div>
                                         <strong style={{ color: '#000' }}>Estado:</strong>
                                         <span style={{ 
-                                            background: solicitudSeleccionada.estado ? '#4caf50' : '#ffd700',
+                                            background: solicitudSeleccionada.estado ? '#4caf50' : '#f44336',
                                             color: '#000',
                                             padding: '2px 8px',
                                             borderRadius: '12px',
@@ -378,13 +486,27 @@ const SolicitudCompra = ({ onPageChange }) => {
                                             fontWeight: 'bold',
                                             marginLeft: '10px'
                                         }}>
-                                            {solicitudSeleccionada.estado ? 'ACTIVA' : 'PENDIENTE'}
+                                            {solicitudSeleccionada.estado ? 'ACTIVA' : 'INACTIVA'}
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <strong style={{ color: '#000' }}>Orden:</strong>
+                                        <span style={{ 
+                                            background: tieneOrden(solicitudSeleccionada.id, solicitudSeleccionada.numeroSolicitud) ? '#2196f3' : '#9e9e9e',
+                                            color: 'white',
+                                            padding: '2px 8px',
+                                            borderRadius: '12px',
+                                            fontSize: '12px',
+                                            fontWeight: 'bold',
+                                            marginLeft: '10px'
+                                        }}>
+                                            {tieneOrden(solicitudSeleccionada.id, solicitudSeleccionada.numeroSolicitud) ? 'GENERADA' : 'PENDIENTE'}
                                         </span>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Tabla de detalles - sin observaciones */}
+                            {/* Tabla de detalles */}
                             <h3 style={{ color: '#ffffff', marginBottom: '15px' }}>Artículos Solicitados</h3>
                             
                             {solicitudSeleccionada.detalles && solicitudSeleccionada.detalles.length > 0 ? (
@@ -402,7 +524,6 @@ const SolicitudCompra = ({ onPageChange }) => {
                                         </thead>
                                         <tbody>
                                             {solicitudSeleccionada.detalles.map((d, i) => {
-                                                console.log("Detalle individual:", d);
                                                 return (
                                                     <tr key={i} style={{ borderBottom: '1px solid #ccc' }}>
                                                         <td style={{ padding: '10px', color: '#000' }}>
@@ -449,7 +570,7 @@ const SolicitudCompra = ({ onPageChange }) => {
                         </div>
                     )}
 
-                    {/* ===== CREACIÓN (sin observaciones) ===== */}
+                    {/* ===== CREACIÓN ===== */}
                     {view === 'create' && (
                         <div style={{ 
                             display: 'flex', 
