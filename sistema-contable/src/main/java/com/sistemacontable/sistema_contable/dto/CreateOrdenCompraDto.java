@@ -59,4 +59,12 @@ public class CreateOrdenCompraDto {
     public void setComprador(String comprador) {
         this.comprador = comprador;
     }
+
+    public List<CreateDetalleOrdenCompraDto> getDetalles() {
+        return detalles;
+    }
+
+    public void setDetalles(List<CreateDetalleOrdenCompraDto> detalles) {
+        this.detalles = detalles;
+    }
 }
