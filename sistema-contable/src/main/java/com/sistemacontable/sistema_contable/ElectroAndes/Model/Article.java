@@ -39,7 +39,7 @@ public class Article {
     private boolean habilitado;
 
     @Column(name = "envase_si_no")
-    private boolean envaseSiNo;
+    private Boolean envaseSiNo;
 
     @Column(name = "unidades_por_envase")
     private Integer unidadesPorEnvase;

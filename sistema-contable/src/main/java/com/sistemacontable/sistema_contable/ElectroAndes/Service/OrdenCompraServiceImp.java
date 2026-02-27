@@ -3,8 +3,10 @@ package com.sistemacontable.sistema_contable.ElectroAndes.Service;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import com.sistemacontable.sistema_contable.ElectroAndes.Model.DetalleOrdenCompra;
 import com.sistemacontable.sistema_contable.ElectroAndes.Model.DetalleSolicitud;
 import com.sistemacontable.sistema_contable.ElectroAndes.Model.OrdenCompra;
@@ -15,8 +17,8 @@ import com.sistemacontable.sistema_contable.ElectroAndes.Repository.ProveedorRep
 import com.sistemacontable.sistema_contable.ElectroAndes.Repository.SolicitudCompraRepository;
 import com.sistemacontable.sistema_contable.dto.CreateDetalleOrdenCompraDto;
 import com.sistemacontable.sistema_contable.dto.CreateOrdenCompraDto;
+
 import jakarta.transaction.Transactional;
-import jakarta.persistence.EntityNotFoundException;
 
 @Service
 public class OrdenCompraServiceImp implements OrdenCompraService {

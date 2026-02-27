@@ -1,12 +1,14 @@
 package com.sistemacontable.sistema_contable.ElectroAndes.Util;
 
-import com.sistemacontable.sistema_contable.ElectroAndes.Model.OrdenCompra;
-import com.sistemacontable.sistema_contable.dto.ResponseOrdenCompraDto;
-import com.sistemacontable.sistema_contable.dto.ResponseDetalleOrdenDto;
-import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Component;
+
+import com.sistemacontable.sistema_contable.ElectroAndes.Model.OrdenCompra;
+import com.sistemacontable.sistema_contable.dto.ResponseDetalleOrdenDto;
+import com.sistemacontable.sistema_contable.dto.ResponseOrdenCompraDto;
 
 @Component
 public class OrdenCompraMapper {
@@ -18,7 +20,7 @@ public class OrdenCompraMapper {
         dto.setFechaEmision(orden.getFechaEmision());
         dto.setProveedorNombre(orden.getProveedor().getNombre());
         dto.setMoneda(orden.getMoneda().name());
-        
+
         // Vínculo con la solicitud origen
         if (orden.getSolicitudAsociada() != null) {
             dto.setSolicitudNumero(orden.getSolicitudAsociada().getNumeroSolicitud());
@@ -37,11 +39,11 @@ public class OrdenCompraMapper {
             dDto.setCantidad(detalle.getCantidad());
             dDto.setMedida(detalle.getMedida());
             dDto.setPrecioUnitario(detalle.getPrecioUnitario());
-            
+
             // Calculamos el subtotal de la línea para el frontend
             BigDecimal subtotalLinea = detalle.getPrecioUnitario().multiply(BigDecimal.valueOf(detalle.getCantidad()));
             dDto.setSubtotalLinea(subtotalLinea);
-            
+
             return dDto;
         }).collect(Collectors.toList());
 
