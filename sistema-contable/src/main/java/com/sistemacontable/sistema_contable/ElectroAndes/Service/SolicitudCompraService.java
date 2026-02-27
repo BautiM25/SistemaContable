@@ -13,5 +13,7 @@ public interface SolicitudCompraService {
 
     SolicitudCompra obtenerPorId(Long id);
 
+    SolicitudCompra obtenerPorNumero(String numeroSolicitud);
+
     void cambiarEstado(Long id, boolean estado);
 }
