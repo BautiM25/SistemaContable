@@ -60,6 +60,12 @@ public class SolicitudCompraServiceImp implements SolicitudCompraService {
     }
 
     @Override
+    public SolicitudCompra obtenerPorNumero(String numeroSolicitud) {
+        return solicitudRepo.findByNumeroSolicitud(numeroSolicitud)
+                .orElseThrow(() -> new EntityNotFoundException("Solicitud con número " + numeroSolicitud + " no encontrada"));
+    }
+
+    @Override
     public void cambiarEstado(Long id, boolean estado) {
         SolicitudCompra s = obtenerPorId(id);
         s.setEstado(estado);
