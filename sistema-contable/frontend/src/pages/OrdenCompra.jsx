@@ -229,16 +229,29 @@ const OrdenCompra = ({ onPageChange }) => {
         setNuevaOrden({
             ...nuevaOrden,
             idSolicitud: solicitud.id,
-            // Cargar los detalles de la solicitud como base
+            // Cargar los detalles de la solicitud como base (con cantidad editable)
             detalles: solicitud.detalles.map(d => ({
                 idArticulo: d.idArticulo || d.articulo?.id,
                 descripcion: d.articuloDescripcion || d.descripcion,
-                cantidad: d.cantidad,
+                cantidad: d.cantidad, // Se carga la cantidad de la solicitud pero será editable
                 medida: d.medida || '',
                 precioUnitario: 0
             }))
         });
         setShowSolicitudModal(false);
+    };
+
+    // Función para actualizar cualquier campo de un detalle
+    const actualizarDetalle = (index, campo, valor) => {
+        const nuevosDetalles = [...nuevaOrden.detalles];
+        nuevosDetalles[index] = {
+            ...nuevosDetalles[index],
+            [campo]: campo === 'cantidad' || campo === 'precioUnitario' ? parseFloat(valor) || 0 : valor
+        };
+        setNuevaOrden({
+            ...nuevaOrden,
+            detalles: nuevosDetalles
+        });
     };
 
     const actualizarPrecioDetalle = (index, precio) => {
@@ -551,7 +564,7 @@ const OrdenCompra = ({ onPageChange }) => {
                         }}>
                             <div className="user-form" style={{ 
                                 width: '100%', 
-                                maxWidth: '1000px',
+                                maxWidth: '1200px',
                                 margin: '0 auto'
                             }}>
                                 {/* Número de orden automático */}
@@ -671,7 +684,7 @@ const OrdenCompra = ({ onPageChange }) => {
                                     </div>
                                 </div>
 
-                                {/* Tabla de artículos con precios */}
+                                {/* Tabla de artículos con cantidades editables */}
                                 <div style={{ 
                                     background: '#2a2a2a', 
                                     padding: '20px', 
@@ -697,12 +710,13 @@ const OrdenCompra = ({ onPageChange }) => {
                                             <table className="partidas-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
                                                 <thead>
                                                     <tr style={{ background: '#333' }}>
-                                                        <th style={{ padding: '10px', textAlign: 'left', color: '#fff' }}>Descripción</th>
-                                                        <th style={{ padding: '10px', textAlign: 'left', color: '#fff' }}>Cant.</th>
-                                                        <th style={{ padding: '10px', textAlign: 'left', color: '#fff' }}>Medida</th>
-                                                        <th style={{ padding: '10px', textAlign: 'left', color: '#fff' }}>Precio Unit.</th>
-                                                        <th style={{ padding: '10px', textAlign: 'left', color: '#fff' }}>Subtotal</th>
-                                                        <th style={{ padding: '10px', textAlign: 'left', color: '#fff' }}>Acción</th>
+                                                        <th style={{ padding: '10px', textAlign: 'left', color: '#000000' }}>ID Art.</th>
+                                                        <th style={{ padding: '10px', textAlign: 'left', color: '#000000' }}>Descripción</th>
+                                                        <th style={{ padding: '10px', textAlign: 'left', color: '#000000' }}>Cantidad</th>
+                                                        <th style={{ padding: '10px', textAlign: 'left', color: '#000000' }}>Medida</th>
+                                                        <th style={{ padding: '10px', textAlign: 'left', color: '#000000' }}>Precio Unit.</th>
+                                                        <th style={{ padding: '10px', textAlign: 'left', color: '#000000' }}>Subtotal</th>
+                                                        <th style={{ padding: '10px', textAlign: 'left', color: '#000000' }}>Acción</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -710,14 +724,24 @@ const OrdenCompra = ({ onPageChange }) => {
                                                         const subtotal = d.cantidad * d.precioUnitario;
                                                         return (
                                                             <tr key={i} style={{ borderBottom: '1px solid #444' }}>
-                                                                <td style={{ padding: '10px', color: '#fff' }}>{d.descripcion}</td>
-                                                                <td style={{ padding: '10px', color: '#fff' }}>{d.cantidad}</td>
-                                                                <td style={{ padding: '10px', color: '#fff' }}>{d.medida || '-'}</td>
+                                                                <td style={{ padding: '10px', color: '#000000' }}>{d.idArticulo || '-'}</td>
+                                                                <td style={{ padding: '10px', color: '#000000' }}>{d.descripcion}</td>
                                                                 <td style={{ padding: '10px', color: '#fff' }}>
                                                                     <input 
                                                                         type="number" 
                                                                         min="0"
-                                                                        step="0.01"
+                                                                        step="1"
+                                                                        value={d.cantidad} 
+                                                                        onChange={e => actualizarDetalle(i, 'cantidad', e.target.value)}
+                                                                        style={{ width: '80px', background: '#222', color: '#fff', border: '1px solid #444', padding: '5px', borderRadius: '4px' }}
+                                                                    />
+                                                                </td>
+                                                                <td style={{ padding: '10px', color: '#000000' }}>{d.medida}</td>
+                                                                <td style={{ padding: '10px', color: '#fff' }}>
+                                                                    <input 
+                                                                        type="number" 
+                                                                        min="0"
+                                                                        step="1"
                                                                         value={d.precioUnitario} 
                                                                         onChange={e => actualizarPrecioDetalle(i, e.target.value)}
                                                                         style={{ width: '100px', background: '#222', color: '#fff', border: '1px solid #444', padding: '5px', borderRadius: '4px' }}
