@@ -30,7 +30,6 @@ public class OrdenCompraServiceImp implements OrdenCompraService {
     @Autowired
     private ProveedorRepository proveedorRepo;
 
-    // OrdenCompraServiceImp.java
     @Override
     @Transactional
     public OrdenCompra generarDesdeSolicitud(CreateOrdenCompraDto dto) {

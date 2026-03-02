@@ -82,6 +82,8 @@ const BuscarSolicitudModal = ({ onSelect, onClose }) => {
         const fetchSolicitudes = async () => {
             try {
                 const res = await api.get("/solicitudes");
+
+                console.log("📥 JSON recibido de /solicitudes:", JSON.stringify(res.data, null, 2));
                 // Filtrar solo solicitudes activas y que tengan detalles
                 const activas = res.data.filter(s => s.estado === true && s.detalles?.length > 0);
                 setSolicitudes(activas);
@@ -297,6 +299,8 @@ const OrdenCompra = ({ onPageChange }) => {
                     medida: d.medida
                 }))
             };
+
+            console.log("🚀 Payload enviado al Back:", JSON.stringify(ordenDto, null, 2));
             
             await api.post("/ordenes/generar-desde-solicitud", ordenDto);
             alert("✅ Orden de Compra generada exitosamente.");

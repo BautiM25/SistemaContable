@@ -2,7 +2,9 @@ package com.sistemacontable.sistema_contable.ElectroAndes.Util;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Component;
+
 import com.sistemacontable.sistema_contable.ElectroAndes.Model.SolicitudCompra;
 import com.sistemacontable.sistema_contable.dto.ResponseDetalleSolicitudDto;
 import com.sistemacontable.sistema_contable.dto.ResponseSolicitudCompraDto;
@@ -20,17 +22,18 @@ public class SolicitudCompraMapper {
         List<ResponseDetalleSolicitudDto> detallesDto = solicitud.getDetalles().stream().map(d -> {
             ResponseDetalleSolicitudDto rd = new ResponseDetalleSolicitudDto();
             rd.setId(d.getId());
+            rd.setIdArticulo(d.getArticulo().getId());
             rd.setArticuloReferencia(d.getArticulo().getReferencia());
             rd.setArticuloDescripcion(d.getDescripcion());
             rd.setCantidad(d.getCantidad());
             rd.setMedida(d.getMedida());
             rd.setEstado(d.getEstado());
-            
+
             // 📌 CAMPOS FALTANTES - AGREGADOS AHORA
             rd.setEspecificacionesTecnicas(d.getEspecificacionesTecnicas());
             rd.setObservaciones(d.getObservaciones());
             rd.setFechaLimite(d.getFechaLimite());
-            
+
             return rd;
         }).collect(Collectors.toList());
 
