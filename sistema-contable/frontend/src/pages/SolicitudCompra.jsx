@@ -78,7 +78,7 @@ const SolicitudCompra = ({ onPageChange }) => {
     const [solicitudes, setSolicitudes] = useState([]);
     const [ordenes, setOrdenes] = useState([]);
     const [searchTerm, setSearchTerm] = useState(''); 
-    const [filtroEstado, setFiltroEstado] = useState('todas'); // 'todas', 'activas', 'inactivas'
+    const [filtroEstado, setFiltroEstado] = useState('todas');
     const [view, setView] = useState('list'); 
     const [loading, setLoading] = useState(false);
     const [showModal, setShowModal] = useState(false);
@@ -150,7 +150,6 @@ const SolicitudCompra = ({ onPageChange }) => {
     const cargarSolicitudes = async () => {
         setLoading(true);
         try {
-            // Usar el nuevo endpoint que trae TODAS las solicitudes
             const res = await api.get("/solicitudes/todas");
             console.log("Todas las solicitudes:", res.data);
             setSolicitudes(res.data);
@@ -165,13 +164,52 @@ const SolicitudCompra = ({ onPageChange }) => {
     const tieneOrden = (solicitudId, solicitudNumero) => {
         if (!ordenes || ordenes.length === 0) return false;
         
-        // Buscar por ID de solicitud o por número de solicitud
         const encontrada = ordenes.some(o => 
             o.solicitudNumero === solicitudNumero || 
             o.solicitudNumero === solicitudId?.toString()
         );
         
         return encontrada;
+    };
+
+    // Calcular cantidad pendiente para un artículo en una solicitud
+    const calcularCantidadPendiente = (solicitudId, articuloId, cantidadSolicitada) => {
+        if (!ordenes || ordenes.length === 0) return cantidadSolicitada;
+        
+        // Buscar todas las órdenes asociadas a esta solicitud
+        const ordenesSolicitud = ordenes.filter(o => 
+            o.solicitudNumero === solicitudId?.toString() || 
+            o.solicitudNumero === solicitudSeleccionada?.numeroSolicitud
+        );
+        
+        if (ordenesSolicitud.length === 0) return cantidadSolicitada;
+        
+        // Sumar las cantidades de este artículo en todas las órdenes
+        let cantidadPedida = 0;
+        ordenesSolicitud.forEach(orden => {
+            if (orden.detalles) {
+                const detalle = orden.detalles.find(d => 
+                    d.articuloReferencia === articuloId?.toString() ||
+                    d.id === articuloId
+                );
+                if (detalle) {
+                    cantidadPedida += detalle.cantidad;
+                }
+            }
+        });
+        
+        return Math.max(0, cantidadSolicitada - cantidadPedida);
+    };
+
+    // Determinar el color de fondo para un detalle según su estado de pedido
+    const getColorEstadoArticulo = (cantidadPendiente, cantidadSolicitada) => {
+        if (cantidadPendiente === 0) {
+            return '#ffcccc'; // Rojo claro para artículos totalmente pedidos
+        } else if (cantidadPendiente < cantidadSolicitada) {
+            return '#cce5ff'; // Azul claro para artículos parcialmente pedidos
+        } else {
+            return 'white'; // Blanco para artículos sin pedir
+        }
     };
 
     const handleSelectArticulo = (art) => {
@@ -256,15 +294,14 @@ const SolicitudCompra = ({ onPageChange }) => {
         }
     };
 
-    // Función para determinar el color de fondo según el estado
     const getBackgroundColor = (solicitud) => {
         if (!solicitud.estado) {
-            return '#ffebee'; // Rojo muy claro para inactivas
+            return '#ffebee';
         }
         if (tieneOrden(solicitud.id, solicitud.numeroSolicitud)) {
-            return '#e8f4fd'; // Azul claro para activas con orden
+            return '#e8f4fd';
         }
-        return 'white'; // Blanco para activas sin orden
+        return 'white';
     };
 
     return (
@@ -327,7 +364,6 @@ const SolicitudCompra = ({ onPageChange }) => {
                                 </div>
                             ) : (
                                 <div>
-                                    {/* Filtros por estado - SOLO LOS BOTONES, SIN LEGENDA */}
                                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px', alignItems: 'center' }}>
                                         <div style={{ display: 'flex', gap: '10px' }}>
                                             <button 
@@ -352,7 +388,6 @@ const SolicitudCompra = ({ onPageChange }) => {
                                                 Inactivas
                                             </button>
                                         </div>
-                                        {/* LEGENDA ELIMINADA */}
                                     </div>
 
                                     <table className="partidas-table" style={{ width: '100%', borderCollapse: 'collapse', background: 'white' }}>
@@ -370,9 +405,7 @@ const SolicitudCompra = ({ onPageChange }) => {
                                         <tbody>
                                             {solicitudes
                                                 .filter(s => {
-                                                    // Filtro por búsqueda
                                                     const matchesSearch = s.numeroSolicitud?.toLowerCase().includes(searchTerm.toLowerCase());
-                                                    // Filtro por estado
                                                     const matchesEstado = 
                                                         filtroEstado === 'todas' ? true :
                                                         filtroEstado === 'activas' ? s.estado === true :
@@ -506,7 +539,7 @@ const SolicitudCompra = ({ onPageChange }) => {
                                 </div>
                             </div>
 
-                            {/* Tabla de detalles */}
+                            {/* Tabla de detalles con cantidad pendiente y colores */}
                             <h3 style={{ color: '#ffffff', marginBottom: '15px' }}>Artículos Solicitados</h3>
                             
                             {solicitudSeleccionada.detalles && solicitudSeleccionada.detalles.length > 0 ? (
@@ -516,7 +549,8 @@ const SolicitudCompra = ({ onPageChange }) => {
                                             <tr style={{ background: '#f0f0f0' }}>
                                                 <th style={{ padding: '10px', textAlign: 'left', color: '#000', borderBottom: '2px solid #ccc' }}>Referencia</th>
                                                 <th style={{ padding: '10px', textAlign: 'left', color: '#000', borderBottom: '2px solid #ccc' }}>Descripción</th>
-                                                <th style={{ padding: '10px', textAlign: 'left', color: '#000', borderBottom: '2px solid #ccc' }}>Cantidad</th>
+                                                <th style={{ padding: '10px', textAlign: 'left', color: '#000', borderBottom: '2px solid #ccc' }}>Cant. Solicitada</th>
+                                                <th style={{ padding: '10px', textAlign: 'left', color: '#000', borderBottom: '2px solid #ccc' }}>Cant. Pendiente</th>
                                                 <th style={{ padding: '10px', textAlign: 'left', color: '#000', borderBottom: '2px solid #ccc' }}>Espec. Técnicas</th>
                                                 <th style={{ padding: '10px', textAlign: 'left', color: '#000', borderBottom: '2px solid #ccc' }}>Medida</th>
                                                 <th style={{ padding: '10px', textAlign: 'left', color: '#000', borderBottom: '2px solid #ccc' }}>Fecha Límite</th>
@@ -524,8 +558,18 @@ const SolicitudCompra = ({ onPageChange }) => {
                                         </thead>
                                         <tbody>
                                             {solicitudSeleccionada.detalles.map((d, i) => {
+                                                const cantidadPendiente = calcularCantidadPendiente(
+                                                    solicitudSeleccionada.id, 
+                                                    d.articuloReferencia, 
+                                                    d.cantidad
+                                                );
+                                                const backgroundColor = getColorEstadoArticulo(cantidadPendiente, d.cantidad);
+                                                
                                                 return (
-                                                    <tr key={i} style={{ borderBottom: '1px solid #ccc' }}>
+                                                    <tr key={i} style={{ 
+                                                        borderBottom: '1px solid #ccc',
+                                                        backgroundColor: backgroundColor
+                                                    }}>
                                                         <td style={{ padding: '10px', color: '#000' }}>
                                                             {d.articuloReferencia || 'S/N'}
                                                         </td>
@@ -533,6 +577,9 @@ const SolicitudCompra = ({ onPageChange }) => {
                                                             {d.articuloDescripcion || 'Sin descripción'}
                                                         </td>
                                                         <td style={{ padding: '10px', color: '#000', fontWeight: 'bold' }}>{d.cantidad}</td>
+                                                        <td style={{ padding: '10px', color: '#000', fontWeight: 'bold' }}>
+                                                            {cantidadPendiente}
+                                                        </td>
                                                         <td style={{ padding: '10px', color: '#000' }}>
                                                             {d.especificacionesTecnicas || '-'}
                                                         </td>
@@ -656,8 +703,8 @@ const SolicitudCompra = ({ onPageChange }) => {
                                             <input 
                                                 className="input-base" 
                                                 type="number" 
-                                                min="0.01"
-                                                step="0.01"
+                                                min="0"
+                                                step="1"
                                                 value={itemActual.cantidad} 
                                                 onChange={e => setItemActual({...itemActual, cantidad: parseFloat(e.target.value) || 1})}
                                                 style={{ width: '100%', background: '#222', color: '#fff', boxSizing: 'border-box' }}
