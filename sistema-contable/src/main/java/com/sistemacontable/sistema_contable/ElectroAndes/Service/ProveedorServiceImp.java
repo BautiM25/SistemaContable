@@ -8,8 +8,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.sistemacontable.sistema_contable.ElectroAndes.Model.Article;
+import com.sistemacontable.sistema_contable.ElectroAndes.Model.ArticuloProveedor;
 import com.sistemacontable.sistema_contable.ElectroAndes.Model.Proveedor;
+import com.sistemacontable.sistema_contable.ElectroAndes.Repository.ArticleRepository;
 import com.sistemacontable.sistema_contable.ElectroAndes.Repository.ProveedorRepository;
+import com.sistemacontable.sistema_contable.dto.ArticuloVinculadoDto;
 import com.sistemacontable.sistema_contable.dto.CreateProveedorDto;
 import com.sistemacontable.sistema_contable.dto.ResponseProveedorDto;
 
@@ -18,6 +22,9 @@ public class ProveedorServiceImp implements ProveedorService {
 
     @Autowired
     private ProveedorRepository proveedorRepository;
+
+    @Autowired
+    private ArticleRepository articleRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -117,6 +124,18 @@ public class ProveedorServiceImp implements ProveedorService {
         dto.setDivisa(entity.getDivisa());
         dto.setSaldoInicialCC(entity.getSaldoInicialCC());
         dto.setBanco(entity.getBanco());
+
+        if (entity.getArticulosSuministrados() != null) {
+            dto.setArticulos(entity.getArticulosSuministrados().stream()
+                    .map(ap -> {
+                        ArticuloVinculadoDto aDto = new ArticuloVinculadoDto();
+                        aDto.setIdArticulo(ap.getArticulo().getId());
+                        aDto.setReferencia(ap.getArticulo().getReferencia());
+                        aDto.setDescripcion(ap.getArticulo().getDescripcion());
+                        aDto.setPrecioPactado(ap.getPrecio());
+                        return aDto;
+                    }).collect(Collectors.toList()));
+        }
         return dto;
     }
 
@@ -147,5 +166,25 @@ public class ProveedorServiceImp implements ProveedorService {
     @Transactional(readOnly = true)
     public List<String> getRubrosDisponibles() {
         return proveedorRepository.findDistinctRubros();
+    }
+
+    @Override
+    @Transactional
+    public void agregarArticuloAProveedor(Long idProveedor, Long idArticulo) {
+        // Corregido: usando proveedorRepository y articleRepository (necesitás inyectar articleRepository acá)
+        Proveedor proveedor = proveedorRepository.findById(idProveedor)
+                .orElseThrow(() -> new RuntimeException("Proveedor no encontrado"));
+
+        // Necesitás inyectar articleRepository en este Service también
+        Article articulo = articleRepository.findById(idArticulo)
+                .orElseThrow(() -> new RuntimeException("Artículo no encontrado"));
+
+        ArticuloProveedor asociacion = new ArticuloProveedor();
+        asociacion.setProveedor(proveedor);
+        asociacion.setArticulo(articulo);
+        asociacion.setPrecio(articulo.getCostoBase());
+
+        proveedor.getArticulosSuministrados().add(asociacion);
+        proveedorRepository.save(proveedor);
     }
 }

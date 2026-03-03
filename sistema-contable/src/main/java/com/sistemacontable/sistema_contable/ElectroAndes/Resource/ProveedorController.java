@@ -103,4 +103,10 @@ public class ProveedorController {
         return proveedorService.getRubrosDisponibles();
     }
 
+    @PostMapping("/{id}/articulos/{idArticulo}")
+    public ResponseEntity<Void> vincularArticulo(@PathVariable Long id, @PathVariable Long idArticulo) {
+        proveedorService.agregarArticuloAProveedor(id, idArticulo);
+        return ResponseEntity.ok().build();
+    }
+
 }

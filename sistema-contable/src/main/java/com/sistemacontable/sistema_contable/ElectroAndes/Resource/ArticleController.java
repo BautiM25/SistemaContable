@@ -110,4 +110,10 @@ public class ArticleController {
         return articleService.findByStatus(status);
     }
 
+    @PostMapping("/{id}/proveedores/{idProveedor}")
+    public ResponseEntity<Void> vincularProveedor(@PathVariable Long id, @PathVariable Long idProveedor) {
+        articleService.agregarProveedorAArticulo(id, idProveedor);
+        return ResponseEntity.ok().build();
+    }
+
 }

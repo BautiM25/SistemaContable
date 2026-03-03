@@ -28,4 +28,6 @@ public interface ArticleService {
     boolean enable(Long id);
 
     List<ResponseArticleDto> findByStatus(boolean activo);
+
+    void agregarProveedorAArticulo(Long articleId, Long providerId);
 }
