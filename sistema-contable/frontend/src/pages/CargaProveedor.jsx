@@ -9,8 +9,7 @@ import LogoGrupo5 from "../assets/LogoGrupo5.png";
 const CATEGORIAS_IVA = [
     { value: 'RESPONSABLE_INSCRIPTO', label: 'Responsable Inscripto' },
     { value: 'MONOTRIBUTISTA', label: 'Monotributista' },
-    { value: 'EXENTO', label: 'Exento' },
-    { value: 'CONSUMIDOR_FINAL', label: 'Consumidor Final' }
+    { value: 'EXENTO', label: 'Exento' }
 ];
 
 export default function CargaProveedor({ onPageChange }) {
