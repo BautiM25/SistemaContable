@@ -4,5 +4,5 @@ public enum CategoriaIva {
     RESPONSABLE_INSCRIPTO,
     MONOTRIBUTISTA,
     EXENTO,
-    CONSUMIDOR_FINAL
+    CONSUMIDOR_FINALdd
 }
