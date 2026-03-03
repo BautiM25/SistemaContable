@@ -1,6 +1,7 @@
 package com.sistemacontable.sistema_contable.dto;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import com.sistemacontable.sistema_contable.ElectroAndes.Model.CategoriaIva;
 
@@ -15,6 +16,7 @@ public class ResponseProveedorDto {
     private String divisa;
     private BigDecimal saldoInicialCC;
     private String banco;
+    private List<ArticuloVinculadoDto> articulos;
 
     public ResponseProveedorDto() {
     }
@@ -90,5 +92,13 @@ public class ResponseProveedorDto {
 
     public void setBanco(String banco) {
         this.banco = banco;
+    }
+
+    public List<ArticuloVinculadoDto> getArticulos() {
+        return articulos;
+    }
+
+    public void setArticulos(List<ArticuloVinculadoDto> articulos) {
+        this.articulos = articulos;
     }
 }

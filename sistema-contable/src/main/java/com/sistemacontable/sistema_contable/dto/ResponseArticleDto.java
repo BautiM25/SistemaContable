@@ -1,6 +1,7 @@
 package com.sistemacontable.sistema_contable.dto;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 public class ResponseArticleDto {
 
@@ -15,6 +16,7 @@ public class ResponseArticleDto {
     private Long idProveedorHabitual;
     private String nombreProveedorHabitual;
     private String comentarios;
+    private List<ProveedorVinculadoDto> proveedores; // Una lista de proveedores con sus precios
 
     public ResponseArticleDto() {
     }
@@ -106,5 +108,13 @@ public class ResponseArticleDto {
 
     public void setComentarios(String comentarios) {
         this.comentarios = comentarios;
+    }
+
+    public List<ProveedorVinculadoDto> getProveedores() {
+        return proveedores;
+    }
+
+    public void setProveedores(List<ProveedorVinculadoDto> proveedores) {
+        this.proveedores = proveedores;
     }
 }

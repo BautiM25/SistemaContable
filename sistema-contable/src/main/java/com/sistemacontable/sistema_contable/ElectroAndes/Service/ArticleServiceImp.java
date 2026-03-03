@@ -9,11 +9,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.sistemacontable.sistema_contable.ElectroAndes.Model.Article;
+import com.sistemacontable.sistema_contable.ElectroAndes.Model.ArticuloProveedor;
 import com.sistemacontable.sistema_contable.ElectroAndes.Model.Proveedor;
 import com.sistemacontable.sistema_contable.ElectroAndes.Repository.ArticleRepository;
 import com.sistemacontable.sistema_contable.ElectroAndes.Repository.ProveedorRepository;
 import com.sistemacontable.sistema_contable.dto.ArticleStockWarningDto;
 import com.sistemacontable.sistema_contable.dto.CreateArticleDto;
+import com.sistemacontable.sistema_contable.dto.ProveedorVinculadoDto;
 import com.sistemacontable.sistema_contable.dto.ResponseArticleDto;
 
 @Service
@@ -142,6 +144,17 @@ public class ArticleServiceImp implements ArticleService {
             dto.setIdProveedorHabitual(entity.getProveedorHabitual().getId());
             dto.setNombreProveedorHabitual(entity.getProveedorHabitual().getNombre());
         }
+
+        if (entity.getProveedoresAsociados() != null) {
+            dto.setProveedores(entity.getProveedoresAsociados().stream()
+                    .map(ap -> {
+                        ProveedorVinculadoDto pDto = new ProveedorVinculadoDto();
+                        pDto.setIdProveedor(ap.getProveedor().getId());
+                        pDto.setNombre(ap.getProveedor().getNombre());
+                        pDto.setPrecioPactado(ap.getPrecio()); // ¡Dato clave!
+                        return pDto;
+                    }).collect(Collectors.toList()));
+        }
         return dto;
     }
 
@@ -179,5 +192,23 @@ public class ArticleServiceImp implements ArticleService {
                     .map(this::convertToResponseDto)
                     .collect(Collectors.toList());
         }
+    }
+
+    @Override
+    @Transactional
+    public void agregarProveedorAArticulo(Long idArticulo, Long idProveedor) {
+        // Corregido: usando articleRepository y proveedorRepository
+        Article articulo = articleRepository.findById(idArticulo)
+                .orElseThrow(() -> new RuntimeException("Artículo no encontrado"));
+        Proveedor proveedor = proveedorRepository.findById(idProveedor)
+                .orElseThrow(() -> new RuntimeException("Proveedor no encontrado"));
+
+        ArticuloProveedor asociacion = new ArticuloProveedor();
+        asociacion.setArticulo(articulo);
+        asociacion.setProveedor(proveedor);
+        asociacion.setPrecio(articulo.getCostoBase());
+
+        articulo.getProveedoresAsociados().add(asociacion);
+        articleRepository.save(articulo);
     }
 }

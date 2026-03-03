@@ -243,4 +243,12 @@ public class Proveedor {
     public void setActivo(boolean activo) {
         this.activo = activo;
     }
+
+    public List<ArticuloProveedor> getArticulosSuministrados() {
+        return articulosSuministrados;
+    }
+
+    public void setArticulosSuministrados(List<ArticuloProveedor> articulosSuministrados) {
+        this.articulosSuministrados = articulosSuministrados;
+    }
 }

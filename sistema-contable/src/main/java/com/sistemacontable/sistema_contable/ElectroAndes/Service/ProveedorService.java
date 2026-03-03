@@ -27,4 +27,6 @@ public interface ProveedorService {
     List<ResponseProveedorDto> findByStatus(boolean status);
 
     List<String> getRubrosDisponibles();
+
+    void agregarArticuloAProveedor(Long providerId, Long articleId);
 }
