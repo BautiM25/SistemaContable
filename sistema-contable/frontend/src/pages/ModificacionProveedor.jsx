@@ -12,6 +12,8 @@ const CATEGORIAS_IVA = [
     { value: 'EXENTO', label: 'Exento' }
 ];
 
+const DIVISAS = ['ARS', 'USD'];
+
 // ====================================================================
 // MODAL DE BÚSQUEDA (Misma lógica que Activar/Baja)
 // ====================================================================
@@ -172,7 +174,9 @@ export default function ModificacionProveedor({ onPageChange }) {
                                         </select>
                                     </label>
                                     <label className="header-field">Divisa:
-                                        <input type="text" className="input-base" name="divisa" value={formData.divisa} onChange={handleChange} />
+                                        <select className="input-base" name="divisa" value={formData.divisa} onChange={handleChange}>
+                                            {DIVISAS.map(d => <option key={d} value={d}>{d}</option>)}
+                                        </select>
                                     </label>
                                     <label className="header-field">Subcuenta:
                                         <input type="text" className="input-base" name="subcuenta" value={formData.subcuenta} onChange={handleChange} />

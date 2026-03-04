@@ -197,15 +197,15 @@ export default function ConsultaArticulo({ id, onPageChange }) {
                             <table className="partidas-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
                                 <thead>
                                     <tr style={{ background: '#333' }}>
-                                        <th style={{ padding: '10px', textAlign: 'left', color: '#fff' }}>Proveedor</th>
-                                        <th style={{ padding: '10px', textAlign: 'right', color: '#fff' }}>Precio Pactado</th>
-                                        <th style={{ padding: '10px', textAlign: 'center', color: '#fff' }}>Rol</th>
+                                        <th style={{ padding: '10px', textAlign: 'left', color: '#000000' }}>Proveedor</th>
+                                        <th style={{ padding: '10px', textAlign: 'right', color: '#000000' }}>Precio Pactado</th>
+                                        <th style={{ padding: '10px', textAlign: 'center', color: '#000000' }}>Rol</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {articulo.proveedores.map((p, idx) => (
                                         <tr key={idx} style={{ borderBottom: '1px solid #444' }}>
-                                            <td style={{ padding: '10px', color: '#fff' }}>{p.nombre}</td>
+                                            <td style={{ padding: '10px', color: '#000000' }}>{p.nombre}</td>
                                             <td style={{ padding: '10px', color: '#ffd700', textAlign: 'right', fontWeight: 'bold' }}>
                                                 ${p.precioPactado?.toFixed(2)}
                                             </td>

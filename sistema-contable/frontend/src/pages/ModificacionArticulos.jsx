@@ -14,7 +14,7 @@ const IVA_MODALITIES = [
     { value: 'EXENTO', label: 'Exento' }
 ];
 
-const DIVISAS = ['ARS', 'USD', 'EUR'];
+const DIVISAS = ['ARS', 'USD'];
 
 // ====================================================================
 // MODAL PARA BUSCAR EL ARTÍCULO A MODIFICAR
