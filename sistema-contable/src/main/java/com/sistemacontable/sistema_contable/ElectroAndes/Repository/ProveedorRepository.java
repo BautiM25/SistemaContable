@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.sistemacontable.sistema_contable.ElectroAndes.Model.Proveedor;
@@ -31,4 +32,13 @@ public interface ProveedorRepository extends JpaRepository<Proveedor, Long> {
 
     @Query("SELECT DISTINCT p.rubro FROM Proveedor p WHERE p.activo = true")
     List<String> findDistinctRubros();
+
+    @Query("SELECT ap.proveedor FROM ArticuloProveedor ap "
+            + "WHERE ap.articulo.id IN :articuloIds "
+            + "GROUP BY ap.proveedor "
+            + "HAVING COUNT(DISTINCT ap.articulo.id) = :totalArticulos")
+    List<Proveedor> findProveedoresAptos(
+            @Param("articuloIds") List<Long> articuloIds,
+            @Param("totalArticulos") Long totalArticulos
+    );
 }
