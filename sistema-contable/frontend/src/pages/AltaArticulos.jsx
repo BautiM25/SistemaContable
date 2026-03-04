@@ -13,7 +13,7 @@ const IVA_MODALITIES = [
     { value: 'EXENTO', label: 'Exento' }
 ];
 
-const DIVISAS = ['ARS', 'USD', 'EUR'];
+const DIVISAS = ['ARS', 'USD'];
 
 // ====================================================================
 // MODAL DE BÚSQUEDA DE PROVEEDOR

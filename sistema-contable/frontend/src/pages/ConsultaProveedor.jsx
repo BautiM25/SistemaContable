@@ -197,16 +197,16 @@ export default function ConsultaProveedor({ id, onPageChange }) {
                             <table className="partidas-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
                                 <thead>
                                     <tr style={{ background: '#333' }}>
-                                        <th style={{ padding: '10px', textAlign: 'left', color: '#fff' }}>Referencia</th>
-                                        <th style={{ padding: '10px', textAlign: 'left', color: '#fff' }}>Descripción</th>
-                                        <th style={{ padding: '10px', textAlign: 'right', color: '#fff' }}>Precio Pactado</th>
+                                        <th style={{ padding: '10px', textAlign: 'left', color: '#000000' }}>Referencia</th>
+                                        <th style={{ padding: '10px', textAlign: 'left', color: '#000000' }}>Descripción</th>
+                                        <th style={{ padding: '10px', textAlign: 'right', color: '#000000' }}>Precio Pactado</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {proveedor.articulos.map((art, idx) => (
                                         <tr key={idx} style={{ borderBottom: '1px solid #444' }}>
                                             <td style={{ padding: '10px', color: '#4caf50', fontWeight: 'bold' }}>{art.referencia}</td>
-                                            <td style={{ padding: '10px', color: '#fff' }}>{art.descripcion}</td>
+                                            <td style={{ padding: '10px', color: '#000000' }}>{art.descripcion}</td>
                                             <td style={{ padding: '10px', color: '#ffd700', textAlign: 'right', fontWeight: 'bold' }}>
                                                 ${art.precioPactado?.toFixed(2)}
                                             </td>

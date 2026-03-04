@@ -12,6 +12,8 @@ const CATEGORIAS_IVA = [
     { value: 'EXENTO', label: 'Exento' }
 ];
 
+const DIVISAS = ['ARS', 'USD'];
+
 export default function CargaProveedor({ onPageChange }) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     
@@ -109,7 +111,9 @@ export default function CargaProveedor({ onPageChange }) {
                                     </select>
                                 </label>
                                 <label className="header-field">Divisa:
-                                    <input type="text" className="input-base" name="divisa" value={formData.divisa} onChange={handleChange} />
+                                    <select className="input-base" name="divisa" value={formData.divisa} onChange={handleChange}>
+                                        {DIVISAS.map(d => <option key={d} value={d}>{d}</option>)}
+                                    </select>
                                 </label>
                                 <label className="header-field">Subcuenta Contable:
                                     <input type="text" className="input-base" name="subcuenta" value={formData.subcuenta} onChange={handleChange} />
