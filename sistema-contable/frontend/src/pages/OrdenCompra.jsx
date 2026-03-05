@@ -11,59 +11,92 @@ import "../styles/Modal.css";
 // ====================================================================
 // MODAL DE BÚSQUEDA DE PROVEEDORES
 // ====================================================================
-const BuscarProveedorModal = ({ onSelect, onClose }) => {
+const BuscarProveedorModal = ({ onSelect, onClose, proveedoresAptos = [], isFiltering = false }) => {
     const [proveedores, setProveedores] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        const fetchProveedores = async () => {
-            try {
-                const res = await api.get("/proveedores");
-                setProveedores(res.data);
-            } catch (err) {
-                console.error("Error al cargar proveedores:", err);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchProveedores();
-    }, []);
+        // REGLA: Si estamos filtrando por solicitud, usamos SOLO lo que llegó por props
+        if (isFiltering) {
+            setProveedores(proveedoresAptos);
+            setLoading(false);
+        } else {
+            // Solo si NO hay solicitud (creación libre), cargamos todo el padrón
+            const fetchProveedores = async () => {
+                setLoading(true);
+                try {
+                    const res = await api.get("/proveedores");
+                    setProveedores(res.data);
+                } catch (err) {
+                    console.error("Error al cargar proveedores:", err);
+                } finally {
+                    setLoading(false);
+                }
+            };
+            fetchProveedores();
+        }
+    }, [proveedoresAptos, isFiltering]);
 
     const filtered = proveedores.filter(p => 
         p.nombre?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-        p.cuit?.includes(searchTerm)
+        p.cuitCuil?.includes(searchTerm) // Usamos cuitCuil del backup [cite: 76]
     );
 
     return (
         <div className="modal-overlay">
-            <div className="modal-content modal-cuenta" style={{ width: '600px', maxWidth: '90%' }}>
-                <h3 className="modal-title">Seleccionar Proveedor</h3>
-                <input 
-                    type="text" 
-                    className="input-base large-input" 
-                    placeholder="Filtrar por nombre o CUIT..."
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    autoFocus
-                />
-                <div className="cuenta-list-container" style={{ maxHeight: '400px' }}>
-                    {loading ? (
-                        <div style={{color:'white', textAlign:'center', padding: '20px'}}>Cargando proveedores...</div>
-                    ) : filtered.length > 0 ? (
-                        filtered.map(p => (
-                            <div key={p.id} className="list-item clickable-item" onClick={() => onSelect(p)}>
-                                <span className="item-code" style={{ minWidth: '120px' }}>
-                                    {p.cuit || `CUIT-${p.id}`}
-                                </span>
-                                <span className="item-name" style={{ flex: 2 }}>{p.nombre}</span>
-                            </div>
-                        ))
-                    ) : (
-                        <div style={{color:'#999', textAlign:'center', padding: '20px'}}>No se encontraron proveedores</div>
-                    )}
-                </div>
-                <div className="modal-actions">
-                    <button className="action-button secondary-button" onClick={onClose}>Cancelar</button>
+            <div className="modal-content modal-cuenta" style={{ width: '600px', maxWidth: '90%', border: isFiltering && proveedores.length === 0 ? '2px solid #8b2b2b' : 'none' }}>
+                <h3 className="modal-title">
+                    {isFiltering ? "Validación de Proveedores Aptos" : "Seleccionar Proveedor"}
+                </h3>
+
+                {/* MENSAJE DE ADVERTENCIA SI NO HAY APTOS */}
+                {isFiltering && proveedores.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '30px' }}>
+                        <div style={{ fontSize: '40px', marginBottom: '10px' }}>⚠️</div>
+                        <p style={{ color: '#ff4d4d', fontWeight: 'bold', fontSize: '16px' }}>
+                            SIN COINCIDENCIAS TOTALES
+                        </p>
+                        <p style={{ color: '#bbb', fontSize: '13px', marginTop: '10px' }}>
+                            Ningún proveedor en la base de datos suministra la totalidad de los artículos activos en esta solicitud.
+                        </p>
+                        <p style={{ color: '#888', fontSize: '11px', fontStyle: 'italic' }}>
+                            Sugerencia: Cierre este cuadro y remueva artículos de la tabla para volver a evaluar.
+                        </p>
+                    </div>
+                ) : (
+                    <>
+                        <input 
+                            type="text" 
+                            className="input-base large-input" 
+                            placeholder="Filtrar por nombre o CUIT..."
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            autoFocus
+                        />
+                        <div className="cuenta-list-container" style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                            {loading ? (
+                                <div style={{color:'white', textAlign:'center', padding: '20px'}}>Sincronizando...</div>
+                            ) : filtered.length > 0 ? (
+                                filtered.map(p => (
+                                    <div key={p.id} className="list-item clickable-item" onClick={() => onSelect(p)}>
+                                        <span className="item-code" style={{ minWidth: '120px' }}>
+                                            {p.cuitCuil} {/* CUIT del backup [cite: 76] */}
+                                        </span>
+                                        <span className="item-name" style={{ flex: 2 }}>{p.nombre}</span>
+                                        {isFiltering && <span style={{color: '#4caf50', fontSize: '10px', fontWeight:'bold'}}>APTO ✅</span>}
+                                    </div>
+                                ))
+                            ) : (
+                                <div style={{color:'#999', textAlign:'center', padding: '20px'}}>No hay proveedores disponibles</div>
+                            )}
+                        </div>
+                    </>
+                )}
+
+                <div className="modal-actions" style={{ marginTop: '20px' }}>
+                    <button className="action-button secondary-button" onClick={onClose}>
+                        {isFiltering && proveedores.length === 0 ? "ENTENDIDO" : "CANCELAR"}
+                    </button>
                 </div>
             </div>
         </div>
@@ -148,8 +181,13 @@ const OrdenCompra = ({ onPageChange }) => {
     const [loading, setLoading] = useState(false);
     const [showProveedorModal, setShowProveedorModal] = useState(false);
     const [showSolicitudModal, setShowSolicitudModal] = useState(false);
+    const [proveedoresAptos, setProveedoresAptos] = useState([]);
+    const [analisisBloqueo, setAnalisisBloqueo] = useState(null);
+    const [buscandoAptos, setBuscandoAptos] = useState(false);
     
     const [ordenSeleccionada, setOrdenSeleccionada] = useState(null);
+    const [solicitudOrigen, setSolicitudOrigen] = useState(null);
+    const [proveedorSeleccionado, setProveedorSeleccionado] = useState(null);
 
     const [nuevaOrden, setNuevaOrden] = useState({
         numeroOrdenCompra: '',
@@ -161,52 +199,12 @@ const OrdenCompra = ({ onPageChange }) => {
         detalles: []
     });
 
-    const [solicitudOrigen, setSolicitudOrigen] = useState(null);
-    const [proveedorSeleccionado, setProveedorSeleccionado] = useState(null);
-
-    const [itemActual, setItemActual] = useState({
-        idArticulo: null,
-        descripcion: '',
-        cantidad: 1,
-        medida: '',
-        precioUnitario: 0
-    });
-
-    useEffect(() => {
-        cargarOrdenes();
-    }, []);
-
-    // Generar número de orden automático
-    const generarNumeroOrden = () => {
-        const fecha = new Date();
-        const año = fecha.getFullYear();
-        const mes = String(fecha.getMonth() + 1).padStart(2, '0');
-        const dia = String(fecha.getDate()).padStart(2, '0');
-        
-        let maxNumero = 0;
-        ordenes.forEach(o => {
-            if (o.numeroOrdenCompra) {
-                const partes = o.numeroOrdenCompra.split('-');
-                if (partes.length === 3) {
-                    const secuencial = parseInt(partes[2]);
-                    if (!isNaN(secuencial) && secuencial > maxNumero) {
-                        maxNumero = secuencial;
-                    }
-                }
-            }
-        });
-        
-        const nuevoSecuencial = maxNumero + 1;
-        const secuencialStr = String(nuevoSecuencial).padStart(3, '0');
-        
-        return `OC-${año}${mes}${dia}-${secuencialStr}`;
-    };
+    useEffect(() => { cargarOrdenes(); }, []);
 
     const cargarOrdenes = async () => {
         setLoading(true);
         try {
             const res = await api.get("/ordenes");
-            console.log("Órdenes recibidas:", JSON.stringify(res.data, null, 2));
             setOrdenes(res.data);
         } catch (err) {
             console.error("Error al obtener órdenes:", err);
@@ -215,31 +213,98 @@ const OrdenCompra = ({ onPageChange }) => {
         }
     };
 
+    const generarNumeroOrden = () => {
+        const fecha = new Date();
+        const año = fecha.getFullYear();
+        const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+        const dia = String(fecha.getDate()).padStart(2, '0');
+        let maxNumero = 0;
+        ordenes.forEach(o => {
+            if (o.numeroOrdenCompra) {
+                const partes = o.numeroOrdenCompra.split('-');
+                if (partes.length === 3) {
+                    const secuencial = parseInt(partes[2]);
+                    if (!isNaN(secuencial) && secuencial > maxNumero) maxNumero = secuencial;
+                }
+            }
+        });
+        return `OC-${año}${mes}${dia}-${String(maxNumero + 1).padStart(3, '0')}`;
+    };
+
+    // 🚀 LÓGICA DE ACTUALIZACIÓN DE PRECIOS PACTADOS
     const handleSelectProveedor = (prov) => {
         setProveedorSeleccionado(prov);
+        
+        // Mapeamos los detalles que ya están en la tabla
+        const detallesActualizados = nuevaOrden.detalles.map(det => {
+            // El JSON de aptos trae una lista de 'articulos' con su 'precioPactado'
+            const vinculacion = prov.articulos?.find(a => a.idArticulo === det.idArticulo);
+            
+            return {
+                ...det,
+                // Si el proveedor tiene precio pactado para este artículo, lo fijamos.
+                // Si no (raro en aptos), mantenemos el que tenía (0 o costo base).
+                precioUnitario: vinculacion ? vinculacion.precioPactado : det.precioUnitario
+            };
+        });
+
         setNuevaOrden({
             ...nuevaOrden,
-            idProveedor: prov.id
+            idProveedor: prov.id,
+            detalles: detallesActualizados
         });
+        
         setShowProveedorModal(false);
+    };
+
+    const buscarProveedoresAptos = async (idSolicitud) => {
+        setBuscandoAptos(true);
+        try {
+            const res = await api.get(`/solicitudes/${idSolicitud}/proveedores-aptos`);
+            setProveedoresAptos(res.data);
+            if (res.data.length === 0) {
+                sugerirArticuloARemover();
+            } else {
+                setAnalisisBloqueo(null);
+            }
+        } catch (err) {
+            console.error("Error al buscar proveedores aptos:", err);
+        } finally {
+            setBuscandoAptos(false);
+        }
     };
 
     const handleSelectSolicitud = (solicitud) => {
         setSolicitudOrigen(solicitud);
+        const nuevosDetalles = solicitud.detalles
+            .filter(d => d.estado) // Filtramos solo activos [cite: 70]
+            .map(d => ({
+                idArticulo: d.articulo?.id || d.idArticulo,
+                referencia: d.articulo?.reference || d.referencia, // Usamos reference del backup [cite: 5]
+                descripcion: d.descripcion,
+                cantidad: d.cantidad,
+                medida: d.medida || '',
+                precioUnitario: 0 // Se completará al elegir proveedor
+            }));
+
         setNuevaOrden({
             ...nuevaOrden,
             idSolicitud: solicitud.id,
-            // Cargar los detalles de la solicitud como base (con cantidad editable)
-            detalles: solicitud.detalles.map(d => ({
-                idArticulo: d.idArticulo || d.articulo?.id,
-                descripcion: d.articuloDescripcion || d.descripcion,
-                cantidad: d.cantidad, // Se carga la cantidad de la solicitud pero será editable
-                medida: d.medida || '',
-                precioUnitario: 0
-            }))
+            detalles: nuevosDetalles
         });
+        
         setShowSolicitudModal(false);
+        buscarProveedoresAptos(solicitud.id); // Gatillo de búsqueda
     };
+
+    const sugerirArticuloARemover = () => {
+        if (!nuevaOrden.detalles.length) return;
+        setAnalisisBloqueo(`Ningún proveedor suministra la totalidad de los artículos activos.`);
+    };
+
+    
+
+    
 
     // Función para actualizar cualquier campo de un detalle
     const actualizarDetalle = (index, campo, valor) => {
@@ -265,10 +330,12 @@ const OrdenCompra = ({ onPageChange }) => {
 
     const eliminarDetalle = (index) => {
         const nuevosDetalles = nuevaOrden.detalles.filter((_, i) => i !== index);
-        setNuevaOrden({
-            ...nuevaOrden,
-            detalles: nuevosDetalles
-        });
+        setNuevaOrden({ ...nuevaOrden, detalles: nuevosDetalles });
+        
+        // Al eliminar, si hay una solicitud de origen, re-evaluamos proveedores aptos
+        if (nuevaOrden.idSolicitud) {
+            buscarProveedoresAptos(nuevaOrden.idSolicitud);
+        }
     };
 
     const calcularSubtotal = () => {
@@ -555,38 +622,53 @@ const OrdenCompra = ({ onPageChange }) => {
                         </div>
                     )}
 
-                    {/* ===== CREACIÓN ===== */}
                     {view === 'create' && (
-                        <div style={{ 
-                            display: 'flex', 
-                            justifyContent: 'center', 
-                            width: '100%' 
-                        }}>
-                            <div className="user-form" style={{ 
-                                width: '100%', 
-                                maxWidth: '1200px',
-                                margin: '0 auto'
-                            }}>
-                                {/* Número de orden automático */}
+                    <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+                        <div className="user-form" style={{ width: '100%', maxWidth: '1200px', margin: '0 auto' }}>
+                            
+                            {/* 1. NÚMERO DE ORDEN (Igual al tuyo) */}
+                            <div style={{ background: '#2a2a2a', padding: '20px', borderRadius: '8px', marginBottom: '20px', borderLeft: '4px solid #3c6c3e' }}>
+                                <label style={{ color: '#aaa', fontSize: '11px', display: 'block', marginBottom: '5px' }}>NÚMERO DE ORDEN</label>
+                                <input className="input-base" value={nuevaOrden.numeroOrdenCompra} readOnly style={{ width: '100%', background: '#333', color: '#3c6c3e', fontWeight: 'bold' }} />
+                            </div>
+
+                            {/* 🚀 NUEVO: PANEL DE ANÁLISIS DE DISPONIBILIDAD (Sugerido por tu compañero) */}
+                            {solicitudOrigen && (
                                 <div style={{ 
-                                    background: '#2a2a2a', 
-                                    padding: '20px', 
-                                    borderRadius: '8px', 
-                                    marginBottom: '20px',
-                                    borderLeft: '4px solid #3c6c3e',
-                                    width: '100%',
-                                    boxSizing: 'border-box'
+                                    background: proveedoresAptos.length > 0 ? '#1b2e1b' : '#2e1b1b', 
+                                    padding: '15px', borderRadius: '8px', marginBottom: '20px',
+                                    border: `1px solid ${proveedoresAptos.length > 0 ? '#3c6c3e' : '#8b2b2b'}`,
+                                    boxShadow: '0 4px 10px rgba(0,0,0,0.3)'
                                 }}>
-                                    <label style={{ color: '#aaa', fontSize: '11px', display: 'block', marginBottom: '5px' }}>
-                                        NÚMERO DE ORDEN
-                                    </label>
-                                    <input 
-                                        className="input-base" 
-                                        value={nuevaOrden.numeroOrdenCompra} 
-                                        readOnly
-                                        style={{ width: '100%', background: '#333', color: '#3c6c3e', fontWeight: 'bold' }}
-                                    />
+                                    <h4 style={{ margin: '0 0 10px 0', color: '#fff', fontSize: '13px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                                        {buscandoAptos ? "⏳ Analizando mercado..." : "🔍 Proveedores con Stock Completo"}
+                                    </h4>
+                                    
+                                    {proveedoresAptos.length > 0 ? (
+                                        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                                            {proveedoresAptos.map(p => (
+                                                <button 
+                                                    key={p.id}
+                                                    className={`action-button ${nuevaOrden.idProveedor === p.id ? 'primary-button' : 'secondary-button'}`}
+                                                    style={{ fontSize: '12px', padding: '8px 15px', border: nuevaOrden.idProveedor === p.id ? '2px solid #fff' : 'none' }}
+                                                    onClick={() => handleSelectProveedor(p)}
+                                                >
+                                                    ✅ {p.nombre}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div style={{ padding: '5px' }}>
+                                            <p style={{ color: '#ff4d4d', margin: '0', fontSize: '14px', fontWeight: 'bold' }}>
+                                                ⚠️ {analisisBloqueo || "Ningún proveedor suministra la totalidad de los artículos activos."}
+                                            </p>
+                                            <p style={{ color: '#aaa', margin: '5px 0 0 0', fontSize: '12px', fontStyle: 'italic' }}>
+                                                Sugerencia: Intente remover el artículo más restrictivo de la tabla inferior para encontrar coincidencias.
+                                            </p>
+                                        </div>
+                                    )}
                                 </div>
+                            )}
 
                                 {/* Selección de Proveedor y Solicitud */}
                                 <div style={{ 
@@ -833,6 +915,9 @@ const OrdenCompra = ({ onPageChange }) => {
                 <BuscarProveedorModal 
                     onSelect={handleSelectProveedor} 
                     onClose={() => setShowProveedorModal(false)} 
+                    proveedoresAptos={proveedoresAptos} 
+                    // Si hay solicitudOrigen, activamos el modo filtro estricto
+                    isFiltering={!!solicitudOrigen} 
                 />
             )}
             {showSolicitudModal && (
