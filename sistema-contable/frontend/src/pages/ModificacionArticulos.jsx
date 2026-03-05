@@ -6,14 +6,6 @@ import "../styles/Modal.css";
 import LogoEmpresa from "../assets/LogoEmpresa.png";
 import LogoGrupo5 from "../assets/LogoGrupo5.png";
 
-// Enums sincronizados con el Backend
-const IVA_MODALITIES = [
-    { value: 'GENERAL', label: 'IVA General (21%)' },
-    { value: 'REDUCIDO', label: 'IVA Reducido (10.5%)' },
-    { value: 'RESPONSABLE_INSCRIPTO', label: 'Responsable Inscripto' },
-    { value: 'EXENTO', label: 'Exento' }
-];
-
 const DIVISAS = ['ARS', 'USD'];
 
 // ====================================================================
@@ -35,6 +27,7 @@ const BuscarArticuloModal = ({ articulosDisponibles, onSelect, onClose, loading 
                     type="text" 
                     className="input-base large-input" 
                     placeholder="Buscar por SKU o descripción..."
+                    autoFocus
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
                 <div className="cuenta-list-container">
@@ -56,25 +49,37 @@ const BuscarArticuloModal = ({ articulosDisponibles, onSelect, onClose, loading 
 };
 
 // ====================================================================
-// MODAL PARA CAMBIAR PROVEEDOR HABITUAL
+// MODAL PARA BUSCAR PROVEEDOR
 // ====================================================================
 const BuscarProveedorModal = ({ onSelect, onClose }) => {
     const [proveedores, setProveedores] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         api.get("/proveedores/status?status=true")
             .then(res => setProveedores(res.data))
+            .catch(err => console.error(err))
             .finally(() => setLoading(false));
     }, []);
+
+    const filtered = proveedores.filter(p => 
+        p.nombre.toLowerCase().includes(searchTerm.toLowerCase()) || p.cuitCuil.includes(searchTerm)
+    );
 
     return (
         <div className="modal-overlay">
             <div className="modal-content modal-cuenta">
-                <h3 className="modal-title">Cambiar Proveedor Habitual</h3>
+                <h3 className="modal-title">Seleccionar Proveedor Habitual</h3>
+                <input 
+                    type="text" 
+                    className="input-base large-input" 
+                    placeholder="Filtrar por nombre o CUIT..."
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
                 <div className="cuenta-list-container">
                     {loading ? <div>Cargando...</div> : 
-                        proveedores.map(p => (
+                        filtered.map(p => (
                             <div key={p.id} className="list-item clickable-item" onClick={() => onSelect(p)}>
                                 <span className="item-code">{p.cuitCuil}</span>
                                 <span className="item-name">{p.nombre}</span>
@@ -83,7 +88,7 @@ const BuscarProveedorModal = ({ onSelect, onClose }) => {
                     }
                 </div>
                 <div className="modal-actions">
-                    <button className="action-button secondary-button" onClick={onClose}>Cancelar</button>
+                    <button className="action-button secondary-button" onClick={onClose}>Cerrar</button>
                 </div>
             </div>
         </div>
@@ -91,24 +96,30 @@ const BuscarProveedorModal = ({ onSelect, onClose }) => {
 };
 
 // ====================================================================
-// COMPONENTE PRINCIPAL
+// COMPONENTE PRINCIPAL: MODIFICACION (Mismo form que Alta)
 // ====================================================================
 export default function ModificacionArticulo({ onPageChange }) {
     const [seleccionado, setSeleccionado] = useState(null);
     const [articulosActivos, setArticulosActivos] = useState([]);
     const [showArticuloModal, setShowArticuloModal] = useState(false);
-    const [showProveedorModal, setShowProveedorModal] = useState(false);
+    const [showSupplierModal, setShowSupplierModal] = useState(false);
+    const [nombreProveedorSel, setNombreProveedorSel] = useState("");
     const [loadingList, setLoadingList] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [nombreProveedorHabitual, setNombreProveedorHabitual] = useState("");
 
     const [formData, setFormData] = useState({
         referencia: '', descripcion: '', familia: '',
         habilitado: true, envaseSiNo: false, unidadesPorEnvase: 1,
-        modalidadIvaCompra: 'GENERAL', modalidadIvaVenta: 'GENERAL',
-        idProveedorHabitual: null, costoDivisa: 0, costoBase: 0, divisa: 'ARS',
+        modalidadIvaCompra: 'GENERAL',
+        modalidadIvaVenta: 'GENERAL',
+        idProveedorHabitual: null,
+        costoDivisa: 0, costoBase: 0, divisa: 'ARS',
         precioPublico: 0, precioMayorista: 0, descuentoMaximo: 0,
-        listaPrecios: '', stockMinimo: 0, stockMaximo: 0, comentarios: ''
+        listaPrecios: '', 
+        stockFisico: 0,
+        stockMinimo: 0,
+        stockMaximo: 1000,
+        comentarios: ''
     });
 
     useEffect(() => {
@@ -121,28 +132,47 @@ export default function ModificacionArticulo({ onPageChange }) {
     const handleSelectArticulo = (art) => {
         setSeleccionado(art);
         setFormData({ ...art });
-        setNombreProveedorHabitual(art.nombreProveedorHabitual || "No asignado");
+        setNombreProveedorSel(art.nombreProveedorHabitual || "Buscar Proveedor...");
         setShowArticuloModal(false);
     };
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
-        const numericFields = ['unidadesPorEnvase', 'costoDivisa', 'costoBase', 'precioPublico', 'precioMayorista', 'descuentoMaximo', 'stockMinimo', 'stockMaximo'];
+        const numericFields = ['unidadesPorEnvase', 'costoDivisa', 'costoBase', 'precioPublico', 'precioMayorista', 'descuentoMaximo', 'stockFisico', 'stockMinimo', 'stockMaximo'];
+        
         setFormData(prev => ({
             ...prev,
             [name]: type === 'checkbox' ? checked : 
-                    numericFields.includes(name) ? parseFloat(value) || 0 : value
+                    numericFields.includes(name) ? (value === "" ? "" : parseFloat(value)) : value
         }));
     };
 
+    const handleSelectSupplier = (p) => {
+        setFormData(prev => ({ ...prev, idProveedorHabitual: p.id }));
+        setNombreProveedorSel(p.nombre);
+        setShowSupplierModal(false);
+    };
+
     const handleGuardar = async () => {
+        if (!formData.referencia || !formData.descripcion) {
+            alert("Referencia y Descripción son campos obligatorios.");
+            return;
+        }
+
         setIsSubmitting(true);
+        // Limpieza para Backend (vaciós a 0)
+        const finalData = { ...formData };
+        ['stockFisico', 'stockMinimo', 'stockMaximo'].forEach(key => {
+            if (finalData[key] === "") finalData[key] = 0;
+        });
+
         try {
-            await api.put(`/articulos/${seleccionado.id}`, formData);
+            await api.put(`/articulos/${seleccionado.id}`, finalData);
             alert("✅ Artículo actualizado correctamente.");
             onPageChange("GESTION_STOCK");
         } catch (err) {
-            alert("❌ Error al actualizar el artículo.");
+            console.error("Error al actualizar:", err.response?.data);
+            alert("❌ Error al guardar los cambios.");
         } finally {
             setIsSubmitting(false);
         }
@@ -162,28 +192,33 @@ export default function ModificacionArticulo({ onPageChange }) {
                     <div className="asiento-body form-body" style={{ overflowY: 'auto' }}>
                         {!seleccionado ? (
                             <div style={{ textAlign: 'center', marginTop: '50px' }}>
-                                <h3 className="partidas-title">Seleccione un artículo para editar</h3>
+                                <h3 className="partidas-title">Busque el artículo que desea modificar</h3>
                                 <button className="action-button primary-button large-button" onClick={() => setShowArticuloModal(true)}>
                                     BUSCAR ARTÍCULO
                                 </button>
                             </div>
                         ) : (
                             <div className="tab-content-grid">
-                                <h3 className="partidas-title">Datos Principales (Ref: {formData.referencia})</h3>
+                                <h3 className="partidas-title">Identificación y Clasificación</h3>
                                 <div className="input-row">
-                                    <label className="header-field">Descripción:
-                                        <input type="text" className="input-base" name="descripcion" value={formData.descripcion} onChange={handleChange} />
+                                    <label className="header-field">Referencia / SKU:
+                                        <input type="text" className="input-base" name="referencia" value={formData.referencia} onChange={handleChange} />
                                     </label>
                                     <label className="header-field">Familia:
                                         <input type="text" className="input-base" name="familia" value={formData.familia} onChange={handleChange} />
                                     </label>
                                 </div>
+                                <div className="input-row">
+                                    <label className="header-field">Descripción:
+                                        <input type="text" className="input-base" name="descripcion" value={formData.descripcion} onChange={handleChange} />
+                                    </label>
+                                </div>
 
-                                <h3 className="partidas-title" style={{ marginTop: '20px' }}>Costos y Proveedor</h3>
+                                <h3 className="partidas-title" style={{ marginTop: '20px' }}>Costos y Suministro</h3>
                                 <div className="input-row">
                                     <label className="header-field">Proveedor Habitual:
-                                        <div className="input-base" onClick={() => setShowProveedorModal(true)} style={{ cursor: 'pointer', textAlign: 'center' }}>
-                                            {nombreProveedorHabitual} (Click para cambiar)
+                                        <div className="input-base" onClick={() => setShowSupplierModal(true)} style={{ cursor: 'pointer', textAlign: 'center' }}>
+                                            {nombreProveedorSel || "Buscar Proveedor..."}
                                         </div>
                                     </label>
                                     <label className="header-field">Divisa:
@@ -192,33 +227,17 @@ export default function ModificacionArticulo({ onPageChange }) {
                                         </select>
                                     </label>
                                 </div>
-                                <div className="input-row three-columns">
-                                    <label className="header-field">Costo Base:
-                                        <input type="number" className="input-base" name="costoBase" value={formData.costoBase} onChange={handleChange} />
-                                    </label>
-                                    <label className="header-field">IVA Compra:
-                                        <select className="input-base" name="modalidadIvaCompra" value={formData.modalidadIvaCompra} onChange={handleChange}>
-                                            {IVA_MODALITIES.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
-                                        </select>
-                                    </label>
-                                    <label className="header-field">IVA Venta:
-                                        <select className="input-base" name="modalidadIvaVenta" value={formData.modalidadIvaVenta} onChange={handleChange}>
-                                            {IVA_MODALITIES.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
-                                        </select>
-                                    </label>
-                                </div>
 
-                                <h3 className="partidas-title" style={{ marginTop: '20px' }}>Stock y Control</h3>
+                                <h3 className="partidas-title" style={{ marginTop: '20px' }}>Precios y Stock</h3>
                                 <div className="input-row three-columns">
                                     <label className="header-field">Stock Mínimo:
-                                        <input type="number" className="input-base" name="stockMinimo" value={formData.stockMinimo} onChange={handleChange} />
+                                        <input type="number" className="input-base no-spinners" name="stockMinimo" value={formData.stockMinimo} onChange={handleChange} />
+                                    </label>
+                                    <label className="header-field">Stock Actual:
+                                        <input type="number" className="input-base no-spinners" name="stockFisico" value={formData.stockFisico} onChange={handleChange} />
                                     </label>
                                     <label className="header-field">Stock Máximo:
-                                        <input type="number" className="input-base" name="stockMaximo" value={formData.stockMaximo} onChange={handleChange} />
-                                    </label>
-                                    <label className="header-field" style={{ flexDirection: 'row', alignItems: 'center', gap: '8px' }}>
-                                        <input type="checkbox" name="habilitado" checked={formData.habilitado} onChange={handleChange} />
-                                        Habilitado
+                                        <input type="number" className="input-base no-spinners" name="stockMaximo" value={formData.stockMaximo} onChange={handleChange} />
                                     </label>
                                 </div>
 
@@ -254,14 +273,10 @@ export default function ModificacionArticulo({ onPageChange }) {
                 />
             )}
 
-            {showProveedorModal && (
+            {showSupplierModal && (
                 <BuscarProveedorModal 
-                    onSelect={(p) => {
-                        setFormData(prev => ({ ...prev, idProveedorHabitual: p.id }));
-                        setNombreProveedorHabitual(p.nombre);
-                        setShowProveedorModal(false);
-                    }} 
-                    onClose={() => setShowProveedorModal(false)} 
+                    onSelect={handleSelectSupplier} 
+                    onClose={() => setShowSupplierModal(false)} 
                 />
             )}
         </div>
