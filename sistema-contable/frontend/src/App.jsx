@@ -32,6 +32,7 @@ import BajaArticulos from "./pages/BajaArticulos.jsx";
 import ActivarArticulo from "./pages/ActivarArticulo.jsx";
 import VerArticulos from "./pages/VerArticulos.jsx";
 import ConsultaArticulo from "./pages/ConsultaArticulo.jsx";
+import VerCuentasCorrientes from "./pages/VerCuentasCorrientes.jsx";
 
 const AdminLayout = ({ onLogout }) => (
   <MenuAdministrador onLogout={onLogout}> 
@@ -156,6 +157,9 @@ function App() {
           onPageChange={handlePageChange} 
           id={nextPageState?.id} 
         />;
+
+      case "VER_CUENTAS_CORRIENTES":
+        return <VerCuentasCorrientes onPageChange={handlePageChange} />;
 
       // Dashboard / Menú principal
       case "DASHBOARD":

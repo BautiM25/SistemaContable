@@ -41,7 +41,10 @@ export default function MenuComprador({ onLogout, onPageChange }) {
                     >
                         <img src={LogoGrupo5} alt="" /> Stock
                     </button>
-                    <button className="menu-button">
+                    <button 
+                        className="menu-button"
+                        onClick={() => handleMenuClick('VER_CUENTAS_CORRIENTES')}
+                    >
                         <img src={LogoGrupo5} alt="" /> Cuentas Corrientes
                     </button>
                     <button className="menu-button logout" onClick={onLogout}>Cerrar Sesión</button>

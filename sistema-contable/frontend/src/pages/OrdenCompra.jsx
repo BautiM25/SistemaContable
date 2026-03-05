@@ -276,12 +276,14 @@ const OrdenCompra = ({ onPageChange }) => {
 
     const handleSelectSolicitud = (solicitud) => {
         setSolicitudOrigen(solicitud);
+        
+        // Mapeamos usando los nombres exactos del JSON que recibís 
         const nuevosDetalles = solicitud.detalles
-            .filter(d => d.estado) // Filtramos solo activos [cite: 70]
+            .filter(d => d.estado) // Solo los activos (estado: true) 
             .map(d => ({
-                idArticulo: d.articulo?.id || d.idArticulo,
-                referencia: d.articulo?.reference || d.referencia, // Usamos reference del backup [cite: 5]
-                descripcion: d.descripcion,
+                idArticulo: d.idArticulo,         // Antes era d.articulo?.id 
+                referencia: d.articuloReferencia, // Antes era d.articulo?.reference 
+                descripcion: d.articuloDescripcion, // Antes era d.articulo?.descripcion 
                 cantidad: d.cantidad,
                 medida: d.medida || '',
                 precioUnitario: 0 // Se completará al elegir proveedor
@@ -294,7 +296,7 @@ const OrdenCompra = ({ onPageChange }) => {
         });
         
         setShowSolicitudModal(false);
-        buscarProveedoresAptos(solicitud.id); // Gatillo de búsqueda
+        buscarProveedoresAptos(solicitud.id); 
     };
 
     const sugerirArticuloARemover = () => {
