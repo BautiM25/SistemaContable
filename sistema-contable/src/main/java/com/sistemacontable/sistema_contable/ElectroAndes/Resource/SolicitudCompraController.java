@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.sistemacontable.sistema_contable.ElectroAndes.Service.SolicitudCompraService;
 import com.sistemacontable.sistema_contable.ElectroAndes.Util.SolicitudCompraMapper;
 import com.sistemacontable.sistema_contable.dto.CreateSolicitudCompraDto;
+import com.sistemacontable.sistema_contable.dto.ResponseProveedorDto;
 import com.sistemacontable.sistema_contable.dto.ResponseSolicitudCompraDto;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -73,5 +74,12 @@ public class SolicitudCompraController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al procesar la búsqueda");
         }
+    }
+
+    @GetMapping("/{id}/proveedores-aptos")
+    public ResponseEntity<List<ResponseProveedorDto>> obtenerProveedoresAptos(@PathVariable Long id) {
+        List<ResponseProveedorDto> proveedores = solicitudService.buscarProveedoresAptos(id);
+        // Retornamos 200 siempre, la lista vacía indica que no hay coincidencia total
+        return ResponseEntity.ok(proveedores);
     }
 }
