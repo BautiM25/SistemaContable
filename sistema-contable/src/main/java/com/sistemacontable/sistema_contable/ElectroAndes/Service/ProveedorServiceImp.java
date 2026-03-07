@@ -97,8 +97,8 @@ public class ProveedorServiceImp implements ProveedorService {
 
         // Comercial
         entity.setDivisa(dto.getDivisa());
-        entity.setSaldosAFavor(dto.getSaldosAFavor());
         entity.setSaldoInicialCC(dto.getSaldoInicialCC());
+        entity.setSaldosAFavor(dto.getSaldoInicialCC());
         entity.setSubcuenta(dto.getSubcuenta());
         entity.setCategoriaIva(dto.getCategoriaIva());
 

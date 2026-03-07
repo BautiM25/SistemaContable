@@ -92,6 +92,13 @@ public class OrdenCompraServiceImp implements OrdenCompraService {
         orden.setTotal(orden.getSubtotal().add(orden.getIva()));
         orden.setMoneda(orden.getDetalles().get(0).getArticulo().getDivisa());
 
+        BigDecimal montoOC = orden.getTotal();
+        BigDecimal saldoPrevio = proveedor.getSaldosAFavor() != null ? proveedor.getSaldosAFavor() : BigDecimal.ZERO;
+
+        proveedor.setSaldosAFavor(saldoPrevio.subtract(montoOC));
+
+        //Persistir los cambios en el proveedor
+        proveedorRepo.save(proveedor);
         // 5. Actualizar Cabecera de Solicitud
         solicitud.setFechaEmisionOC(LocalDate.now());
 
