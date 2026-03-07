@@ -17,6 +17,7 @@ public class ResponseProveedorDto {
     private BigDecimal saldoInicialCC;
     private String banco;
     private List<ArticuloVinculadoDto> articulos;
+    private String identificadorBanco;
 
     public ResponseProveedorDto() {
     }
@@ -100,5 +101,13 @@ public class ResponseProveedorDto {
 
     public void setArticulos(List<ArticuloVinculadoDto> articulos) {
         this.articulos = articulos;
+    }
+
+    public String getIdentificadorBanco() {
+        return identificadorBanco;
+    }
+
+    public void setIdentificadorBanco(String identificadorBanco) {
+        this.identificadorBanco = identificadorBanco;
     }
 }
