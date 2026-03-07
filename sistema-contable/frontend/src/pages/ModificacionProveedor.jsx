@@ -15,7 +15,7 @@ const CATEGORIAS_IVA = [
 const DIVISAS = ['ARS', 'USD'];
 
 // ====================================================================
-// MODAL DE BÚSQUEDA (Misma lógica que Activar/Baja)
+// MODAL DE BÚSQUEDA
 // ====================================================================
 const BuscarProveedorModal = ({ proveedoresDisponibles, onSelect, onClose, loading }) => {
     const [searchTerm, setSearchTerm] = useState('');
@@ -63,7 +63,6 @@ export default function ModificacionProveedor({ onPageChange }) {
     const [showModal, setShowModal] = useState(false);
     const [seleccionado, setSeleccionado] = useState(null);
 
-    // Estado que mapea 1 a 1 con CreateProveedorDto
     const [formData, setFormData] = useState({
         nombre: '', direccion: '', cuitCuil: '', telefono: '', mail: '', rubro: '',
         divisa: 'ARS', saldosAFavor: 0, saldoInicialCC: 0, subcuenta: '',
@@ -72,7 +71,6 @@ export default function ModificacionProveedor({ onPageChange }) {
         producto: '', variacionPrecio: 0, precio: 0, variacionDescuento: 0, descuento: 0, comentario: ''
     });
 
-    // 1. Cargar activos para el buscador
     useEffect(() => {
         const fetchActivos = async () => {
             setLoadingList(true);
@@ -85,27 +83,40 @@ export default function ModificacionProveedor({ onPageChange }) {
         fetchActivos();
     }, []);
 
-    // 2. Al seleccionar un proveedor, cargamos sus datos en el form
     const handleSelect = (p) => {
         setSeleccionado(p);
-        setFormData({ ...p }); // Asumimos que el objeto 'p' ya trae los campos del DTO
+        setFormData({ ...p });
         setShowModal(false);
     };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
         const numericFields = ['saldosAFavor', 'saldoInicialCC', 'variacionPrecio', 'precio', 'variacionDescuento', 'descuento'];
+        
         setFormData(prev => ({
             ...prev,
-            [name]: numericFields.includes(name) ? parseFloat(value) || 0 : value
+            // Validación para evitar NaN y asegurar que sea 0 si se borra el input
+            [name]: numericFields.includes(name) ? (value === "" ? 0 : parseFloat(value)) : value
         }));
     };
 
     const handleGuardar = async () => {
         if (!seleccionado) return;
+
+        // --- VALIDACIÓN DE VALORES NO NEGATIVOS ---
+        // Validamos precio y descuento (y saldos por si el DTO de edición los permite)
+        if (formData.precio < 0 || formData.descuento < 0 || formData.saldosAFavor < 0 || formData.saldoInicialCC < 0) {
+            alert("Los valores de precio, descuento y saldos deben ser mayores o iguales a 0.");
+            return;
+        }
+
+        if (!formData.nombre || !formData.cuitCuil) {
+            alert("El nombre y el CUIT son campos obligatorios.");
+            return;
+        }
+
         setIsSubmitting(true);
         try {
-            // 🚨 PUT /api/proveedores/{id}
             await api.put(`/proveedores/${seleccionado.id}`, formData);
             alert("✅ Cambios guardados con éxito.");
             onPageChange("GESTION_PROVEEDORES");
@@ -121,7 +132,6 @@ export default function ModificacionProveedor({ onPageChange }) {
             <div className="main-content">
                 <div className="asiento-layout-column">
                     
-                    {/* HEADER */}
                     <div className="asiento-header">
                         <div className="asiento-logo-wrapper">
                             <img src={LogoEmpresa} alt="Logo" className="logo-small" />
@@ -129,9 +139,7 @@ export default function ModificacionProveedor({ onPageChange }) {
                         </div>
                     </div>
 
-                    {/* BUSCADOR INICIAL O FORMULARIO */}
                     <div className="asiento-body form-body" style={{ overflowY: 'auto' }}>
-                        
                         {!seleccionado ? (
                             <div className="center-search-container" style={{ textAlign: 'center', marginTop: '50px' }}>
                                 <h3 className="partidas-title">Seleccione un proveedor para comenzar la edición</h3>
@@ -141,7 +149,6 @@ export default function ModificacionProveedor({ onPageChange }) {
                             </div>
                         ) : (
                             <div className="tab-content-grid">
-                                {/* SECCIÓN GENERAL */}
                                 <h3 className="partidas-title">Datos Generales (ID: {seleccionado.id})</h3>
                                 <div className="input-row">
                                     <label className="header-field">Nombre / Razón Social:
@@ -151,19 +158,17 @@ export default function ModificacionProveedor({ onPageChange }) {
                                         <input type="text" className="input-base" name="cuitCuil" value={formData.cuitCuil} onChange={handleChange} />
                                     </label>
                                 </div>
-                                <div className="input-row three-columns">
-                                    <label className="header-field">Email:
-                                        <input type="email" className="input-base" name="mail" value={formData.mail} onChange={handleChange} />
+                                
+                                {/* Campos de Saldo (Opcional, según lógica de negocio) */}
+                                <div className="input-row">
+                                    <label className="header-field">Saldo Inicial CC:
+                                        <input type="number" className="input-base" name="saldoInicialCC" value={formData.saldoInicialCC} onChange={handleChange} min="0" />
                                     </label>
-                                    <label className="header-field">Teléfono:
-                                        <input type="text" className="input-base" name="telefono" value={formData.telefono} onChange={handleChange} />
-                                    </label>
-                                    <label className="header-field">Rubro:
-                                        <input type="text" className="input-base" name="rubro" value={formData.rubro} onChange={handleChange} />
+                                    <label className="header-field">Saldos a Favor:
+                                        <input type="number" className="input-base" name="saldosAFavor" value={formData.saldosAFavor} onChange={handleChange} min="0" />
                                     </label>
                                 </div>
 
-                                {/* SECCIÓN COMERCIAL */}
                                 <h3 className="partidas-title" style={{ marginTop: '20px' }}>Comercial e Impuestos</h3>
                                 <div className="input-row three-columns">
                                     <label className="header-field">Categoría IVA:
@@ -183,7 +188,6 @@ export default function ModificacionProveedor({ onPageChange }) {
                                     </label>
                                 </div>
 
-                                {/* SECCIÓN BANCO */}
                                 <h3 className="partidas-title" style={{ marginTop: '20px' }}>Datos Bancarios</h3>
                                 <div className="input-row three-columns">
                                     <label className="header-field">Banco:
@@ -197,17 +201,16 @@ export default function ModificacionProveedor({ onPageChange }) {
                                     </label>
                                 </div>
 
-                                {/* SECCIÓN ESPECÍFICAS */}
                                 <h3 className="partidas-title" style={{ marginTop: '20px' }}>Productos y Comentarios</h3>
                                 <div className="input-row three-columns">
                                     <label className="header-field">Producto:
                                         <input type="text" className="input-base" name="producto" value={formData.producto} onChange={handleChange} />
                                     </label>
-                                    <label className="header-field">Precio:
-                                        <input type="number" className="input-base" name="precio" value={formData.precio} onChange={handleChange} />
+                                    <label className="header-field">Precio Base:
+                                        <input type="number" className="input-base" name="precio" value={formData.precio} onChange={handleChange} min="0" />
                                     </label>
-                                    <label className="header-field">Descuento (%):
-                                        <input type="number" className="input-base" name="descuento" value={formData.descuento} onChange={handleChange} />
+                                    <label className="header-field">Descuento %:
+                                        <input type="number" className="input-base" name="descuento" value={formData.descuento} onChange={handleChange} min="0" />
                                     </label>
                                 </div>
                                 <div className="input-row">
@@ -219,7 +222,6 @@ export default function ModificacionProveedor({ onPageChange }) {
                         )}
                     </div>
 
-                    {/* FOOTER */}
                     <div className="asiento-footer">
                         {seleccionado && (
                             <button className="action-button primary-button" onClick={handleGuardar} disabled={isSubmitting}>

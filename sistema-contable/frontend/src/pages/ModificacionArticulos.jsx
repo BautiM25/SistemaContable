@@ -96,7 +96,7 @@ const BuscarProveedorModal = ({ onSelect, onClose }) => {
 };
 
 // ====================================================================
-// COMPONENTE PRINCIPAL: MODIFICACION (Mismo form que Alta)
+// COMPONENTE PRINCIPAL: MODIFICACION
 // ====================================================================
 export default function ModificacionArticulo({ onPageChange }) {
     const [seleccionado, setSeleccionado] = useState(null);
@@ -118,7 +118,7 @@ export default function ModificacionArticulo({ onPageChange }) {
         listaPrecios: '', 
         stockFisico: 0,
         stockMinimo: 0,
-        stockMaximo: 1000,
+        stockMaximo: 0,
         comentarios: ''
     });
 
@@ -143,7 +143,7 @@ export default function ModificacionArticulo({ onPageChange }) {
         setFormData(prev => ({
             ...prev,
             [name]: type === 'checkbox' ? checked : 
-                    numericFields.includes(name) ? (value === "" ? "" : parseFloat(value)) : value
+                    numericFields.includes(name) ? (value === "" ? 0 : parseFloat(value)) : value
         }));
     };
 
@@ -159,12 +159,20 @@ export default function ModificacionArticulo({ onPageChange }) {
             return;
         }
 
+        // --- NUEVA LÓGICA DE VALIDACIÓN DE STOCK ---
+        if (formData.stockMinimo < 0 || formData.stockFisico < 0 || formData.stockMaximo < 0) {
+            alert("Los valores de stock no pueden ser negativos.");
+            return;
+        }
+
+        if (formData.stockMaximo <= formData.stockMinimo) {
+            alert("El Stock Máximo debe ser mayor que el Stock Mínimo.");
+            return;
+        }
+        // -------------------------------------------
+
         setIsSubmitting(true);
-        // Limpieza para Backend (vaciós a 0)
         const finalData = { ...formData };
-        ['stockFisico', 'stockMinimo', 'stockMaximo'].forEach(key => {
-            if (finalData[key] === "") finalData[key] = 0;
-        });
 
         try {
             await api.put(`/articulos/${seleccionado.id}`, finalData);
@@ -231,13 +239,13 @@ export default function ModificacionArticulo({ onPageChange }) {
                                 <h3 className="partidas-title" style={{ marginTop: '20px' }}>Precios y Stock</h3>
                                 <div className="input-row three-columns">
                                     <label className="header-field">Stock Mínimo:
-                                        <input type="number" className="input-base no-spinners" name="stockMinimo" value={formData.stockMinimo} onChange={handleChange} />
+                                        <input type="number" className="input-base no-spinners" name="stockMinimo" value={formData.stockMinimo} onChange={handleChange} min="0" />
                                     </label>
                                     <label className="header-field">Stock Actual:
-                                        <input type="number" className="input-base no-spinners" name="stockFisico" value={formData.stockFisico} onChange={handleChange} />
+                                        <input type="number" className="input-base no-spinners" name="stockFisico" value={formData.stockFisico} onChange={handleChange} min="0" />
                                     </label>
                                     <label className="header-field">Stock Máximo:
-                                        <input type="number" className="input-base no-spinners" name="stockMaximo" value={formData.stockMaximo} onChange={handleChange} />
+                                        <input type="number" className="input-base no-spinners" name="stockMaximo" value={formData.stockMaximo} onChange={handleChange} min="0" />
                                     </label>
                                 </div>
 

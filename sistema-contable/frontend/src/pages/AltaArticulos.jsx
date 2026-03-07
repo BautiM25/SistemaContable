@@ -6,13 +6,6 @@ import "../styles/Modal.css";
 import LogoEmpresa from "../assets/LogoEmpresa.png";
 import LogoGrupo5 from "../assets/LogoGrupo5.png";
 
-const IVA_MODALITIES = [
-    { value: 'GENERAL', label: 'IVA General (21%)' },
-    { value: 'REDUCIDO', label: 'IVA Reducido (10.5%)' },
-    { value: 'RESPONSABLE_INSCRIPTO', label: 'Responsable Inscripto' },
-    { value: 'EXENTO', label: 'Exento' }
-];
-
 const DIVISAS = ['ARS', 'USD'];
 
 // ====================================================================
@@ -83,10 +76,9 @@ export default function AltaArticulos({ onPageChange }) {
         costoDivisa: 0, costoBase: 0, divisa: 'ARS',
         precioPublico: 0, precioMayorista: 0, descuentoMaximo: 0,
         listaPrecios: '', 
-        stockFisico: 0, // 🚨 Valor por defecto: 0
-        stockMinimo: 0, // 🚨 Valor por defecto: 0
-        stockMaximo: 1000, // 🚨 Valor por defecto: 1000
-        comentarios: ''
+        stockFisico: 0, 
+        stockMinimo: 0, 
+        stockMaximo: 1
     });
 
     const handleChange = (e) => {
@@ -95,10 +87,8 @@ export default function AltaArticulos({ onPageChange }) {
         
         setFormData(prev => ({
             ...prev,
-            // 🚨 Lógica: Si el campo es numérico y está vacío, permitimos el string vacío para poder borrar.
-            // Si tiene valor, lo parseamos a número.
             [name]: type === 'checkbox' ? checked : 
-                    numericFields.includes(name) ? (value === "" ? "" : parseFloat(value)) : value
+                    numericFields.includes(name) ? (value === "" ? 0 : parseFloat(value)) : value
         }));
     };
 
@@ -109,17 +99,25 @@ export default function AltaArticulos({ onPageChange }) {
     };
 
     const handleGuardar = async () => {
+        // Validaciones de campos obligatorios
         if (!formData.referencia || !formData.descripcion) {
             alert("Referencia y Descripción son campos obligatorios.");
             return;
         }
 
+        // Validación de lógica de Stock (Mínimo >= 0, Máximo > Mínimo)
+        if (formData.stockMinimo < 0 || formData.stockFisico < 0 || formData.stockMaximo < 0) {
+            alert("Los valores de stock no pueden ser negativos.");
+            return;
+        }
+
+        if (formData.stockMaximo <= formData.stockMinimo) {
+            alert("El Stock Máximo debe ser mayor que el Stock Mínimo.");
+            return;
+        }
+
         setIsSubmitting(true);
-        // 🚨 Limpieza antes de enviar: Convertir vacíos en 0 para el Backend
         const finalData = { ...formData };
-        ['stockFisico', 'stockMinimo', 'stockMaximo'].forEach(key => {
-            if (finalData[key] === "") finalData[key] = 0;
-        });
 
         try {
             await api.post("/articulos", finalData);
@@ -177,16 +175,15 @@ export default function AltaArticulos({ onPageChange }) {
                             </div>
 
                             <h3 className="partidas-title" style={{ marginTop: '20px' }}>Precios y Stock</h3>
-                            {/* 🚨 Fila de Stocks: Mínimo, Actual (Físico) y Máximo */}
                             <div className="input-row three-columns">
                                 <label className="header-field">Stock Mínimo:
-                                    <input type="number" className="input-base no-spinners" name="stockMinimo" value={formData.stockMinimo} onChange={handleChange} />
+                                    <input type="number" className="input-base no-spinners" name="stockMinimo" value={formData.stockMinimo} onChange={handleChange} min="0" />
                                 </label>
                                 <label className="header-field">Stock Actual:
-                                    <input type="number" className="input-base no-spinners" name="stockFisico" value={formData.stockFisico} onChange={handleChange} />
+                                    <input type="number" className="input-base no-spinners" name="stockFisico" value={formData.stockFisico} onChange={handleChange} min="0" />
                                 </label>
                                 <label className="header-field">Stock Máximo:
-                                    <input type="number" className="input-base no-spinners" name="stockMaximo" value={formData.stockMaximo} onChange={handleChange} />
+                                    <input type="number" className="input-base no-spinners" name="stockMaximo" value={formData.stockMaximo} onChange={handleChange} min="0" />
                                 </label>
                             </div>
 
