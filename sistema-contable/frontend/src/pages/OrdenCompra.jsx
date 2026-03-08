@@ -257,13 +257,20 @@ const OrdenCompra = ({ onPageChange }) => {
         setShowProveedorModal(false);
     };
 
-    const buscarProveedoresAptos = async (idSolicitud) => {
+    // Actualizá esta función en tu componente OrdenCompra.jsx
+    const buscarProveedoresAptos = async (idSolicitud, idsVigentes = []) => {
         setBuscandoAptos(true);
         try {
-            const res = await api.get(`/solicitudes/${idSolicitud}/proveedores-aptos`);
+            // 1. Convertimos la lista [4, 6] en el string "4,6"
+            const idsQuery = idsVigentes.length > 0 ? `?ids=${idsVigentes.join(',')}` : '';
+            
+            // 2. Cambiamos POST por GET para que coincida con tu @GetMapping
+            const res = await api.get(`/solicitudes/${idSolicitud}/proveedores-aptos${idsQuery}`);
+
             setProveedoresAptos(res.data);
+            
             if (res.data.length === 0) {
-                sugerirArticuloARemover();
+                setAnalisisBloqueo("Ningún proveedor suministra la totalidad de los artículos seleccionados.");
             } else {
                 setAnalisisBloqueo(null);
             }
@@ -277,16 +284,16 @@ const OrdenCompra = ({ onPageChange }) => {
     const handleSelectSolicitud = (solicitud) => {
         setSolicitudOrigen(solicitud);
         
-        // Mapeamos usando los nombres exactos del JSON que recibís 
+        // Mapeo inicial (usando cantidadFaltante si existe)
         const nuevosDetalles = solicitud.detalles
-            .filter(d => d.estado) // Solo los activos (estado: true) 
+            .filter(d => d.estado) 
             .map(d => ({
-                idArticulo: d.idArticulo,         // Antes era d.articulo?.id 
-                referencia: d.articuloReferencia, // Antes era d.articulo?.reference 
-                descripcion: d.articuloDescripcion, // Antes era d.articulo?.descripcion 
-                cantidad: d.cantidad,
+                idArticulo: d.idArticulo,
+                referencia: d.articuloReferencia,
+                descripcion: d.articuloDescripcion,
+                cantidad: d.cantidadFaltante !== undefined ? d.cantidadFaltante : d.cantidad, 
                 medida: d.medida || '',
-                precioUnitario: 0 // Se completará al elegir proveedor
+                precioUnitario: 0 
             }));
 
         setNuevaOrden({
@@ -296,7 +303,9 @@ const OrdenCompra = ({ onPageChange }) => {
         });
         
         setShowSolicitudModal(false);
-        buscarProveedoresAptos(solicitud.id); 
+        
+        // Disparamos la búsqueda inicial con todos los artículos de la solicitud
+        buscarProveedoresAptos(solicitud.id, nuevosDetalles.map(d => d.idArticulo)); 
     };
 
     const sugerirArticuloARemover = () => {
@@ -334,9 +343,10 @@ const OrdenCompra = ({ onPageChange }) => {
         const nuevosDetalles = nuevaOrden.detalles.filter((_, i) => i !== index);
         setNuevaOrden({ ...nuevaOrden, detalles: nuevosDetalles });
         
-        // Al eliminar, si hay una solicitud de origen, re-evaluamos proveedores aptos
         if (nuevaOrden.idSolicitud) {
-            buscarProveedoresAptos(nuevaOrden.idSolicitud);
+            // IMPORTANTE: Usamos nuevosDetalles aquí
+            const idsRestantes = nuevosDetalles.map(d => d.idArticulo);
+            buscarProveedoresAptos(nuevaOrden.idSolicitud, idsRestantes);
         }
     };
 

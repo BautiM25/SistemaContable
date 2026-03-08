@@ -87,28 +87,40 @@ public class SolicitudCompraServiceImp implements SolicitudCompraService {
     }
 
     @Override
-    @Transactional(readOnly = true) // 3. AHORA SÍ RECONOCE EL readOnly
-    public List<ResponseProveedorDto> buscarProveedoresAptos(Long idSolicitud) {
-        SolicitudCompra solicitud = solicitudRepo.findById(idSolicitud)
-                .orElseThrow(() -> new RuntimeException("Solicitud no encontrada"));
+    @Transactional(readOnly = true)
+    public List<ResponseProveedorDto> buscarProveedoresAptos(Long idSolicitud, List<Long> idsManuales) {
+        List<Long> idsAProcesar;
 
-        List<Long> idsArticulos = solicitud.getDetalles().stream()
-                .filter(d -> d.getEstado() && d.getArticulo() != null)
-                .map(d -> d.getArticulo().getId())
-                .distinct()
-                .collect(Collectors.toList());
+        // 1. Decidimos qué lista de artículos evaluar
+        if (idsManuales != null && !idsManuales.isEmpty()) {
+            // Caso Dinámico: El usuario quitó artículos en el Front y nos manda los que quedan
+            idsAProcesar = idsManuales.stream().distinct().collect(Collectors.toList());
+        } else {
+            // Caso Inicial: No hay filtros, buscamos la solicitud completa en la DB
+            SolicitudCompra solicitud = solicitudRepo.findById(idSolicitud)
+                    .orElseThrow(() -> new RuntimeException("Solicitud no encontrada"));
 
-        if (idsArticulos.isEmpty()) {
+            idsAProcesar = solicitud.getDetalles().stream()
+                    .filter(d -> d.getEstado() && d.getArticulo() != null)
+                    .map(d -> d.getArticulo().getId())
+                    .distinct()
+                    .collect(Collectors.toList());
+        }
+
+        // 2. Validación de lista vacía
+        if (idsAProcesar.isEmpty()) {
             return new ArrayList<>();
         }
 
+        // 3. Ejecutamos la query de coincidencia total (La que ya tenías)
+        // El segundo parámetro es crucial: cuenta cuántos artículos DEBEN coincidir
         List<Proveedor> proveedores = proveedorRepo.findProveedoresAptos(
-                idsArticulos,
-                (long) idsArticulos.size()
+                idsAProcesar,
+                (long) idsAProcesar.size()
         );
 
         return proveedores.stream()
-                .map(this::convertToResponseDto) // 4. REFERENCIA AL MÉTODO DE ABAJO
+                .map(this::convertToResponseDto)
                 .collect(Collectors.toList());
     }
 
