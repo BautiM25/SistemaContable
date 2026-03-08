@@ -731,13 +731,16 @@ const OrdenCompra = ({ onPageChange }) => {
                                         <label style={{ color: '#aaa', fontSize: '11px', display: 'block', marginBottom: '5px' }}>
                                             CONDICIONES DE PAGO
                                         </label>
-                                        <input 
+                                        <select 
                                             className="input-base" 
-                                            placeholder="Ej: Contado, 30 días, etc." 
                                             value={nuevaOrden.condicionesPago} 
                                             onChange={e => setNuevaOrden({...nuevaOrden, condicionesPago: e.target.value})}
-                                            style={{ width: '100%', background: '#222', color: '#fff' }}
-                                        />
+                                            style={{ width: '100%', background: '#222', color: '#fff', padding: '10px' }}
+                                        >
+                                            <option value="">Seleccione una condición...</option>
+                                            <option value="CONTADO">Contado (Efectivo/Banco)</option>
+                                            <option value="CREDITO">Cuenta Corriente (Proveedores)</option>
+                                        </select>
                                     </div>
 
                                     <div style={{ marginBottom: '15px' }}>
