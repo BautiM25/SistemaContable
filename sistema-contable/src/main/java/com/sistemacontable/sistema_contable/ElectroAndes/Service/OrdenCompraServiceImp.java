@@ -117,29 +117,58 @@ public class OrdenCompraServiceImp implements OrdenCompraService {
         orden.setTotal(orden.getSubtotal().add(orden.getIva()));
         orden.setMoneda(orden.getDetalles().get(0).getArticulo().getDivisa()); // [cite: 5, 57]
 
-        // 5. GENERAR ASIENTO CONTABLE (Usa el AsientoService que me pasaste)
+        // --- 5. GENERAR ASIENTO CONTABLE ---
         CreateAsientoDto asientoDto = new CreateAsientoDto();
-        asientoDto.setFecha(LocalDate.now()); // Fecha del asiento = fecha de emisión de la OC
-        asientoDto.setDescripcion("Compra s/ OC: " + orden.getNumeroOrdenCompra());
-        asientoDto.setCreador(2L); // ID del usuario comprador (Luka) 
+        asientoDto.setFecha(LocalDate.now());
+        asientoDto.setDescripcion("Compra s/ OC: " + orden.getNumeroOrdenCompra() + " - Proveedor: " + proveedor.getNombre());
+        asientoDto.setCreador(2L); 
 
         List<CreateDetalleAsientoDto> detallesAsiento = new ArrayList<>();
 
-        // DEBE: Mercaderías (Cuenta de Activo) por el Subtotal
-        detallesAsiento.add(new CreateDetalleAsientoDto(Long.valueOf(15), orden.getTotal().doubleValue(), 0.0));
-        // HABER: Proveedores (Cuenta de Pasivo) por el Total
-        detallesAsiento.add(new CreateDetalleAsientoDto(Long.valueOf(22), 0.0, orden.getTotal().doubleValue()));
+        // DEBE: Mercaderías (ID 15) por el Subtotal (Neto)
+        detallesAsiento.add(new CreateDetalleAsientoDto(
+            15L, 
+            orden.getSubtotal().doubleValue(), 
+            0.0
+        ));
+
+        // DEBE: IVA Crédito Fiscal (ID 40 - La que creamos recién) por el IVA
+        detallesAsiento.add(new CreateDetalleAsientoDto(
+            40L, 
+            orden.getIva().doubleValue(), 
+            0.0
+        ));
+
+        // --- LÓGICA DINÁMICA PARA EL HABER ---
+        Long cuentaHaberId;
+        String condicion = dto.getCondicionesPago().toUpperCase();
+
+        if ("CONTADO".equals(condicion)) {
+            cuentaHaberId = 7L; // Supongamos que 7L es la cuenta "Caja" o "Banco"
+        } else {
+            cuentaHaberId = 22L; // Tu cuenta actual de "Proveedores"
+        }
+
+        // HABER: Dinámico según la condición
+        detallesAsiento.add(new CreateDetalleAsientoDto(
+            cuentaHaberId, 
+            0.0, 
+            orden.getTotal().doubleValue()
+        ));
 
         asientoDto.setDetalles(detallesAsiento);
 
-        // Llamamos al servicio para validar partida doble y saldos negativos 
+        // Llamamos al servicio para validar partida doble y persistir
         Asiento asientoCreado = asientoService.crearAsiento(asientoDto);
-        orden.setAsientoAsociado(asientoCreado); // Vinculamos la OC con su Asiento 
+        orden.setAsientoAsociado(asientoCreado);
 
         // 6. ACTUALIZAR CUENTA CORRIENTE (Mayor del Proveedor)
         // Según tu lógica: Aumenta por el DEBE
         BigDecimal montoTotal = orden.getTotal();
-        cc.setSaldoActual(cc.getSaldoActual().add(montoTotal));
+        if (!"CONTADO".equals(condicion)) {
+            cc.setSaldoActual(cc.getSaldoActual().add(orden.getTotal()));
+            proveedorRepo.save(proveedor);
+        }
 
         // 7. Persistir todos los cambios
         proveedorRepo.save(proveedor);
