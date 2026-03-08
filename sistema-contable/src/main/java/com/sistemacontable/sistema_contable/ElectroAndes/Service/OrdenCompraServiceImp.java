@@ -88,11 +88,12 @@ public class OrdenCompraServiceImp implements OrdenCompraService {
             articleRepo.save(articulo); // 
 
             // --- REGLA DE NEGOCIO: Actualizar Solicitud ---
-            if (itemDto.getCantidad() >= dSol.getCantidad()) {
-                dSol.setCantidad(0.0);
-                dSol.setEstado(false);
+            if (itemDto.getCantidad() >= dSol.getCantidadFaltante()) {
+                dSol.setCantidadFaltante(0.0);
+                dSol.setEstado(false); // Se cierra el ítem
             } else {
-                dSol.setCantidad(dSol.getCantidad() - itemDto.getCantidad());
+                dSol.setCantidadFaltante(dSol.getCantidadFaltante() - itemDto.getCantidad());
+                // El estado sigue siendo true para permitir futuras OC por el resto
             }
 
             // --- Crear Detalle de la Orden ---
