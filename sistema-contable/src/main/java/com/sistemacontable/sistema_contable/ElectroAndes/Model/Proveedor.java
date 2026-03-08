@@ -13,6 +13,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -78,6 +79,9 @@ public class Proveedor {
 
     @OneToMany(mappedBy = "proveedor", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ArticuloProveedor> articulosSuministrados = new ArrayList<>();
+
+    @OneToOne(mappedBy = "proveedor", cascade = CascadeType.ALL, orphanRemoval = true)
+    private CuentaCorriente cuentaCorriente;
 
     // --- CONSTRUCTORES ---
     public Proveedor() {
@@ -250,5 +254,13 @@ public class Proveedor {
 
     public void setArticulosSuministrados(List<ArticuloProveedor> articulosSuministrados) {
         this.articulosSuministrados = articulosSuministrados;
+    }
+
+    public CuentaCorriente getCuentaCorriente() {
+        return cuentaCorriente;
+    }
+
+    public void setCuentaCorriente(CuentaCorriente cuentaCorriente) {
+        this.cuentaCorriente = cuentaCorriente;
     }
 }
