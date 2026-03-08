@@ -6,6 +6,14 @@ public class CreateDetalleAsientoDto {
     private Double haber;
     private Long cuenta;
 
+    public CreateDetalleAsientoDto() {
+    }
+
+    public CreateDetalleAsientoDto(Long cuenta, Double debe, Double haber) {
+        this.cuenta = cuenta;
+        this.debe = debe;
+        this.haber = haber;
+    }
     // Getters y Setters
 
     public Double getDebe() {
