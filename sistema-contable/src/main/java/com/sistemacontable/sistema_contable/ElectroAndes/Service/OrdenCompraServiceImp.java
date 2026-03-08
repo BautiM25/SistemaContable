@@ -120,12 +120,12 @@ public class OrdenCompraServiceImp implements OrdenCompraService {
         CreateAsientoDto asientoDto = new CreateAsientoDto();
         asientoDto.setFecha(LocalDate.now()); // Fecha del asiento = fecha de emisión de la OC
         asientoDto.setDescripcion("Compra s/ OC: " + orden.getNumeroOrdenCompra());
-        asientoDto.setCreador(1L); // ID del usuario comprador (Luka) 
+        asientoDto.setCreador(2L); // ID del usuario comprador (Luka) 
 
         List<CreateDetalleAsientoDto> detallesAsiento = new ArrayList<>();
 
         // DEBE: Mercaderías (Cuenta de Activo) por el Subtotal
-        detallesAsiento.add(new CreateDetalleAsientoDto(Long.valueOf(15), orden.getSubtotal().doubleValue(), 0.0));
+        detallesAsiento.add(new CreateDetalleAsientoDto(Long.valueOf(15), orden.getTotal().doubleValue(), 0.0));
         // HABER: Proveedores (Cuenta de Pasivo) por el Total
         detallesAsiento.add(new CreateDetalleAsientoDto(Long.valueOf(22), 0.0, orden.getTotal().doubleValue()));
 
