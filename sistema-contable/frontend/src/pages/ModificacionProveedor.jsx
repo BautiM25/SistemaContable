@@ -63,12 +63,13 @@ export default function ModificacionProveedor({ onPageChange }) {
     const [showModal, setShowModal] = useState(false);
     const [seleccionado, setSeleccionado] = useState(null);
 
+    // Se eliminaron 'producto' y 'precio' para coincidir con Alta
     const [formData, setFormData] = useState({
         nombre: '', direccion: '', cuitCuil: '', telefono: '', mail: '', rubro: '',
         divisa: 'ARS', saldosAFavor: 0, saldoInicialCC: 0, subcuenta: '',
         categoriaIva: 'RESPONSABLE_INSCRIPTO',
         identificadorBanco: '', pais: '', banco: '',
-        producto: '', variacionPrecio: 0, precio: 0, variacionDescuento: 0, descuento: 0, comentario: ''
+        descuento: 0, comentario: ''
     });
 
     useEffect(() => {
@@ -91,11 +92,11 @@ export default function ModificacionProveedor({ onPageChange }) {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        const numericFields = ['saldosAFavor', 'saldoInicialCC', 'variacionPrecio', 'precio', 'variacionDescuento', 'descuento'];
+        // Campos numéricos validados (sin 'precio')
+        const numericFields = ['saldosAFavor', 'saldoInicialCC', 'descuento'];
         
         setFormData(prev => ({
             ...prev,
-            // Validación para evitar NaN y asegurar que sea 0 si se borra el input
             [name]: numericFields.includes(name) ? (value === "" ? 0 : parseFloat(value)) : value
         }));
     };
@@ -103,10 +104,9 @@ export default function ModificacionProveedor({ onPageChange }) {
     const handleGuardar = async () => {
         if (!seleccionado) return;
 
-        // --- VALIDACIÓN DE VALORES NO NEGATIVOS ---
-        // Validamos precio y descuento (y saldos por si el DTO de edición los permite)
-        if (formData.precio < 0 || formData.descuento < 0 || formData.saldosAFavor < 0 || formData.saldoInicialCC < 0) {
-            alert("Los valores de precio, descuento y saldos deben ser mayores o iguales a 0.");
+        // Validaciones de valores no negativos
+        if (formData.descuento < 0 || formData.saldosAFavor < 0 || formData.saldoInicialCC < 0) {
+            alert("Los valores de descuento y saldos deben ser mayores o iguales a 0.");
             return;
         }
 
@@ -159,13 +159,15 @@ export default function ModificacionProveedor({ onPageChange }) {
                                     </label>
                                 </div>
                                 
-                                {/* Campos de Saldo (Opcional, según lógica de negocio) */}
-                                <div className="input-row">
-                                    <label className="header-field">Saldo Inicial CC:
-                                        <input type="number" className="input-base" name="saldoInicialCC" value={formData.saldoInicialCC} onChange={handleChange} min="0" />
+                                <div className="input-row three-columns">
+                                    <label className="header-field">Email:
+                                        <input type="email" className="input-base" name="mail" value={formData.mail} onChange={handleChange} />
                                     </label>
-                                    <label className="header-field">Saldos a Favor:
-                                        <input type="number" className="input-base" name="saldosAFavor" value={formData.saldosAFavor} onChange={handleChange} min="0" />
+                                    <label className="header-field">Teléfono:
+                                        <input type="text" className="input-base" name="telefono" value={formData.telefono} onChange={handleChange} />
+                                    </label>
+                                    <label className="header-field">Rubro:
+                                        <input type="text" className="input-base" name="rubro" value={formData.rubro} onChange={handleChange} />
                                     </label>
                                 </div>
 
@@ -188,26 +190,22 @@ export default function ModificacionProveedor({ onPageChange }) {
                                     </label>
                                 </div>
 
-                                <h3 className="partidas-title" style={{ marginTop: '20px' }}>Datos Bancarios</h3>
+                                <div className="input-row">
+                                    <label className="header-field">Saldo Inicial CC:
+                                        <input type="number" className="input-base" name="saldoInicialCC" value={formData.saldoInicialCC} onChange={handleChange} min="0" />
+                                    </label>
+                                    <label className="header-field">Saldos a Favor:
+                                        <input type="number" className="input-base" name="saldosAFavor" value={formData.saldosAFavor} onChange={handleChange} min="0" />
+                                    </label>
+                                </div>
+
+                                <h3 className="partidas-title" style={{ marginTop: '20px' }}>Datos Bancarios y Notas</h3>
                                 <div className="input-row three-columns">
                                     <label className="header-field">Banco:
                                         <input type="text" className="input-base" name="banco" value={formData.banco} onChange={handleChange} />
                                     </label>
-                                    <label className="header-field">CBU:
+                                    <label className="header-field">CBU / Identificador:
                                         <input type="text" className="input-base" name="identificadorBanco" value={formData.identificadorBanco} onChange={handleChange} />
-                                    </label>
-                                    <label className="header-field">País:
-                                        <input type="text" className="input-base" name="pais" value={formData.pais} onChange={handleChange} />
-                                    </label>
-                                </div>
-
-                                <h3 className="partidas-title" style={{ marginTop: '20px' }}>Productos y Comentarios</h3>
-                                <div className="input-row three-columns">
-                                    <label className="header-field">Producto:
-                                        <input type="text" className="input-base" name="producto" value={formData.producto} onChange={handleChange} />
-                                    </label>
-                                    <label className="header-field">Precio Base:
-                                        <input type="number" className="input-base" name="precio" value={formData.precio} onChange={handleChange} min="0" />
                                     </label>
                                     <label className="header-field">Descuento %:
                                         <input type="number" className="input-base" name="descuento" value={formData.descuento} onChange={handleChange} min="0" />

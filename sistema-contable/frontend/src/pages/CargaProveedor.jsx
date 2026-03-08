@@ -16,45 +16,40 @@ const DIVISAS = ['ARS', 'USD'];
 export default function CargaProveedor({ onPageChange }) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     
+    // Se eliminaron 'producto' y 'precio' del estado inicial
     const [formData, setFormData] = useState({
         nombre: '', direccion: '', cuitCuil: '', telefono: '', mail: '', rubro: '',
         divisa: 'ARS', saldosAFavor: 0, saldoInicialCC: 0, subcuenta: '',
         categoriaIva: 'RESPONSABLE_INSCRIPTO',
         identificadorBanco: '', pais: '', banco: '',
-        producto: '', variacionPrecio: 0, precio: 0, variacionDescuento: 0, descuento: 0, comentario: ''
+        descuento: 0, comentario: ''
     });
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        const numericFields = ['saldosAFavor', 'saldoInicialCC', 'variacionPrecio', 'precio', 'variacionDescuento', 'descuento'];
+        // Se quitó 'precio' de los campos numéricos
+        const numericFields = ['saldosAFavor', 'saldoInicialCC', 'descuento'];
         
         setFormData(prev => ({
             ...prev,
-            // Si es numérico y está vacío, ponemos 0 para evitar errores
             [name]: numericFields.includes(name) ? (value === "" ? 0 : parseFloat(value)) : value
         }));
     };
 
     const handleGuardar = async () => {
-        // Validaciones de campos obligatorios
         if (!formData.nombre || !formData.cuitCuil) {
             alert("Nombre y CUIT son campos obligatorios.");
             return;
         }
 
-        // --- VALIDACIÓN DE VALORES NO NEGATIVOS ---
-        if (
-            formData.saldoInicialCC < 0 || 
-            formData.saldosAFavor < 0 || 
-            formData.precio < 0 || 
-            formData.descuento < 0
-        ) {
-            alert("Los saldos, el precio y el descuento deben ser mayores o iguales a 0.");
+        if (formData.saldoInicialCC < 0 || formData.saldosAFavor < 0 || formData.descuento < 0) {
+            alert("Los saldos y el descuento deben ser mayores o iguales a 0.");
             return;
         }
 
         setIsSubmitting(true);
         try {
+            // Se envía el formData, incluyendo 'identificadorBanco'
             await api.post("/proveedores", formData);
             alert("✅ Proveedor creado con éxito.");
             onPageChange("GESTION_PROVEEDORES");
@@ -79,8 +74,8 @@ export default function CargaProveedor({ onPageChange }) {
                     </div>
 
                     <div className="asiento-body form-body" style={{ overflowY: 'auto' }}>
-                        
                         <div className="tab-content-grid">
+                            
                             <h3 className="partidas-title">Datos Generales</h3>
                             <div className="input-row">
                                 <label className="header-field">Nombre / Razón Social:
@@ -90,6 +85,7 @@ export default function CargaProveedor({ onPageChange }) {
                                     <input type="text" className="input-base" name="cuitCuil" value={formData.cuitCuil} onChange={handleChange} placeholder="30-XXXXXXXX-X" />
                                 </label>
                             </div>
+
                             <div className="input-row three-columns">
                                 <label className="header-field">Email:
                                     <input type="email" className="input-base" name="mail" value={formData.mail} onChange={handleChange} />
@@ -120,6 +116,7 @@ export default function CargaProveedor({ onPageChange }) {
                                     <input type="text" className="input-base" name="subcuenta" value={formData.subcuenta} onChange={handleChange} />
                                 </label>
                             </div>
+
                             <div className="input-row">
                                 <label className="header-field">Saldo Inicial CC:
                                     <input type="number" className="input-base no-spinners" name="saldoInicialCC" value={formData.saldoInicialCC} onChange={handleChange} min="0" />
@@ -129,23 +126,26 @@ export default function CargaProveedor({ onPageChange }) {
                                 </label>
                             </div>
 
-                            <h3 className="partidas-title" style={{ marginTop: '20px' }}>Específicas y Notas</h3>
+                            <h3 className="partidas-title" style={{ marginTop: '20px' }}>Datos Bancarios y Notas</h3>
                             <div className="input-row three-columns">
-                                <label className="header-field">Producto Principal:
-                                    <input type="text" className="input-base" name="producto" value={formData.producto} onChange={handleChange} />
+                                <label className="header-field">Banco:
+                                    <input type="text" className="input-base" name="banco" value={formData.banco} onChange={handleChange} />
                                 </label>
-                                <label className="header-field">Precio Base:
-                                    <input type="number" className="input-base no-spinners" name="precio" value={formData.precio} onChange={handleChange} min="0" />
+                                {/* Este es el identificador que enviamos al backend */}
+                                <label className="header-field">CBU / Identificador:
+                                    <input type="text" className="input-base" name="identificadorBanco" value={formData.identificadorBanco} onChange={handleChange} />
                                 </label>
                                 <label className="header-field">Descuento %:
                                     <input type="number" className="input-base no-spinners" name="descuento" value={formData.descuento} onChange={handleChange} min="0" />
                                 </label>
                             </div>
+
                             <div className="input-row">
                                 <label className="header-field">Comentarios:
                                     <textarea className="input-base" name="comentario" rows="3" value={formData.comentario} onChange={handleChange} style={{ width: '100%', resize: 'none' }} />
                                 </label>
                             </div>
+
                         </div>
                     </div>
 

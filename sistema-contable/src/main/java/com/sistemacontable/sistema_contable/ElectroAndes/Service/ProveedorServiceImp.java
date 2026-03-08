@@ -124,6 +124,7 @@ public class ProveedorServiceImp implements ProveedorService {
         dto.setDivisa(entity.getDivisa());
         dto.setSaldoInicialCC(entity.getSaldoInicialCC());
         dto.setBanco(entity.getBanco());
+        dto.setIdentificadorBanco(entity.getIdentificadorBanco());
 
         if (entity.getArticulosSuministrados() != null) {
             dto.setArticulos(entity.getArticulosSuministrados().stream()
