@@ -16,19 +16,18 @@ const DIVISAS = ['ARS', 'USD'];
 export default function CargaProveedor({ onPageChange }) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     
-    // Se eliminaron 'producto' y 'precio' del estado inicial
     const [formData, setFormData] = useState({
         nombre: '', direccion: '', cuitCuil: '', telefono: '', mail: '', rubro: '',
         divisa: 'ARS', saldosAFavor: 0, saldoInicialCC: 0, subcuenta: '',
         categoriaIva: 'RESPONSABLE_INSCRIPTO',
         identificadorBanco: '', pais: '', banco: '',
-        descuento: 0, comentario: ''
+        comentario: ''  // Eliminado 'descuento'
     });
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        // Se quitó 'precio' de los campos numéricos
-        const numericFields = ['saldosAFavor', 'saldoInicialCC', 'descuento'];
+        // Eliminado 'descuento' de los campos numéricos
+        const numericFields = ['saldosAFavor', 'saldoInicialCC'];
         
         setFormData(prev => ({
             ...prev,
@@ -42,14 +41,14 @@ export default function CargaProveedor({ onPageChange }) {
             return;
         }
 
-        if (formData.saldoInicialCC < 0 || formData.saldosAFavor < 0 || formData.descuento < 0) {
-            alert("Los saldos y el descuento deben ser mayores o iguales a 0.");
+        // Eliminada la validación de descuento
+        if (formData.saldoInicialCC < 0 || formData.saldosAFavor < 0) {
+            alert("Los saldos deben ser mayores o iguales a 0.");
             return;
         }
 
         setIsSubmitting(true);
         try {
-            // Se envía el formData, incluyendo 'identificadorBanco'
             await api.post("/proveedores", formData);
             alert("✅ Proveedor creado con éxito.");
             onPageChange("GESTION_PROVEEDORES");
@@ -131,12 +130,12 @@ export default function CargaProveedor({ onPageChange }) {
                                 <label className="header-field">Banco:
                                     <input type="text" className="input-base" name="banco" value={formData.banco} onChange={handleChange} />
                                 </label>
-                                {/* Este es el identificador que enviamos al backend */}
                                 <label className="header-field">CBU / Identificador:
                                     <input type="text" className="input-base" name="identificadorBanco" value={formData.identificadorBanco} onChange={handleChange} />
                                 </label>
-                                <label className="header-field">Descuento %:
-                                    <input type="number" className="input-base no-spinners" name="descuento" value={formData.descuento} onChange={handleChange} min="0" />
+                                {/* Eliminado el campo de descuento */}
+                                <label className="header-field">País:
+                                    <input type="text" className="input-base" name="pais" value={formData.pais} onChange={handleChange} />
                                 </label>
                             </div>
 
