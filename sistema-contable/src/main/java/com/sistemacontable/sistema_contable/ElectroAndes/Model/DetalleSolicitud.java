@@ -48,6 +48,9 @@ public class DetalleSolicitud {
     @Column(name = "estado")
     private boolean estado; // true = activo, false = inactivo
 
+    @Column(name = "cantidad_faltante")
+    private Double cantidadFaltante;
+
     // --- CONSTRUCTORES ---
     public DetalleSolicitud() {
     }
@@ -139,5 +142,13 @@ public class DetalleSolicitud {
 
     public void setEstado(boolean estado) {
         this.estado = estado;
+    }
+
+    public Double getCantidadFaltante() {
+        return cantidadFaltante;
+    }
+
+    public void setCantidadFaltante(Double cantidadFaltante) {
+        this.cantidadFaltante = cantidadFaltante;
     }
 }
