@@ -63,13 +63,12 @@ export default function ModificacionProveedor({ onPageChange }) {
     const [showModal, setShowModal] = useState(false);
     const [seleccionado, setSeleccionado] = useState(null);
 
-    // Se eliminaron 'producto' y 'precio' para coincidir con Alta
     const [formData, setFormData] = useState({
         nombre: '', direccion: '', cuitCuil: '', telefono: '', mail: '', rubro: '',
         divisa: 'ARS', saldosAFavor: 0, saldoInicialCC: 0, subcuenta: '',
         categoriaIva: 'RESPONSABLE_INSCRIPTO',
         identificadorBanco: '', pais: '', banco: '',
-        descuento: 0, comentario: ''
+        comentario: ''  // Eliminado 'descuento'
     });
 
     useEffect(() => {
@@ -92,8 +91,8 @@ export default function ModificacionProveedor({ onPageChange }) {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        // Campos numéricos validados (sin 'precio')
-        const numericFields = ['saldosAFavor', 'saldoInicialCC', 'descuento'];
+        // Eliminado 'descuento' de los campos numéricos
+        const numericFields = ['saldosAFavor', 'saldoInicialCC'];
         
         setFormData(prev => ({
             ...prev,
@@ -104,9 +103,9 @@ export default function ModificacionProveedor({ onPageChange }) {
     const handleGuardar = async () => {
         if (!seleccionado) return;
 
-        // Validaciones de valores no negativos
-        if (formData.descuento < 0 || formData.saldosAFavor < 0 || formData.saldoInicialCC < 0) {
-            alert("Los valores de descuento y saldos deben ser mayores o iguales a 0.");
+        // Eliminada validación de descuento
+        if (formData.saldosAFavor < 0 || formData.saldoInicialCC < 0) {
+            alert("Los valores de saldos deben ser mayores o iguales a 0.");
             return;
         }
 
@@ -207,8 +206,8 @@ export default function ModificacionProveedor({ onPageChange }) {
                                     <label className="header-field">CBU / Identificador:
                                         <input type="text" className="input-base" name="identificadorBanco" value={formData.identificadorBanco} onChange={handleChange} />
                                     </label>
-                                    <label className="header-field">Descuento %:
-                                        <input type="number" className="input-base" name="descuento" value={formData.descuento} onChange={handleChange} min="0" />
+                                    <label className="header-field">País:
+                                        <input type="text" className="input-base" name="pais" value={formData.pais} onChange={handleChange} />
                                     </label>
                                 </div>
                                 <div className="input-row">
