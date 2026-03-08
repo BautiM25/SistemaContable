@@ -134,6 +134,8 @@ public class ProveedorServiceImp implements ProveedorService {
                         aDto.setReferencia(ap.getArticulo().getReferencia());
                         aDto.setDescripcion(ap.getArticulo().getDescripcion());
                         aDto.setPrecioPactado(ap.getPrecio());
+                        aDto.setActivo(ap.getArticulo().isHabilitado());
+
                         return aDto;
                     }).collect(Collectors.toList()));
         }

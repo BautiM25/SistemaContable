@@ -8,6 +8,7 @@ public class ArticuloVinculadoDto {
     private String referencia;
     private String descripcion;
     private BigDecimal precioPactado;
+    private boolean activo;
 
     // Getters y Setters
     public Long getIdArticulo() {
@@ -40,5 +41,13 @@ public class ArticuloVinculadoDto {
 
     public void setPrecioPactado(BigDecimal precioPactado) {
         this.precioPactado = precioPactado;
+    }
+
+    public boolean isActivo() {
+        return activo;
+    }
+
+    public void setActivo(boolean activo) {
+        this.activo = activo;
     }
 }

@@ -20,9 +20,7 @@ const VincularArticuloModal = ({ onSelect, onClose, articulosYaVinculados }) => 
         const cargarArticulos = async () => {
             setLoading(true);
             try {
-                // Traemos todos los artículos
                 const res = await api.get("/articulos");
-                // Filtramos los que el proveedor ya tiene vinculados
                 const vinculadosIds = articulosYaVinculados.map(a => a.idArticulo);
                 const filtrados = res.data.filter(a => !vinculadosIds.includes(a.id));
                 setArticulos(filtrados);
@@ -35,7 +33,6 @@ const VincularArticuloModal = ({ onSelect, onClose, articulosYaVinculados }) => 
         cargarArticulos();
     }, [articulosYaVinculados]);
 
-    // Filtro local por Referencia o Descripción
     const filtered = articulos.filter(a => 
         a.referencia?.toLowerCase().includes(searchTerm.toLowerCase()) || 
         a.descripcion?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -112,10 +109,9 @@ export default function ConsultaProveedor({ id, onPageChange }) {
 
     const handleVincularArticulo = async (articulo) => {
         try {
-            // Endpoint: POST /api/proveedores/{id}/articulos/{idArticulo}
             await api.post(`/proveedores/${proveedor.id}/articulos/${articulo.id}`);
             setShowVincularModal(false);
-            fetchDetalle(); // Refrescar lista de artículos suministrados
+            fetchDetalle(); 
         } catch (err) {
             alert("Error al vincular el artículo.");
         }
@@ -204,10 +200,33 @@ export default function ConsultaProveedor({ id, onPageChange }) {
                                 </thead>
                                 <tbody>
                                     {proveedor.articulos.map((art, idx) => (
-                                        <tr key={idx} style={{ borderBottom: '1px solid #444' }}>
-                                            <td style={{ padding: '10px', color: '#4caf50', fontWeight: 'bold' }}>{art.referencia}</td>
-                                            <td style={{ padding: '10px', color: '#000000' }}>{art.descripcion}</td>
-                                            <td style={{ padding: '10px', color: '#ffd700', textAlign: 'right', fontWeight: 'bold' }}>
+                                        <tr key={idx} style={{ 
+                                            borderBottom: '1px solid #444',
+                                            backgroundColor: art.activo ? 'transparent' : 'rgba(255, 77, 77, 0.05)' 
+                                        }}>
+                                            <td style={{ 
+                                                padding: '10px', 
+                                                // 🚀 Cambio de color dinámico: Verde si está activo, Rojo si no.
+                                                color: art.activo ? '#4caf50' : '#ff4d4d', 
+                                                fontWeight: 'bold' 
+                                            }}>
+                                                {art.referencia}
+                                                {/* Agregamos una etiqueta textual para reforzar el color */}
+                                                {!art.activo && <span style={{fontSize: '9px', marginLeft: '5px'}}>(INACTIVO)</span>}
+                                            </td>
+                                            <td style={{ 
+                                                padding: '10px', 
+                                                color: art.activo ? '#000000' : '#888' // Gris si está inactivo
+                                            }}>
+                                                {art.descripcion}
+                                            </td>
+                                            <td style={{ 
+                                                padding: '10px', 
+                                                color: '#ffd700', 
+                                                textAlign: 'right', 
+                                                fontWeight: 'bold',
+                                                opacity: art.activo ? 1 : 0.6
+                                            }}>
                                                 ${art.precioPactado?.toFixed(2)}
                                             </td>
                                         </tr>
