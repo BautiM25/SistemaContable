@@ -1,5 +1,6 @@
 package com.sistemacontable.sistema_contable.ElectroAndes.Resource;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -111,8 +112,12 @@ public class ArticleController {
     }
 
     @PostMapping("/{id}/proveedores/{idProveedor}")
-    public ResponseEntity<Void> vincularProveedor(@PathVariable Long id, @PathVariable Long idProveedor) {
-        articleService.agregarProveedorAArticulo(id, idProveedor);
+    public ResponseEntity<Void> vincularProveedor(
+            @PathVariable Long id,
+            @PathVariable Long idProveedor,
+            @RequestParam BigDecimal precio // 👈 Nuevo parámetro
+    ) {
+        articleService.agregarProveedorAArticulo(id, idProveedor, precio);
         return ResponseEntity.ok().build();
     }
 

@@ -21,5 +21,5 @@ public interface SolicitudCompraService {
     // 📌 NUEVO: Método para obtener todas las solicitudes
     List<SolicitudCompra> obtenerTodas();
 
-    List<ResponseProveedorDto> buscarProveedoresAptos(Long idSolicitud);
+    List<ResponseProveedorDto> buscarProveedoresAptos(Long idSolicitud, List<Long> idsManuales);
 }

@@ -8,6 +8,68 @@ import "../styles/RegistrarAsiento.css";
 import "../styles/GestionUsuarios.css"; 
 import "../styles/Modal.css";
 
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+
+const generarPDFSolicitud = (solicitud, calcularPendiente) => {
+    try {
+        const doc = new jsPDF();
+
+        // 1. Encabezado Corporativo (Verde #3c6c3e)
+        doc.setFillColor(60, 108, 62); 
+        doc.rect(0, 0, 210, 40, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(22);
+        doc.text("SOLICITUD DE COMPRA", 14, 25);
+        
+        // 2. Información del Documento
+        doc.setTextColor(0, 0, 0);
+        doc.setFontSize(10);
+        doc.text(`Número de Solicitud: ${solicitud.numeroSolicitud || 'S/N'}`, 14, 50);
+        doc.text(`Fecha: ${new Date().toLocaleDateString()}`, 14, 55);
+        doc.text(`Estado: ${solicitud.estado ? 'ACTIVA' : 'INACTIVA'}`, 14, 60);
+
+        // 3. Tabla de Artículos
+        const columnas = ["Ref.", "Descripción", "Cant. Sol.", "Cant. Pend.", "Medida", "Límite"];
+        const filas = (solicitud.detalles || []).map(d => [
+            d.articuloReferencia || '-',
+            d.articuloDescripcion || 'Sin descripción',
+            d.cantidad,
+            calcularPendiente(solicitud.id, d.articuloReferencia, d.cantidad),
+            d.medida || '-',
+            d.fechaLimite ? new Date(d.fechaLimite).toLocaleDateString() : '-'
+        ]);
+
+        autoTable(doc, {
+            startY: 70,
+            head: [columnas],
+            body: filas,
+            theme: 'grid',
+            headStyles: { fillColor: [60, 108, 62], textColor: [255, 255, 255] },
+            styles: { fontSize: 8 },
+            columnStyles: {
+                0: { cellWidth: 25 }, // Referencia
+                2: { halign: 'center' }, // Cantidad Solicitada
+                3: { halign: 'center', fontStyle: 'bold' } // Cantidad Pendiente
+            }
+        });
+
+        // 4. Espacio para observaciones o firmas
+        const finalY = doc.lastAutoTable.finalY + 20;
+        doc.setFontSize(10);
+        doc.setFont(undefined, 'bold');
+        doc.text("OBSERVACIONES TÉCNICAS:", 14, finalY);
+        doc.setFont(undefined, 'normal');
+        doc.text("Documento de validez interna para el departamento de compras.", 14, finalY + 7);
+
+        // 5. Descarga
+        doc.save(`Solicitud_${solicitud.numeroSolicitud}.pdf`);
+
+    } catch (error) {
+        console.error("Error generando PDF de solicitud:", error);
+        alert("No se pudo generar el PDF. Verificá los datos de la solicitud.");
+    }
+};
 // ====================================================================
 // MODAL DE BÚSQUEDA DE ARTÍCULOS
 // ====================================================================
@@ -488,7 +550,6 @@ const SolicitudCompra = ({ onPageChange }) => {
                     {/* ===== DETALLE ===== */}
                     {view === 'detail' && solicitudSeleccionada && (
                         <div>
-                            {/* Cabecera con fondo más claro */}
                             <div style={{ 
                                 background: '#f0f0f0', 
                                 padding: '20px', 
@@ -496,9 +557,19 @@ const SolicitudCompra = ({ onPageChange }) => {
                                 marginBottom: '20px',
                                 borderLeft: '4px solid #3c6c3e'
                             }}>
-                                <h3 style={{ color: '#000', margin: '0 0 15px 0' }}>
-                                    Solicitud #{solicitudSeleccionada.numeroSolicitud}
-                                </h3>
+                                {/* 🚀 BOTÓN DE DESCARGA INTEGRADO */}
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                    <h3 style={{ color: '#000', margin: '0 0 15px 0' }}>
+                                        Solicitud #{solicitudSeleccionada.numeroSolicitud}
+                                    </h3>
+                                    <button 
+                                        className="action-button primary-button" 
+                                        style={{ background: '#3c6c3e', padding: '8px 15px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}
+                                        onClick={() => generarPDFSolicitud(solicitudSeleccionada, calcularCantidadPendiente)}
+                                    >
+                                        PDF
+                                    </button>
+                                </div>
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '15px' }}>
                                     <div>
                                         <strong style={{ color: '#000' }}>ID:</strong>

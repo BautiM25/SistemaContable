@@ -1,5 +1,6 @@
 package com.sistemacontable.sistema_contable.ElectroAndes.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -196,8 +197,7 @@ public class ArticleServiceImp implements ArticleService {
 
     @Override
     @Transactional
-    public void agregarProveedorAArticulo(Long idArticulo, Long idProveedor) {
-        // Corregido: usando articleRepository y proveedorRepository
+    public void agregarProveedorAArticulo(Long idArticulo, Long idProveedor, BigDecimal precio) {
         Article articulo = articleRepository.findById(idArticulo)
                 .orElseThrow(() -> new RuntimeException("Artículo no encontrado"));
         Proveedor proveedor = proveedorRepository.findById(idProveedor)
@@ -206,7 +206,9 @@ public class ArticleServiceImp implements ArticleService {
         ArticuloProveedor asociacion = new ArticuloProveedor();
         asociacion.setArticulo(articulo);
         asociacion.setProveedor(proveedor);
-        asociacion.setPrecio(articulo.getCostoBase());
+
+        // 🚀 Ahora usamos el precio recibido en lugar del costo base
+        asociacion.setPrecio(precio);
 
         articulo.getProveedoresAsociados().add(asociacion);
         articleRepository.save(articulo);

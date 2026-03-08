@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.sistemacontable.sistema_contable.ElectroAndes.Service.SolicitudCompraService;
@@ -77,9 +78,12 @@ public class SolicitudCompraController {
     }
 
     @GetMapping("/{id}/proveedores-aptos")
-    public ResponseEntity<List<ResponseProveedorDto>> obtenerProveedoresAptos(@PathVariable Long id) {
-        List<ResponseProveedorDto> proveedores = solicitudService.buscarProveedoresAptos(id);
-        // Retornamos 200 siempre, la lista vacía indica que no hay coincidencia total
+    public ResponseEntity<List<ResponseProveedorDto>> obtenerProveedoresAptos(
+            @PathVariable Long id,
+            @RequestParam(required = false) List<Long> ids // Parámetro opcional: ?ids=1,2,3
+    ) {
+        // Pasamos el ID de la solicitud y la lista (que puede ser null)
+        List<ResponseProveedorDto> proveedores = solicitudService.buscarProveedoresAptos(id, ids);
         return ResponseEntity.ok(proveedores);
     }
 }

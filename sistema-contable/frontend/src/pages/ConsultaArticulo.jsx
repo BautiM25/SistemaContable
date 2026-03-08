@@ -11,31 +11,29 @@ import "../styles/Modal.css";
 // ====================================================================
 // COMPONENTE INTERNO: MODAL DE VINCULACIÓN
 // ====================================================================
-const VincularProveedorModal = ({ onSelect, onClose, proveedoresYaVinculados }) => {
+const VincularProveedorModal = ({ onSelect, onClose, proveedoresYaVinculados, costoSugerido }) => {
     const [proveedores, setProveedores] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [loading, setLoading] = useState(false);
+    
+    // Estado para el segundo paso: ingreso de precio
+    const [proveedorSeleccionado, setProveedorSeleccionado] = useState(null);
+    const [precioPactado, setPrecioPactado] = useState(costoSugerido || 0);
 
-    // Cargar todos los proveedores al abrir
     useEffect(() => {
         const cargarTodo = async () => {
             setLoading(true);
             try {
                 const res = await api.get("/proveedores");
-                // Filtramos los que YA están vinculados para no duplicar
                 const vinculadosIds = proveedoresYaVinculados.map(p => p.idProveedor);
                 const filtrados = res.data.filter(p => !vinculadosIds.includes(p.id));
                 setProveedores(filtrados);
-            } catch (err) {
-                console.error("Error al cargar proveedores:", err);
-            } finally {
-                setLoading(false);
-            }
+            } catch (err) { console.error(err); } 
+            finally { setLoading(false); }
         };
         cargarTodo();
     }, [proveedoresYaVinculados]);
 
-    // Lógica de búsqueda (Filtro local + soporte para búsqueda por CUIT)
     const filtered = proveedores.filter(p => 
         p.nombre?.toLowerCase().includes(searchTerm.toLowerCase()) || 
         p.cuitCuil?.includes(searchTerm)
@@ -43,42 +41,62 @@ const VincularProveedorModal = ({ onSelect, onClose, proveedoresYaVinculados }) 
 
     return (
         <div className="modal-overlay">
-            <div className="modal-content modal-cuenta" style={{ width: '600px', maxWidth: '90%' }}>
-                <h3 className="modal-title">Vincular Nuevo Proveedor</h3>
-                <div style={{ marginBottom: '15px' }}>
-                    <input 
-                        type="text" 
-                        className="input-base large-input" 
-                        placeholder="Buscar por nombre o CUIT..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        autoFocus
-                    />
-                </div>
+            <div className="modal-content modal-cuenta" style={{ width: '600px' }}>
+                <h3 className="modal-title">
+                    {proveedorSeleccionado ? "Confirmar Precio Pactado" : "Vincular Nuevo Proveedor"}
+                </h3>
 
-                <div className="cuenta-list-container" style={{ maxHeight: '350px', overflowY: 'auto' }}>
-                    {loading ? (
-                        <div style={{color:'white', textAlign:'center', padding: '20px'}}>Buscando proveedores...</div>
-                    ) : filtered.length > 0 ? (
-                        filtered.map(p => (
-                            <div key={p.id} className="list-item clickable-item" onClick={() => onSelect(p)}>
-                                <span className="item-code" style={{ minWidth: '120px' }}>{p.cuitCuil}</span>
-                                <span className="item-name" style={{ flex: 2 }}>{p.nombre}</span>
-                                <button className="action-button primary-button" style={{ padding: '2px 10px', fontSize: '10px' }}>
-                                    VINCULAR
-                                </button>
-                            </div>
-                        ))
-                    ) : (
-                        <div style={{color:'#999', textAlign:'center', padding: '20px'}}>
-                            No se encontraron proveedores disponibles
+                {!proveedorSeleccionado ? (
+                    <>
+                        <input 
+                            type="text" className="input-base large-input" 
+                            placeholder="Buscar por nombre o CUIT..."
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                        <div className="cuenta-list-container" style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                            {loading ? (
+                                <div style={{color:'white', textAlign:'center'}}>Buscando...</div>
+                            ) : filtered.map(p => (
+                                <div key={p.id} className="list-item clickable-item" onClick={() => setProveedorSeleccionado(p)}>
+                                    <span className="item-code" style={{ minWidth: '120px' }}>{p.cuitCuil}</span>
+                                    <span className="item-name">{p.nombre}</span>
+                                    <button className="action-button primary-button" style={{ fontSize: '10px' }}>SELECCIONAR</button>
+                                </div>
+                            ))}
                         </div>
-                    )}
-                </div>
-
-                <div className="modal-actions" style={{ marginTop: '20px' }}>
-                    <button className="action-button secondary-button" onClick={onClose}>Cerrar</button>
-                </div>
+                    </>
+                ) : (
+                    <div style={{ padding: '20px', textAlign: 'center' }}>
+                        <p style={{ color: '#aaa', marginBottom: '15px' }}>
+                            Ingresá el precio negociado con <strong style={{color: '#4caf50'}}>{proveedorSeleccionado.nombre}</strong>
+                        </p>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', justifyContent: 'center' }}>
+                            <span style={{ color: '#fff', fontSize: '20px' }}>$</span>
+                            <input 
+                                type="number" 
+                                className="input-base" 
+                                style={{ width: '200px', fontSize: '18px', textAlign: 'center' }}
+                                value={precioPactado}
+                                onChange={(e) => setPrecioPactado(e.target.value)}
+                                autoFocus
+                            />
+                        </div>
+                        <div style={{ marginTop: '30px', display: 'flex', gap: '10px', justifyContent: 'center' }}>
+                            <button className="action-button primary-button" onClick={() => onSelect(proveedorSeleccionado, precioPactado)}>
+                                CONFIRMAR VINCULACIÓN
+                            </button>
+                            <button className="action-button secondary-button" onClick={() => setProveedorSeleccionado(null)}>
+                                ATRÁS
+                            </button>
+                        </div>
+                    </div>
+                )}
+                
+                {!proveedorSeleccionado && (
+                    <div className="modal-actions" style={{ marginTop: '20px' }}>
+                        <button className="action-button secondary-button" onClick={onClose}>Cerrar</button>
+                    </div>
+                )}
             </div>
         </div>
     );
@@ -108,12 +126,12 @@ export default function ConsultaArticulo({ id, onPageChange }) {
         if (id) fetchDetalle();
     }, [id]);
 
-    const handleVincularProveedor = async (proveedor) => {
+    const handleVincularProveedor = async (proveedor, precio) => {
         try {
-            // Llamada al endpoint: POST /api/articulos/{id}/proveedores/{idProveedor}
-            await api.post(`/articulos/${articulo.id}/proveedores/${proveedor.id}`);
+            // 🔥 Envío del precio como Query Param para el @RequestParam del Back
+            await api.post(`/articulos/${articulo.id}/proveedores/${proveedor.id}?precio=${precio}`);
             setShowVincularModal(false);
-            fetchDetalle(); // Recargamos la ficha para ver la nueva "Compulsa de Precios"
+            fetchDetalle(); 
         } catch (err) {
             alert("Error al vincular el proveedor.");
         }
