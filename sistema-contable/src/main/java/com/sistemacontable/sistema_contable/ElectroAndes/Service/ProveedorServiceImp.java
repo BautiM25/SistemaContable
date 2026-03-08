@@ -1,5 +1,6 @@
 package com.sistemacontable.sistema_contable.ElectroAndes.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -173,19 +174,19 @@ public class ProveedorServiceImp implements ProveedorService {
 
     @Override
     @Transactional
-    public void agregarArticuloAProveedor(Long idProveedor, Long idArticulo) {
-        // Corregido: usando proveedorRepository y articleRepository (necesitás inyectar articleRepository acá)
+    public void agregarArticuloAProveedor(Long idProveedor, Long idArticulo, BigDecimal precio) {
         Proveedor proveedor = proveedorRepository.findById(idProveedor)
                 .orElseThrow(() -> new RuntimeException("Proveedor no encontrado"));
 
-        // Necesitás inyectar articleRepository en este Service también
         Article articulo = articleRepository.findById(idArticulo)
                 .orElseThrow(() -> new RuntimeException("Artículo no encontrado"));
 
         ArticuloProveedor asociacion = new ArticuloProveedor();
         asociacion.setProveedor(proveedor);
         asociacion.setArticulo(articulo);
-        asociacion.setPrecio(articulo.getCostoBase());
+
+        // 🚀 Asignamos el precio específico negociado con este proveedor
+        asociacion.setPrecio(precio);
 
         proveedor.getArticulosSuministrados().add(asociacion);
         proveedorRepository.save(proveedor);

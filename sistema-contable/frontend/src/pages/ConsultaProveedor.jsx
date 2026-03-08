@@ -14,21 +14,17 @@ import "../styles/Modal.css";
 const VincularArticuloModal = ({ onSelect, onClose, articulosYaVinculados }) => {
     const [articulos, setArticulos] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
-    const [loading, setLoading] = useState(false);
+    const [articuloSeleccionado, setArticuloSeleccionado] = useState(null);
+    const [precioPactado, setPrecioPactado] = useState(0);
 
     useEffect(() => {
         const cargarArticulos = async () => {
-            setLoading(true);
             try {
                 const res = await api.get("/articulos");
                 const vinculadosIds = articulosYaVinculados.map(a => a.idArticulo);
                 const filtrados = res.data.filter(a => !vinculadosIds.includes(a.id));
                 setArticulos(filtrados);
-            } catch (err) {
-                console.error("Error al cargar artículos:", err);
-            } finally {
-                setLoading(false);
-            }
+            } catch (err) { console.error(err); }
         };
         cargarArticulos();
     }, [articulosYaVinculados]);
@@ -38,46 +34,61 @@ const VincularArticuloModal = ({ onSelect, onClose, articulosYaVinculados }) => 
         a.descripcion?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+    // Cuando selecciona un artículo, cargamos su costo base como sugerencia
+    const prepararConfirmacion = (art) => {
+        setArticuloSeleccionado(art);
+        setPrecioPactado(art.costoBase || 0);
+    };
+
     return (
         <div className="modal-overlay">
-            <div className="modal-content modal-cuenta" style={{ width: '600px', maxWidth: '90%' }}>
-                <h3 className="modal-title">Vincular Artículo al Proveedor</h3>
-                <div style={{ marginBottom: '15px' }}>
-                    <input 
-                        type="text" 
-                        className="input-base large-input" 
-                        placeholder="Buscar por Referencia (ej: CAB-30) o Descripción..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        autoFocus
-                    />
-                </div>
+            <div className="modal-content modal-cuenta" style={{ width: '600px' }}>
+                <h3 className="modal-title">
+                    {articuloSeleccionado ? "Acuerdo de Precio" : "Vincular Artículo"}
+                </h3>
 
-                <div className="cuenta-list-container" style={{ maxHeight: '350px', overflowY: 'auto' }}>
-                    {loading ? (
-                        <div style={{color:'white', textAlign:'center', padding: '20px'}}>Sincronizando catálogo...</div>
-                    ) : filtered.length > 0 ? (
-                        filtered.map(a => (
-                            <div key={a.id} className="list-item clickable-item" onClick={() => onSelect(a)}>
-                                <span className="item-code" style={{ minWidth: '130px', fontWeight: 'bold', color: '#4caf50' }}>
-                                    {a.referencia}
-                                </span>
-                                <span className="item-name" style={{ flex: 2 }}>{a.descripcion}</span>
-                                <button className="action-button primary-button" style={{ padding: '2px 10px', fontSize: '10px' }}>
-                                    AGREGAR
-                                </button>
-                            </div>
-                        ))
-                    ) : (
-                        <div style={{color:'#999', textAlign:'center', padding: '20px'}}>
-                            No hay artículos disponibles para vincular
+                {!articuloSeleccionado ? (
+                    <>
+                        <input 
+                            type="text" className="input-base large-input" 
+                            placeholder="Buscar referencia o descripción..."
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                        <div className="cuenta-list-container" style={{ maxHeight: '350px' }}>
+                            {filtered.map(a => (
+                                <div key={a.id} className="list-item clickable-item" onClick={() => prepararConfirmacion(a)}>
+                                    <span className="item-code" style={{ color: '#4caf50' }}>{a.referencia}</span>
+                                    <span className="item-name">{a.descripcion}</span>
+                                    <button className="action-button primary-button" style={{ fontSize: '10px' }}>VINCULAR</button>
+                                </div>
+                            ))}
                         </div>
-                    )}
-                </div>
+                    </>
+                ) : (
+                    <div style={{ padding: '20px', textAlign: 'center' }}>
+                        <p style={{ color: '#aaa' }}>Precio de compra para <strong style={{color: '#ffd700'}}>{articuloSeleccionado.descripcion}</strong></p>
+                        <input 
+                            type="number" className="input-base" 
+                            style={{ width: '200px', fontSize: '18px', textAlign: 'center', marginTop: '10px' }}
+                            value={precioPactado}
+                            onChange={(e) => setPrecioPactado(e.target.value)}
+                        />
+                        <div style={{ marginTop: '30px', display: 'flex', gap: '10px', justifyContent: 'center' }}>
+                            <button className="action-button primary-button" onClick={() => onSelect(articuloSeleccionado, precioPactado)}>
+                                GUARDAR VÍNCULO
+                            </button>
+                            <button className="action-button secondary-button" onClick={() => setArticuloSeleccionado(null)}>
+                                VOLVER
+                            </button>
+                        </div>
+                    </div>
+                )}
 
-                <div className="modal-actions" style={{ marginTop: '20px' }}>
-                    <button className="action-button secondary-button" onClick={onClose}>Cancelar</button>
-                </div>
+                {!articuloSeleccionado && (
+                    <div className="modal-actions" style={{ marginTop: '20px' }}>
+                        <button className="action-button secondary-button" onClick={onClose}>Cancelar</button>
+                    </div>
+                )}
             </div>
         </div>
     );
@@ -107,9 +118,10 @@ export default function ConsultaProveedor({ id, onPageChange }) {
         if (id) fetchDetalle();
     }, [id]);
 
-    const handleVincularArticulo = async (articulo) => {
+    const handleVincularArticulo = async (articulo, precio) => {
         try {
-            await api.post(`/proveedores/${proveedor.id}/articulos/${articulo.id}`);
+            // 🔥 Envío al endpoint de proveedores con el precio por parámetro
+            await api.post(`/proveedores/${proveedor.id}/articulos/${articulo.id}?precio=${precio}`);
             setShowVincularModal(false);
             fetchDetalle(); 
         } catch (err) {

@@ -8,6 +8,72 @@ import "../styles/RegistrarAsiento.css";
 import "../styles/GestionUsuarios.css"; 
 import "../styles/Modal.css";
 
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable'; // 👈 Importamos la función directamente
+
+
+const generarPDF = (orden) => {
+    try {
+        const doc = new jsPDF();
+
+        // 1. Encabezado con el verde de BASE (#3c6c3e)
+        doc.setFillColor(60, 108, 62); 
+        doc.rect(0, 0, 210, 40, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(22);
+        doc.text("ORDEN DE COMPRA", 14, 25);
+        
+        // 2. Información del Documento
+        doc.setTextColor(0, 0, 0);
+        doc.setFontSize(10);
+        doc.text(`Número de OC: ${orden.numeroOrdenCompra}`, 14, 50);
+        doc.text(`Fecha de Emisión: ${new Date(orden.fechaEmision).toLocaleDateString()}`, 14, 55);
+        doc.text(`Comprador: ${orden.comprador || 'Luka Ojea'}`, 14, 60);
+
+        // 3. Datos del Proveedor
+        doc.setFontSize(12);
+        doc.setFont(undefined, 'bold');
+        doc.text("PROVEEDOR:", 14, 75);
+        doc.setFont(undefined, 'normal');
+        doc.setFontSize(10);
+        doc.text(`${orden.proveedorNombre}`, 14, 82);
+        // 4. Tabla de Artículos usando la función autoTable directamente
+        const columnas = ["Referencia", "Descripción", "Cant.", "Precio Unit.", "Subtotal"];
+        const filas = (orden.detalles || []).map(d => [
+            d.articuloReferencia,
+            d.articuloDescripcion,
+            d.cantidad,
+            `$${parseFloat(d.precioUnitario).toLocaleString()}`,
+            `$${parseFloat(d.subtotalLinea).toLocaleString()}`
+        ]);
+
+        // 🔥 AQUÍ ESTÁ EL CAMBIO CLAVE
+        autoTable(doc, {
+            startY: 90,
+            head: [columnas],
+            body: filas,
+            theme: 'grid',
+            headStyles: { fillColor: [60, 108, 62], textColor: [255, 255, 255] },
+            styles: { fontSize: 9 }
+        });
+
+        // 5. Totales (Posicionados dinámicamente)
+        const finalY = doc.lastAutoTable.finalY + 15;
+        doc.setFontSize(10);
+        doc.text(`Subtotal: $${parseFloat(orden.subtotal).toLocaleString()}`, 140, finalY); 
+        doc.text(`IVA (21%): $${parseFloat(orden.iva).toLocaleString()}`, 140, finalY + 7); 
+        doc.setFont(undefined, 'bold');
+        doc.text(`TOTAL: $${parseFloat(orden.total).toLocaleString()}`, 140, finalY + 15); 
+
+        // 6. Descarga
+        doc.save(`Orden_${orden.numeroOrdenCompra}.pdf`);
+
+    } catch (error) {
+        console.error("Error generando PDF:", error);
+        alert("No se pudo generar el PDF. Revisá la consola.");
+    }
+};
+
 // ====================================================================
 // MODAL DE BÚSQUEDA DE PROVEEDORES
 // ====================================================================
@@ -534,53 +600,64 @@ const OrdenCompra = ({ onPageChange }) => {
                         </div>
                     )}
 
-                    {/* ===== DETALLE ===== */}
                     {view === 'detail' && ordenSeleccionada && (
-                        <div>
-                            {/* Cabecera con fondo más claro */}
-                            <div style={{ 
-                                background: '#f0f0f0', 
-                                padding: '20px', 
-                                borderRadius: '8px', 
-                                marginBottom: '20px',
-                                borderLeft: '4px solid #3c6c3e'
-                            }}>
+                    <div>
+                        {/* Cabecera con fondo más claro */}
+                        <div style={{ 
+                            background: '#f0f0f0', 
+                            padding: '20px', 
+                            borderRadius: '8px', 
+                            marginBottom: '20px',
+                            borderLeft: '4px solid #3c6c3e'
+                        }}>
+                            {/* 🚀 BOTÓN INTEGRADO EN EL TÍTULO USANDO FLEXBOX */}
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                 <h3 style={{ color: '#000', margin: '0 0 15px 0' }}>
                                     Orden #{ordenSeleccionada.numeroOrdenCompra}
                                 </h3>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '15px' }}>
-                                    <div>
-                                        <strong style={{ color: '#000' }}>ID:</strong>
-                                        <span style={{ color: '#000', marginLeft: '5px' }}>{ordenSeleccionada.id}</span>
-                                    </div>
-                                    <div>
-                                        <strong style={{ color: '#000' }}>Fecha:</strong>
-                                        <span style={{ color: '#000', marginLeft: '5px' }}>{formatearFecha(ordenSeleccionada.fechaEmision)}</span>
-                                    </div>
-                                    <div>
-                                        <strong style={{ color: '#000' }}>Proveedor:</strong>
-                                        <span style={{ color: '#000', marginLeft: '5px' }}>{ordenSeleccionada.proveedorNombre}</span>
-                                    </div>
-                                    <div>
-                                        <strong style={{ color: '#000' }}>Solicitud:</strong>
-                                        <span style={{ color: '#000', marginLeft: '5px' }}>{ordenSeleccionada.solicitudNumero || '-'}</span>
-                                    </div>
+                                <button 
+                                    className="action-button primary-button" 
+                                    style={{ background: '#3c6c3e', padding: '8px 15px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}
+                                    onClick={() => generarPDF(ordenSeleccionada)}
+                                >
+                                    PDF
+                                </button>
+                            </div>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '15px' }}>
+                                <div>
+                                    <strong style={{ color: '#000' }}>ID:</strong>
+                                    <span style={{ color: '#000', marginLeft: '5px' }}>{ordenSeleccionada.id}</span>
                                 </div>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '15px', marginTop: '10px' }}>
-                                    <div>
-                                        <strong style={{ color: '#000' }}>Subtotal:</strong>
-                                        <span style={{ color: '#000', marginLeft: '5px' }}>{formatearMoneda(ordenSeleccionada.subtotal)}</span>
-                                    </div>
-                                    <div>
-                                        <strong style={{ color: '#000' }}>IVA:</strong>
-                                        <span style={{ color: '#000', marginLeft: '5px' }}>{formatearMoneda(ordenSeleccionada.iva)}</span>
-                                    </div>
-                                    <div>
-                                        <strong style={{ color: '#000' }}>Total:</strong>
-                                        <span style={{ color: '#000', marginLeft: '5px', fontWeight: 'bold' }}>{formatearMoneda(ordenSeleccionada.total)}</span>
-                                    </div>
+                                <div>
+                                    <strong style={{ color: '#000' }}>Fecha:</strong>
+                                    <span style={{ color: '#000', marginLeft: '5px' }}>{formatearFecha(ordenSeleccionada.fechaEmision)}</span>
+                                </div>
+                                <div>
+                                    <strong style={{ color: '#000' }}>Proveedor:</strong>
+                                    <span style={{ color: '#000', marginLeft: '5px' }}>{ordenSeleccionada.proveedorNombre}</span> 
+                                </div>
+                                <div>
+                                    <strong style={{ color: '#000' }}>Solicitud:</strong>
+                                    <span style={{ color: '#000', marginLeft: '5px' }}>{ordenSeleccionada.solicitudNumero || '-'}</span> 
                                 </div>
                             </div>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '15px', marginTop: '10px' }}>
+                                <div>
+                                    <strong style={{ color: '#000' }}>Subtotal:</strong>
+                                    <span style={{ color: '#000', marginLeft: '5px' }}>{formatearMoneda(ordenSeleccionada.subtotal)}</span> 
+                                </div>
+                                <div>
+                                    <strong style={{ color: '#000' }}>IVA:</strong>
+                                    <span style={{ color: '#000', marginLeft: '5px' }}>{formatearMoneda(ordenSeleccionada.iva)}</span>
+                                </div>
+                                <div>
+                                    <strong style={{ color: '#000' }}>Total:</strong>
+                                    <span style={{ color: '#000', marginLeft: '5px', fontWeight: 'bold' }}>{formatearMoneda(ordenSeleccionada.total)}</span>
+                                </div>
+                            </div>
+                        </div>
 
                             {/* Tabla de detalles */}
                             <h3 style={{ color: '#fff', marginBottom: '15px' }}>Detalle de Artículos</h3>

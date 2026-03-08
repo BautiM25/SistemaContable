@@ -1,5 +1,6 @@
 package com.sistemacontable.sistema_contable.ElectroAndes.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,5 +29,5 @@ public interface ProveedorService {
 
     List<String> getRubrosDisponibles();
 
-    void agregarArticuloAProveedor(Long providerId, Long articleId);
+    void agregarArticuloAProveedor(Long providerId, Long articleId, BigDecimal precio);
 }

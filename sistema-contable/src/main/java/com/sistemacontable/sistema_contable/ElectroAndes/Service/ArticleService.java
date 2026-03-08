@@ -1,5 +1,6 @@
 package com.sistemacontable.sistema_contable.ElectroAndes.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,5 +30,5 @@ public interface ArticleService {
 
     List<ResponseArticleDto> findByStatus(boolean activo);
 
-    void agregarProveedorAArticulo(Long articleId, Long providerId);
+    void agregarProveedorAArticulo(Long articleId, Long providerId, BigDecimal precio);
 }
