@@ -123,7 +123,7 @@ public class OrdenCompraServiceImp implements OrdenCompraService {
         boolean esContado = "CONTADO".equalsIgnoreCase(dto.getCondicionesPago());
         
         if (esContado) {
-            cuentaHaberId = 1L; // ID de la cuenta CAJA
+            cuentaHaberId = 7L; // ID de la cuenta CAJA
         } else {
             cuentaHaberId = 22L; // ID de la cuenta PROVEEDORES
         }
