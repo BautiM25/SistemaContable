@@ -31,21 +31,12 @@ import jakarta.transaction.Transactional;
 @Service
 public class OrdenCompraServiceImp implements OrdenCompraService {
 
-    @Autowired
-    private OrdenCompraRepository ordenRepo;
-    @Autowired
-    private SolicitudCompraRepository solicitudRepo;
-    @Autowired
-    private ProveedorRepository proveedorRepo;
-
-    @Autowired
-    private AsientoService asientoService;
-
-    @Autowired
-    private ArticleRepository articleRepo;
-
-    @Autowired
-    private CuentaRepository cuentaRepository;
+    @Autowired private OrdenCompraRepository ordenRepo;
+    @Autowired private SolicitudCompraRepository solicitudRepo;
+    @Autowired private ProveedorRepository proveedorRepo;
+    @Autowired private AsientoService asientoService;
+    @Autowired private ArticleRepository articleRepo;
+    @Autowired private CuentaRepository cuentaRepository;
 
     @Override
     @Transactional
@@ -57,7 +48,6 @@ public class OrdenCompraServiceImp implements OrdenCompraService {
         Proveedor proveedor = proveedorRepo.findById(dto.getIdProveedor())
                 .orElseThrow(() -> new RuntimeException("Proveedor no encontrado"));
 
-        // Obtenemos la Cuenta Corriente del proveedor
         CuentaCorriente cc = proveedor.getCuentaCorriente();
 
         // 2. Preparar Cabecera de la Orden
@@ -66,7 +56,7 @@ public class OrdenCompraServiceImp implements OrdenCompraService {
         orden.setFechaEmision(LocalDate.now());
         orden.setSolicitudAsociada(solicitud);
         orden.setProveedor(proveedor);
-        orden.setCuentaCorriente(cc); // Vinculamos la OC a la CC
+        orden.setCuentaCorriente(cc); 
         orden.setCondicionesPago(dto.getCondicionesPago());
         orden.setComprador(dto.getComprador());
         orden.setObservaciones(dto.getObservaciones());
@@ -75,28 +65,25 @@ public class OrdenCompraServiceImp implements OrdenCompraService {
 
         // 3. Procesar items: Stock, Solicitud y Detalles de Orden
         for (CreateDetalleOrdenCompraDto itemDto : dto.getDetalles()) {
-
-            // Buscamos el detalle correspondiente en la SOLICITUD
             DetalleSolicitud dSol = solicitud.getDetalles().stream()
                     .filter(ds -> ds.getArticulo().getId().equals(itemDto.getIdArticulo()) && ds.getEstado())
                     .findFirst()
-                    .orElseThrow(() -> new RuntimeException("El artículo " + itemDto.getIdArticulo() + " no está activo en esta solicitud"));
+                    .orElseThrow(() -> new RuntimeException("Artículo no activo en solicitud"));
 
-            // --- ACTUALIZAR STOCK DEL ARTÍCULO ---
-            Article articulo = dSol.getArticulo(); // [cite: 5, 57]
-            articulo.setStockFisico(articulo.getStockFisico() + itemDto.getCantidad().intValue()); // 
-            articleRepo.save(articulo); // 
+            // Actualizar Stock
+            Article articulo = dSol.getArticulo();
+            articulo.setStockFisico(articulo.getStockFisico() + itemDto.getCantidad().intValue());
+            articleRepo.save(articulo);
 
-            // --- REGLA DE NEGOCIO: Actualizar Solicitud ---
+            // Actualizar Solicitud
             if (itemDto.getCantidad() >= dSol.getCantidadFaltante()) {
                 dSol.setCantidadFaltante(0.0);
-                dSol.setEstado(false); // Se cierra el ítem
+                dSol.setEstado(false);
             } else {
                 dSol.setCantidadFaltante(dSol.getCantidadFaltante() - itemDto.getCantidad());
-                // El estado sigue siendo true para permitir futuras OC por el resto
             }
 
-            // --- Crear Detalle de la Orden ---
+            // Crear Detalle de la Orden
             DetalleOrdenCompra dOrd = new DetalleOrdenCompra();
             dOrd.setOrdenCompra(orden);
             dOrd.setArticulo(articulo);
@@ -106,7 +93,6 @@ public class OrdenCompraServiceImp implements OrdenCompraService {
 
             orden.getDetalles().add(dOrd);
 
-            // Cálculo financiero
             BigDecimal linea = itemDto.getPrecioUnitario().multiply(BigDecimal.valueOf(itemDto.getCantidad()));
             acumuladoSubtotal = acumuladoSubtotal.add(linea);
         }
@@ -115,41 +101,34 @@ public class OrdenCompraServiceImp implements OrdenCompraService {
         orden.setSubtotal(acumuladoSubtotal);
         orden.setIva(acumuladoSubtotal.multiply(new BigDecimal("0.21")));
         orden.setTotal(orden.getSubtotal().add(orden.getIva()));
-        orden.setMoneda(orden.getDetalles().get(0).getArticulo().getDivisa()); // [cite: 5, 57]
+        orden.setMoneda(orden.getDetalles().get(0).getArticulo().getDivisa());
 
-        // --- 5. GENERAR ASIENTO CONTABLE ---
+        // --- 5. GENERAR ASIENTO CONTABLE (ORDENADO) ---
         CreateAsientoDto asientoDto = new CreateAsientoDto();
         asientoDto.setFecha(LocalDate.now());
-        asientoDto.setDescripcion("Compra s/ OC: " + orden.getNumeroOrdenCompra() + " - Proveedor: " + proveedor.getNombre());
+        asientoDto.setDescripcion("Compra s/ OC: " + orden.getNumeroOrdenCompra() + " - Prov: " + proveedor.getNombre());
         asientoDto.setCreador(2L); 
 
         List<CreateDetalleAsientoDto> detallesAsiento = new ArrayList<>();
 
-        // DEBE: Mercaderías (ID 15) por el Subtotal (Neto)
-        detallesAsiento.add(new CreateDetalleAsientoDto(
-            15L, 
-            orden.getSubtotal().doubleValue(), 
-            0.0
-        ));
+        // IMPORTANTE: Primero agregamos todos los movimientos al DEBE para que aparezcan arriba
+        // DEBE: Mercaderías (ID 15)
+        detallesAsiento.add(new CreateDetalleAsientoDto(15L, orden.getSubtotal().doubleValue(), 0.0));
 
-        // DEBE: IVA Crédito Fiscal (ID 40 - La que creamos recién) por el IVA
-        detallesAsiento.add(new CreateDetalleAsientoDto(
-            40L, 
-            orden.getIva().doubleValue(), 
-            0.0
-        ));
+        // DEBE: IVA Crédito Fiscal (ID 40)
+        detallesAsiento.add(new CreateDetalleAsientoDto(40L, orden.getIva().doubleValue(), 0.0));
 
-        // --- LÓGICA DINÁMICA PARA EL HABER ---
+        // Determinamos la cuenta del HABER según condición
         Long cuentaHaberId;
-        String condicion = dto.getCondicionesPago().toUpperCase();
-
-        if ("CONTADO".equals(condicion)) {
-            cuentaHaberId = 7L; // Supongamos que 7L es la cuenta "Caja" o "Banco"
+        boolean esContado = "CONTADO".equalsIgnoreCase(dto.getCondicionesPago());
+        
+        if (esContado) {
+            cuentaHaberId = 1L; // ID de la cuenta CAJA
         } else {
-            cuentaHaberId = 22L; // Tu cuenta actual de "Proveedores"
+            cuentaHaberId = 22L; // ID de la cuenta PROVEEDORES
         }
 
-        // HABER: Dinámico según la condición
+        // HABER: Al final de la lista para que aparezca abajo en la vista
         detallesAsiento.add(new CreateDetalleAsientoDto(
             cuentaHaberId, 
             0.0, 
@@ -157,23 +136,18 @@ public class OrdenCompraServiceImp implements OrdenCompraService {
         ));
 
         asientoDto.setDetalles(detallesAsiento);
-
-        // Llamamos al servicio para validar partida doble y persistir
         Asiento asientoCreado = asientoService.crearAsiento(asientoDto);
         orden.setAsientoAsociado(asientoCreado);
 
-        // 6. ACTUALIZAR CUENTA CORRIENTE (Mayor del Proveedor)
-        // Según tu lógica: Aumenta por el DEBE
-        BigDecimal montoTotal = orden.getTotal();
-        if (!"CONTADO".equals(condicion)) {
+        // --- 6. ACTUALIZAR CUENTA CORRIENTE ---
+        // Solo aumentamos el saldo si la compra es a CRÉDITO
+        if (!esContado) {
             cc.setSaldoActual(cc.getSaldoActual().add(orden.getTotal()));
             proveedorRepo.save(proveedor);
         }
 
-        // 7. Persistir todos los cambios
-        proveedorRepo.save(proveedor);
+        // 7. Persistir cambios en Solicitud y Orden
         solicitud.setFechaEmisionOC(LocalDate.now());
-
         boolean tieneItemsPendientes = solicitud.getDetalles().stream().anyMatch(DetalleSolicitud::getEstado);
         if (!tieneItemsPendientes) {
             solicitud.setEstado(false);
