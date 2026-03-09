@@ -24,6 +24,8 @@ const ReporteLibroDiario = ({ onVolver }) => {
             params: { desde, hasta }
         })
         .then(response => {
+            console.log("📥 JSON recibido del Backend (Libro Diario):", JSON.stringify(response.data, null, 2));
+            
             setAsientos(response.data);
             setLoading(false);
         })
