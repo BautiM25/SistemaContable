@@ -7,27 +7,22 @@ export default function VerCuentasCorrientes({ onPageChange }) {
     const [proveedores, setProveedores] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filtro, setFiltro] = useState("");
+    const [proveedorSeleccionado, setProveedorSeleccionado] = useState(null);
 
     useEffect(() => {
-        const cargarSaldos = async () => {
-            try {
-                // Usamos el endpoint que ya tenés para traer proveedores activos
-                const res = await api.get("/proveedores?status=true");
-                setProveedores(res.data);
-            } catch (err) {
-                console.error("Error al cargar Cuentas Corrientes:", err);
-            } finally {
-                setLoading(false);
-            }
-        };
-        cargarSaldos();
+        cargarDatos();
     }, []);
 
-    // Lógica contable: Deuda Inicial - Pagos/Saldos a favor
-    const calcularSaldoNeto = (p) => {
-        const inicial = p.saldoInicialCC || 0;
-        const aFavor = p.saldosAFavor || 0;
-        return inicial - aFavor;
+    const cargarDatos = async () => {
+        try {
+            // Se asume que el backend ya trae la CuentaCorriente y sus Ordenes anidadas
+            const res = await api.get("/proveedores?status=true");
+            setProveedores(res.data);
+        } catch (err) {
+            console.error("Error al cargar Cuentas Corrientes:", err);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const filtrados = proveedores.filter(p => 
@@ -35,69 +30,73 @@ export default function VerCuentasCorrientes({ onPageChange }) {
         p.cuitCuil.includes(filtro)
     );
 
-    if (loading) return <div style={{color: 'white', textAlign: 'center', padding: '50px'}}>Sincronizando estados financieros...</div>;
+    if (loading) return <div style={{color: 'white', textAlign: 'center', padding: '50px'}}>Cargando estados contables...</div>;
 
-    return (
-        <div className="page-container" style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
-            <div className="main-content" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-                
-                {/* HEADER */}
-                <div className="asiento-header" style={{ flexShrink: 0 }}>
+    // --- VISTA 1: MAYOR AUXILIAR DETALLADO ---
+    if (proveedorSeleccionado) {
+        let saldoAcumulado = proveedorSeleccionado.saldoInicialCC || 0;
+
+        return (
+            <div className="page-container" style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+                <div className="asiento-header">
                     <div className="asiento-logo-wrapper">
                         <img src={LogoEmpresa} alt="Logo" className="logo-small" />
-                        <h2 className="asiento-title">Panel de Cuentas Corrientes</h2>
+                        <div>
+                            <h2 className="asiento-title">Cuenta Corriente: {proveedorSeleccionado.nombre}</h2>
+                            <span style={{ color: '#ffffff', fontSize: '12px' }}>CUIT: {proveedorSeleccionado.cuitCuil}</span>
+                        </div>
                     </div>
-                    <input 
-                        className="input-base" 
-                        placeholder="Buscar proveedor o CUIT..." 
-                        style={{ width: '300px' }}
-                        value={filtro}
-                        onChange={(e) => setFiltro(e.target.value)}
-                    />
+                    <div style={{ textAlign: 'right', color: 'white' }}>
+                        <p style={{ margin: 0 }}>Saldo Inicial: <strong>${proveedorSeleccionado.saldoInicialCC?.toLocaleString()}</strong></p>
+                        <p style={{ margin: 0, color: '#ff4d4d' }}>Saldo Actual: <strong>${proveedorSeleccionado.cuentaCorriente?.saldoActual?.toLocaleString()}</strong></p>
+                    </div>
                 </div>
 
-                {/* TABLA DE SALDOS */}
                 <div className="asiento-body" style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
-                    <table className="partidas-table" style={{ width: '100%', borderCollapse: 'collapse', background: '#2a2a2a' }}>
+                    <table className="partidas-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
                         <thead>
                             <tr style={{ background: '#333' }}>
-                                <th style={{ padding: '12px', textAlign: 'left', color: '#000000' }}>Proveedor</th>
-                                <th style={{ padding: '12px', textAlign: 'left', color: '#000000' }}>CUIT/CUIL</th>
-                                <th style={{ padding: '12px', textAlign: 'right', color: '#000000' }}>Saldo Inicial</th>
-                                <th style={{ padding: '12px', textAlign: 'right', color: '#000000' }}>A Favor</th>
-                                <th style={{ padding: '12px', textAlign: 'right', color: '#000000' }}>Saldo Neto</th>
-                                <th style={{ padding: '12px', textAlign: 'center', color: '#000000' }}>Estado</th>
+                                <th style={{ padding: '12px', textAlign: 'left', color: '#000' }}>Fecha</th>
+                                <th style={{ padding: '12px', textAlign: 'left', color: '#000' }}>Comprobante</th>
+                                <th style={{ padding: '12px', textAlign: 'left', color: '#000' }}>Detalle</th>
+                                <th style={{ padding: '12px', textAlign: 'right', color: '#000' }}>Debe (Pagos)</th>
+                                <th style={{ padding: '12px', textAlign: 'right', color: '#000' }}>Haber (Compras)</th>
+                                <th style={{ padding: '12px', textAlign: 'right', color: '#000' }}>Saldo Acum.</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {filtrados.map(p => {
-                                const neto = calcularSaldoNeto(p);
+                            {/* Fila de Saldo Inicial */}
+                            <tr style={{ borderBottom: '1px solid #444', background: '#222' }}>
+                                <td style={{ padding: '12px', color: '#ffffff' }}>-</td>
+                                <td style={{ padding: '12px', color: '#ffffff' }}>S/I</td>
+                                <td style={{ padding: '12px', color: '#ffffff' }}>SALDO INICIAL DE APERTURA</td>
+                                <td style={{ padding: '12px', color: '#ffffff', textAlign: 'right' }}>-</td>
+                                <td style={{ padding: '12px', color: '#ffffff', textAlign: 'right' }}>-</td>
+                                <td style={{ padding: '12px', textAlign: 'right', fontWeight: 'bold', color: 'white' }}>
+                                    ${proveedorSeleccionado.saldoInicialCC?.toLocaleString()}
+                                </td>
+                            </tr>
+                            
+                            {/* Movimientos: Ordenes de Compra */}
+                            {proveedorSeleccionado.cuentaCorriente?.ordenes?.map((oc) => {
+                                const esContado = oc.condicionesPago?.toUpperCase() === 'CONTADO';
+                                const haber = esContado ? 0 : oc.total; 
+                                const debe = 0; // Reservado para futuros pagos
+                                saldoAcumulado += (haber - debe);
+
                                 return (
-                                    <tr key={p.id} style={{ borderBottom: '1px solid #444' }}>
-                                        <td style={{ padding: '12px', color: '#000000', fontWeight: 'bold' }}>{p.nombre}</td>
-                                        <td style={{ padding: '12px', color: '#000000' }}>{p.cuitCuil}</td>
-                                        <td style={{ padding: '12px', textAlign: 'right', color: '#000000' }}>
-                                            ${p.saldoInicialCC?.toLocaleString() || "0.00"}
+                                    <tr key={oc.id} style={{ borderBottom: '1px solid #444' }}>
+                                        <td style={{ padding: '12px', color: 'white' }}>{oc.fechaEmision}</td>
+                                        <td style={{ padding: '12px', color: '#aaa' }}>OC {oc.numeroOrdenCompra}</td>
+                                        <td style={{ padding: '12px', color: '#aaa' }}>
+                                            {esContado ? "Compra Contado (Sin saldo)" : "Compra a Crédito"}
                                         </td>
-                                        <td style={{ padding: '12px', textAlign: 'right', color: '#4caf50' }}>
-                                            -${p.saldosAFavor?.toLocaleString() || "0.00"}
+                                        <td style={{ padding: '12px', textAlign: 'right', color: '#4caf50' }}>-</td>
+                                        <td style={{ padding: '12px', textAlign: 'right', color: '#ff4d4d' }}>
+                                            ${haber > 0 ? haber.toLocaleString() : "0.00"}
                                         </td>
-                                        <td style={{ 
-                                            padding: '12px', 
-                                            textAlign: 'right', 
-                                            fontWeight: 'bold',
-                                            color: neto > 0 ? '#ff4d4d' : '#4caf50' 
-                                        }}>
-                                            ${neto.toLocaleString()}
-                                        </td>
-                                        <td style={{ padding: '12px', textAlign: 'center' }}>
-                                            <span style={{ 
-                                                fontSize: '10px', padding: '4px 8px', borderRadius: '4px',
-                                                background: neto > 0 ? '#422' : '#1b2e1b',
-                                                color: neto > 0 ? '#ff4d4d' : '#4caf50'
-                                            }}>
-                                                {neto > 0 ? "DEUDA" : "AL DÍA"}
-                                            </span>
+                                        <td style={{ padding: '12px', textAlign: 'right', color: 'white' }}>
+                                            ${saldoAcumulado.toLocaleString()}
                                         </td>
                                     </tr>
                                 );
@@ -106,12 +105,81 @@ export default function VerCuentasCorrientes({ onPageChange }) {
                     </table>
                 </div>
 
-                {/* FOOTER */}
-                <div className="asiento-footer" style={{ flexShrink: 0 }}>
-                    <button className="action-button secondary-button" onClick={() => onPageChange("DASHBOARD")}>
-                        <img src={LogoGrupo5} alt="Back" className="icon-small" /> VOLVER AL MENÚ
+                <div className="asiento-footer">
+                    <button className="action-button secondary-button" onClick={() => setProveedorSeleccionado(null)}>
+                         VOLVER AL LISTADO
                     </button>
                 </div>
+            </div>
+        );
+    }
+
+    // --- VISTA 2: LISTADO GENERAL DE PROVEEDORES ---
+    return (
+        <div className="page-container" style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+            <div className="asiento-header">
+                <div className="asiento-logo-wrapper">
+                    <img src={LogoEmpresa} alt="Logo" className="logo-small" />
+                    <h2 className="asiento-title">Cuentas Corrientes de Proveedores</h2>
+                </div>
+                <input 
+                    className="input-base" 
+                    placeholder="Buscar por nombre o CUIT..." 
+                    style={{ width: '350px' }}
+                    value={filtro}
+                    onChange={(e) => setFiltro(e.target.value)}
+                />
+            </div>
+
+            <div className="asiento-body" style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
+                <table className="partidas-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                        <tr style={{ background: '#333' }}>
+                            <th style={{ padding: '15px', textAlign: 'left', color: '#000' }}>Proveedor</th>
+                            <th style={{ padding: '15px', textAlign: 'left', color: '#000' }}>CUIT/CUIL</th>
+                            <th style={{ padding: '15px', textAlign: 'right', color: '#000' }}>Saldo Inicial</th>
+                            <th style={{ padding: '15px', textAlign: 'right', color: '#000' }}>Saldo Actual</th>
+                            <th style={{ padding: '15px', textAlign: 'center', color: '#000' }}>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {filtrados.map(p => {
+                            const saldo = p.cuentaCorriente?.saldoActual || 0;
+                            return (
+                                <tr key={p.id} style={{ borderBottom: '1px solid #444', transition: '0.3s' }} className="row-hover">
+                                    <td style={{ padding: '15px', color: '#000000', fontWeight: 'bold' }}>{p.nombre}</td>
+                                    <td style={{ padding: '15px', color: '#000000' }}>{p.cuitCuil}</td>
+                                    <td style={{ padding: '15px', textAlign: 'right', color: '#000000' }}>
+                                        ${p.saldoInicialCC?.toLocaleString() || "0.00"}
+                                    </td>
+                                    <td style={{ 
+                                        padding: '15px', 
+                                        textAlign: 'right', 
+                                        fontWeight: 'bold',
+                                        color: saldo > 0 ? '#ff4d4d' : '#4caf50' 
+                                    }}>
+                                        ${saldo.toLocaleString()}
+                                    </td>
+                                    <td style={{ padding: '15px', textAlign: 'center' }}>
+                                        <button 
+                                            className="action-button primary-button" 
+                                            style={{ padding: '5px 15px', fontSize: '12px' }}
+                                            onClick={() => setProveedorSeleccionado(p)}
+                                        >
+                                            VER DETALLES
+                                        </button>
+                                    </td>
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
+            </div>
+
+            <div className="asiento-footer">
+                <button className="action-button secondary-button" onClick={() => onPageChange("DASHBOARD")}>
+                    <img src={LogoGrupo5} alt="Back" className="icon-small" /> VOLVER AL MENÚ
+                </button>
             </div>
         </div>
     );

@@ -65,10 +65,10 @@ export default function ModificacionProveedor({ onPageChange }) {
 
     const [formData, setFormData] = useState({
         nombre: '', direccion: '', cuitCuil: '', telefono: '', mail: '', rubro: '',
-        divisa: 'ARS', saldosAFavor: 0, saldoInicialCC: 0, subcuenta: '',
+        divisa: 'ARS', saldoInicialCC: 0, subcuenta: '',
         categoriaIva: 'RESPONSABLE_INSCRIPTO',
         identificadorBanco: '', pais: '', banco: '',
-        comentario: ''  // Eliminado 'descuento'
+        comentario: ''
     });
 
     useEffect(() => {
@@ -91,8 +91,7 @@ export default function ModificacionProveedor({ onPageChange }) {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        // Eliminado 'descuento' de los campos numéricos
-        const numericFields = ['saldosAFavor', 'saldoInicialCC'];
+        const numericFields = ['saldoInicialCC']; // Solo saldoInicialCC como campo numérico
         
         setFormData(prev => ({
             ...prev,
@@ -103,9 +102,9 @@ export default function ModificacionProveedor({ onPageChange }) {
     const handleGuardar = async () => {
         if (!seleccionado) return;
 
-        // Eliminada validación de descuento
-        if (formData.saldosAFavor < 0 || formData.saldoInicialCC < 0) {
-            alert("Los valores de saldos deben ser mayores o iguales a 0.");
+        // Validación solo para saldoInicialCC
+        if (formData.saldoInicialCC < 0) {
+            alert("El saldo inicial debe ser mayor o igual a 0.");
             return;
         }
 
@@ -193,9 +192,7 @@ export default function ModificacionProveedor({ onPageChange }) {
                                     <label className="header-field">Saldo Inicial CC:
                                         <input type="number" className="input-base" name="saldoInicialCC" value={formData.saldoInicialCC} onChange={handleChange} min="0" />
                                     </label>
-                                    <label className="header-field">Saldos a Favor:
-                                        <input type="number" className="input-base" name="saldosAFavor" value={formData.saldosAFavor} onChange={handleChange} min="0" />
-                                    </label>
+                                    {/* Campo de Saldos a Favor eliminado */}
                                 </div>
 
                                 <h3 className="partidas-title" style={{ marginTop: '20px' }}>Datos Bancarios y Notas</h3>
