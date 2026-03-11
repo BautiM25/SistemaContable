@@ -9,35 +9,42 @@ import "../styles/GestionUsuarios.css";
 import "../styles/Modal.css";
 
 import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable'; // 👈 Importamos la función directamente
+import autoTable from 'jspdf-autotable';
 
-
+// ====================================================================
+// FUNCIÓN PARA GENERAR PDF (ACTUALIZADA)
+// ====================================================================
 const generarPDF = (orden) => {
     try {
         const doc = new jsPDF();
 
-        // 1. Encabezado con el verde de BASE (#3c6c3e)
         doc.setFillColor(60, 108, 62); 
         doc.rect(0, 0, 210, 40, 'F');
         doc.setTextColor(255, 255, 255);
         doc.setFontSize(22);
         doc.text("ORDEN DE COMPRA", 14, 25);
         
-        // 2. Información del Documento
         doc.setTextColor(0, 0, 0);
         doc.setFontSize(10);
         doc.text(`Número de OC: ${orden.numeroOrdenCompra}`, 14, 50);
         doc.text(`Fecha de Emisión: ${new Date(orden.fechaEmision).toLocaleDateString()}`, 14, 55);
-        doc.text(`Comprador: ${orden.comprador || 'Luka Ojea'}`, 14, 60);
+        doc.text(`Comprador: ${orden.comprador || 'Sistema'}`, 14, 60);
 
-        // 3. Datos del Proveedor
         doc.setFontSize(12);
         doc.setFont(undefined, 'bold');
         doc.text("PROVEEDOR:", 14, 75);
         doc.setFont(undefined, 'normal');
         doc.setFontSize(10);
         doc.text(`${orden.proveedorNombre}`, 14, 82);
-        // 4. Tabla de Artículos usando la función autoTable directamente
+        
+        // Mostrar categoría de IVA
+        if (orden.categoriaIva) {
+            doc.setFontSize(8);
+            doc.setTextColor(100, 100, 100);
+            doc.text(`Categoría IVA: ${orden.categoriaIva}`, 14, 88);
+            doc.setTextColor(0, 0, 0);
+        }
+
         const columnas = ["Referencia", "Descripción", "Cant.", "Precio Unit.", "Subtotal"];
         const filas = (orden.detalles || []).map(d => [
             d.articuloReferencia,
@@ -47,9 +54,8 @@ const generarPDF = (orden) => {
             `$${parseFloat(d.subtotalLinea).toLocaleString()}`
         ]);
 
-        // 🔥 AQUÍ ESTÁ EL CAMBIO CLAVE
         autoTable(doc, {
-            startY: 90,
+            startY: 95,
             head: [columnas],
             body: filas,
             theme: 'grid',
@@ -57,15 +63,20 @@ const generarPDF = (orden) => {
             styles: { fontSize: 9 }
         });
 
-        // 5. Totales (Posicionados dinámicamente)
         const finalY = doc.lastAutoTable.finalY + 15;
         doc.setFontSize(10);
         doc.text(`Subtotal: $${parseFloat(orden.subtotal).toLocaleString()}`, 140, finalY); 
-        doc.text(`IVA (21%): $${parseFloat(orden.iva).toLocaleString()}`, 140, finalY + 7); 
+        
+        // Mostrar IVA solo si es mayor a 0
+        if (parseFloat(orden.iva) > 0) {
+            doc.text(`IVA (21%): $${parseFloat(orden.iva).toLocaleString()}`, 140, finalY + 7); 
+        } else {
+            doc.text(`(Proveedor exento - Sin IVA)`, 140, finalY + 7);
+        }
+        
         doc.setFont(undefined, 'bold');
         doc.text(`TOTAL: $${parseFloat(orden.total).toLocaleString()}`, 140, finalY + 15); 
 
-        // 6. Descarga
         doc.save(`Orden_${orden.numeroOrdenCompra}.pdf`);
 
     } catch (error) {
@@ -75,20 +86,27 @@ const generarPDF = (orden) => {
 };
 
 // ====================================================================
-// MODAL DE BÚSQUEDA DE PROVEEDORES
+// MODAL DE BÚSQUEDA DE PROVEEDORES (ACTUALIZADO)
 // ====================================================================
 const BuscarProveedorModal = ({ onSelect, onClose, proveedoresAptos = [], isFiltering = false }) => {
     const [proveedores, setProveedores] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [loading, setLoading] = useState(false);
 
+    const getCategoriaIVATexto = (categoria) => {
+        const categorias = {
+            'RESPONSABLE_INSCRIPTO': 'RI (21%)',
+            'MONOTRIBUTISTA': 'Monotributo',
+            'EXENTO': 'Exento'
+        };
+        return categorias[categoria] || categoria;
+    };
+
     useEffect(() => {
-        // REGLA: Si estamos filtrando por solicitud, usamos SOLO lo que llegó por props
         if (isFiltering) {
             setProveedores(proveedoresAptos);
             setLoading(false);
         } else {
-            // Solo si NO hay solicitud (creación libre), cargamos todo el padrón
             const fetchProveedores = async () => {
                 setLoading(true);
                 try {
@@ -106,7 +124,7 @@ const BuscarProveedorModal = ({ onSelect, onClose, proveedoresAptos = [], isFilt
 
     const filtered = proveedores.filter(p => 
         p.nombre?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-        p.cuitCuil?.includes(searchTerm) // Usamos cuitCuil del backup [cite: 76]
+        p.cuitCuil?.includes(searchTerm)
     );
 
     return (
@@ -116,7 +134,6 @@ const BuscarProveedorModal = ({ onSelect, onClose, proveedoresAptos = [], isFilt
                     {isFiltering ? "Validación de Proveedores Aptos" : "Seleccionar Proveedor"}
                 </h3>
 
-                {/* MENSAJE DE ADVERTENCIA SI NO HAY APTOS */}
                 {isFiltering && proveedores.length === 0 ? (
                     <div style={{ textAlign: 'center', padding: '30px' }}>
                         <div style={{ fontSize: '40px', marginBottom: '10px' }}>⚠️</div>
@@ -146,9 +163,16 @@ const BuscarProveedorModal = ({ onSelect, onClose, proveedoresAptos = [], isFilt
                                 filtered.map(p => (
                                     <div key={p.id} className="list-item clickable-item" onClick={() => onSelect(p)}>
                                         <span className="item-code" style={{ minWidth: '120px' }}>
-                                            {p.cuitCuil} {/* CUIT del backup [cite: 76] */}
+                                            {p.cuitCuil}
                                         </span>
                                         <span className="item-name" style={{ flex: 2 }}>{p.nombre}</span>
+                                        <span className="item-code" style={{ 
+                                            color: p.categoriaIva === 'RESPONSABLE_INSCRIPTO' ? '#4caf50' : '#ff9800',
+                                            fontSize: '11px',
+                                            marginRight: '10px'
+                                        }}>
+                                            {getCategoriaIVATexto(p.categoriaIva)}
+                                        </span>
                                         {isFiltering && <span style={{color: '#4caf50', fontSize: '10px', fontWeight:'bold'}}>APTO ✅</span>}
                                     </div>
                                 ))
@@ -170,7 +194,7 @@ const BuscarProveedorModal = ({ onSelect, onClose, proveedoresAptos = [], isFilt
 };
 
 // ====================================================================
-// MODAL DE BÚSQUEDA DE SOLICITUDES
+// MODAL DE BÚSQUEDA DE SOLICITUDES (SIN CAMBIOS)
 // ====================================================================
 const BuscarSolicitudModal = ({ onSelect, onClose }) => {
     const [solicitudes, setSolicitudes] = useState([]);
@@ -181,9 +205,6 @@ const BuscarSolicitudModal = ({ onSelect, onClose }) => {
         const fetchSolicitudes = async () => {
             try {
                 const res = await api.get("/solicitudes");
-
-                console.log("📥 JSON recibido de /solicitudes:", JSON.stringify(res.data, null, 2));
-                // Filtrar solo solicitudes activas y que tengan detalles
                 const activas = res.data.filter(s => s.estado === true && s.detalles?.length > 0);
                 setSolicitudes(activas);
             } catch (err) {
@@ -238,7 +259,7 @@ const BuscarSolicitudModal = ({ onSelect, onClose }) => {
 };
 
 // ====================================================================
-// COMPONENTE PRINCIPAL: ORDEN DE COMPRA
+// COMPONENTE PRINCIPAL: ORDEN DE COMPRA (ACTUALIZADO)
 // ====================================================================
 const OrdenCompra = ({ onPageChange }) => {
     const [ordenes, setOrdenes] = useState([]);
@@ -265,7 +286,18 @@ const OrdenCompra = ({ onPageChange }) => {
         detalles: []
     });
 
-    useEffect(() => { cargarOrdenes(); }, []);
+    useEffect(() => { 
+        cargarOrdenes(); 
+    }, []);
+
+    useEffect(() => {
+        if (view === 'create' && !nuevaOrden.numeroOrdenCompra) {
+            setNuevaOrden(prev => ({
+                ...prev,
+                numeroOrdenCompra: generarNumeroOrden()
+            }));
+        }
+    }, [view]);
 
     const cargarOrdenes = async () => {
         setLoading(true);
@@ -297,19 +329,49 @@ const OrdenCompra = ({ onPageChange }) => {
         return `OC-${año}${mes}${dia}-${String(maxNumero + 1).padStart(3, '0')}`;
     };
 
-    // 🚀 LÓGICA DE ACTUALIZACIÓN DE PRECIOS PACTADOS
+    // ===== FUNCIONES PARA IVA =====
+    const proveedorEsResponsableInscripto = () => {
+        return proveedorSeleccionado?.categoriaIva === 'RESPONSABLE_INSCRIPTO';
+    };
+
+    const getCategoriaIVATexto = () => {
+        if (!proveedorSeleccionado) return '';
+        const categorias = {
+            'RESPONSABLE_INSCRIPTO': 'Responsable Inscripto (21%)',
+            'MONOTRIBUTISTA': 'Monotributista (Sin IVA)',
+            'EXENTO': 'Exento (Sin IVA)'
+        };
+        return categorias[proveedorSeleccionado.categoriaIva] || proveedorSeleccionado.categoriaIva;
+    };
+
+    const calcularSubtotal = () => {
+        return nuevaOrden.detalles.reduce((sum, d) => 
+            sum + (d.cantidad * d.precioUnitario), 0
+        ).toFixed(2);
+    };
+
+    const calcularIVA = () => {
+        const subtotal = parseFloat(calcularSubtotal()) || 0;
+        if (!proveedorEsResponsableInscripto()) {
+            return (0).toFixed(2);
+        }
+        return (subtotal * 0.21).toFixed(2);
+    };
+
+    const calcularTotal = () => {
+        const subtotal = parseFloat(calcularSubtotal()) || 0;
+        const iva = parseFloat(calcularIVA()) || 0;
+        return (subtotal + iva).toFixed(2);
+    };
+    // ==============================
+
     const handleSelectProveedor = (prov) => {
         setProveedorSeleccionado(prov);
         
-        // Mapeamos los detalles que ya están en la tabla
         const detallesActualizados = nuevaOrden.detalles.map(det => {
-            // El JSON de aptos trae una lista de 'articulos' con su 'precioPactado'
             const vinculacion = prov.articulos?.find(a => a.idArticulo === det.idArticulo);
-            
             return {
                 ...det,
-                // Si el proveedor tiene precio pactado para este artículo, lo fijamos.
-                // Si no (raro en aptos), mantenemos el que tenía (0 o costo base).
                 precioUnitario: vinculacion ? vinculacion.precioPactado : det.precioUnitario
             };
         });
@@ -323,16 +385,11 @@ const OrdenCompra = ({ onPageChange }) => {
         setShowProveedorModal(false);
     };
 
-    // Actualizá esta función en tu componente OrdenCompra.jsx
     const buscarProveedoresAptos = async (idSolicitud, idsVigentes = []) => {
         setBuscandoAptos(true);
         try {
-            // 1. Convertimos la lista [4, 6] en el string "4,6"
             const idsQuery = idsVigentes.length > 0 ? `?ids=${idsVigentes.join(',')}` : '';
-            
-            // 2. Cambiamos POST por GET para que coincida con tu @GetMapping
             const res = await api.get(`/solicitudes/${idSolicitud}/proveedores-aptos${idsQuery}`);
-
             setProveedoresAptos(res.data);
             
             if (res.data.length === 0) {
@@ -350,7 +407,6 @@ const OrdenCompra = ({ onPageChange }) => {
     const handleSelectSolicitud = (solicitud) => {
         setSolicitudOrigen(solicitud);
         
-        // Mapeo inicial (usando cantidadFaltante si existe)
         const nuevosDetalles = solicitud.detalles
             .filter(d => d.estado) 
             .map(d => ({
@@ -369,21 +425,9 @@ const OrdenCompra = ({ onPageChange }) => {
         });
         
         setShowSolicitudModal(false);
-        
-        // Disparamos la búsqueda inicial con todos los artículos de la solicitud
         buscarProveedoresAptos(solicitud.id, nuevosDetalles.map(d => d.idArticulo)); 
     };
 
-    const sugerirArticuloARemover = () => {
-        if (!nuevaOrden.detalles.length) return;
-        setAnalisisBloqueo(`Ningún proveedor suministra la totalidad de los artículos activos.`);
-    };
-
-    
-
-    
-
-    // Función para actualizar cualquier campo de un detalle
     const actualizarDetalle = (index, campo, valor) => {
         const nuevosDetalles = [...nuevaOrden.detalles];
         nuevosDetalles[index] = {
@@ -410,24 +454,9 @@ const OrdenCompra = ({ onPageChange }) => {
         setNuevaOrden({ ...nuevaOrden, detalles: nuevosDetalles });
         
         if (nuevaOrden.idSolicitud) {
-            // IMPORTANTE: Usamos nuevosDetalles aquí
             const idsRestantes = nuevosDetalles.map(d => d.idArticulo);
             buscarProveedoresAptos(nuevaOrden.idSolicitud, idsRestantes);
         }
-    };
-
-    const calcularSubtotal = () => {
-        return nuevaOrden.detalles.reduce((sum, d) => 
-            sum + (d.cantidad * d.precioUnitario), 0
-        ).toFixed(2);
-    };
-
-    const calcularIVA = () => {
-        return (calcularSubtotal() * 0.21).toFixed(2); // 21% IVA
-    };
-
-    const calcularTotal = () => {
-        return (parseFloat(calcularSubtotal()) + parseFloat(calcularIVA())).toFixed(2);
     };
 
     const handleGenerarOrden = async () => {
@@ -442,12 +471,11 @@ const OrdenCompra = ({ onPageChange }) => {
         
         setLoading(true);
         try {
-            // Preparar DTO según CreateOrdenCompraDto
             const ordenDto = {
                 numeroOrdenCompra: nuevaOrden.numeroOrdenCompra,
                 idSolicitud: nuevaOrden.idSolicitud,
                 idProveedor: nuevaOrden.idProveedor,
-                condicionesPago: nuevaOrden.condicionesPago || "Contado",
+                condicionesPago: nuevaOrden.condicionesPago || "CONTADO",
                 observaciones: nuevaOrden.observaciones,
                 comprador: nuevaOrden.comprador || "Sistema",
                 detalles: nuevaOrden.detalles.map(d => ({
@@ -485,6 +513,8 @@ const OrdenCompra = ({ onPageChange }) => {
         });
         setSolicitudOrigen(null);
         setProveedorSeleccionado(null);
+        setProveedoresAptos([]);
+        setAnalisisBloqueo(null);
     };
 
     const formatearFecha = (fecha) => {
@@ -600,66 +630,67 @@ const OrdenCompra = ({ onPageChange }) => {
                         </div>
                     )}
 
+                    {/* ===== DETALLE ===== */}
                     {view === 'detail' && ordenSeleccionada && (
-                    <div>
-                        {/* Cabecera con fondo más claro */}
-                        <div style={{ 
-                            background: '#f0f0f0', 
-                            padding: '20px', 
-                            borderRadius: '8px', 
-                            marginBottom: '20px',
-                            borderLeft: '4px solid #3c6c3e'
-                        }}>
-                            {/* 🚀 BOTÓN INTEGRADO EN EL TÍTULO USANDO FLEXBOX */}
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                <h3 style={{ color: '#000', margin: '0 0 15px 0' }}>
-                                    Orden #{ordenSeleccionada.numeroOrdenCompra}
-                                </h3>
-                                <button 
-                                    className="action-button primary-button" 
-                                    style={{ background: '#3c6c3e', padding: '8px 15px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}
-                                    onClick={() => generarPDF(ordenSeleccionada)}
-                                >
-                                    PDF
-                                </button>
+                        <div>
+                            <div style={{ 
+                                background: '#f0f0f0', 
+                                padding: '20px', 
+                                borderRadius: '8px', 
+                                marginBottom: '20px',
+                                borderLeft: '4px solid #3c6c3e'
+                            }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                    <h3 style={{ color: '#000', margin: '0 0 15px 0' }}>
+                                        Orden #{ordenSeleccionada.numeroOrdenCompra}
+                                    </h3>
+                                    <button 
+                                        className="action-button primary-button" 
+                                        style={{ background: '#3c6c3e', padding: '8px 15px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}
+                                        onClick={() => generarPDF(ordenSeleccionada)}
+                                    >
+                                        PDF
+                                    </button>
+                                </div>
+
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '15px' }}>
+                                    <div>
+                                        <strong style={{ color: '#000' }}>ID:</strong>
+                                        <span style={{ color: '#000', marginLeft: '5px' }}>{ordenSeleccionada.id}</span>
+                                    </div>
+                                    <div>
+                                        <strong style={{ color: '#000' }}>Fecha:</strong>
+                                        <span style={{ color: '#000', marginLeft: '5px' }}>{formatearFecha(ordenSeleccionada.fechaEmision)}</span>
+                                    </div>
+                                    <div>
+                                        <strong style={{ color: '#000' }}>Proveedor:</strong>
+                                        <span style={{ color: '#000', marginLeft: '5px' }}>{ordenSeleccionada.proveedorNombre}</span> 
+                                    </div>
+                                    <div>
+                                        <strong style={{ color: '#000' }}>Solicitud:</strong>
+                                        <span style={{ color: '#000', marginLeft: '5px' }}>{ordenSeleccionada.solicitudNumero || '-'}</span> 
+                                    </div>
+                                </div>
+
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '15px', marginTop: '10px' }}>
+                                    <div>
+                                        <strong style={{ color: '#000' }}>Subtotal:</strong>
+                                        <span style={{ color: '#000', marginLeft: '5px' }}>{formatearMoneda(ordenSeleccionada.subtotal)}</span> 
+                                    </div>
+                                    <div>
+                                        <strong style={{ color: '#000' }}>IVA:</strong>
+                                        <span style={{ color: '#000', marginLeft: '5px' }}>{formatearMoneda(ordenSeleccionada.iva)}</span>
+                                        {parseFloat(ordenSeleccionada.iva) === 0 && (
+                                            <span style={{ color: '#ff9800', marginLeft: '5px', fontSize: '11px' }}>(Exento)</span>
+                                        )}
+                                    </div>
+                                    <div>
+                                        <strong style={{ color: '#000' }}>Total:</strong>
+                                        <span style={{ color: '#000', marginLeft: '5px', fontWeight: 'bold' }}>{formatearMoneda(ordenSeleccionada.total)}</span>
+                                    </div>
+                                </div>
                             </div>
 
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '15px' }}>
-                                <div>
-                                    <strong style={{ color: '#000' }}>ID:</strong>
-                                    <span style={{ color: '#000', marginLeft: '5px' }}>{ordenSeleccionada.id}</span>
-                                </div>
-                                <div>
-                                    <strong style={{ color: '#000' }}>Fecha:</strong>
-                                    <span style={{ color: '#000', marginLeft: '5px' }}>{formatearFecha(ordenSeleccionada.fechaEmision)}</span>
-                                </div>
-                                <div>
-                                    <strong style={{ color: '#000' }}>Proveedor:</strong>
-                                    <span style={{ color: '#000', marginLeft: '5px' }}>{ordenSeleccionada.proveedorNombre}</span> 
-                                </div>
-                                <div>
-                                    <strong style={{ color: '#000' }}>Solicitud:</strong>
-                                    <span style={{ color: '#000', marginLeft: '5px' }}>{ordenSeleccionada.solicitudNumero || '-'}</span> 
-                                </div>
-                            </div>
-
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '15px', marginTop: '10px' }}>
-                                <div>
-                                    <strong style={{ color: '#000' }}>Subtotal:</strong>
-                                    <span style={{ color: '#000', marginLeft: '5px' }}>{formatearMoneda(ordenSeleccionada.subtotal)}</span> 
-                                </div>
-                                <div>
-                                    <strong style={{ color: '#000' }}>IVA:</strong>
-                                    <span style={{ color: '#000', marginLeft: '5px' }}>{formatearMoneda(ordenSeleccionada.iva)}</span>
-                                </div>
-                                <div>
-                                    <strong style={{ color: '#000' }}>Total:</strong>
-                                    <span style={{ color: '#000', marginLeft: '5px', fontWeight: 'bold' }}>{formatearMoneda(ordenSeleccionada.total)}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                            {/* Tabla de detalles */}
                             <h3 style={{ color: '#fff', marginBottom: '15px' }}>Detalle de Artículos</h3>
                             
                             {ordenSeleccionada.detalles && ordenSeleccionada.detalles.length > 0 ? (
@@ -711,53 +742,87 @@ const OrdenCompra = ({ onPageChange }) => {
                         </div>
                     )}
 
+                    {/* ===== CREACIÓN ===== */}
                     {view === 'create' && (
-                    <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                        <div className="user-form" style={{ width: '100%', maxWidth: '1200px', margin: '0 auto' }}>
-                            
-                            {/* 1. NÚMERO DE ORDEN (Igual al tuyo) */}
-                            <div style={{ background: '#2a2a2a', padding: '20px', borderRadius: '8px', marginBottom: '20px', borderLeft: '4px solid #3c6c3e' }}>
-                                <label style={{ color: '#aaa', fontSize: '11px', display: 'block', marginBottom: '5px' }}>NÚMERO DE ORDEN</label>
-                                <input className="input-base" value={nuevaOrden.numeroOrdenCompra} readOnly style={{ width: '100%', background: '#333', color: '#3c6c3e', fontWeight: 'bold' }} />
-                            </div>
-
-                            {/* 🚀 NUEVO: PANEL DE ANÁLISIS DE DISPONIBILIDAD (Sugerido por tu compañero) */}
-                            {solicitudOrigen && (
-                                <div style={{ 
-                                    background: proveedoresAptos.length > 0 ? '#1b2e1b' : '#2e1b1b', 
-                                    padding: '15px', borderRadius: '8px', marginBottom: '20px',
-                                    border: `1px solid ${proveedoresAptos.length > 0 ? '#3c6c3e' : '#8b2b2b'}`,
-                                    boxShadow: '0 4px 10px rgba(0,0,0,0.3)'
-                                }}>
-                                    <h4 style={{ margin: '0 0 10px 0', color: '#fff', fontSize: '13px', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                                        {buscandoAptos ? "⏳ Analizando mercado..." : "🔍 Proveedores con Stock Completo"}
-                                    </h4>
-                                    
-                                    {proveedoresAptos.length > 0 ? (
-                                        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                                            {proveedoresAptos.map(p => (
-                                                <button 
-                                                    key={p.id}
-                                                    className={`action-button ${nuevaOrden.idProveedor === p.id ? 'primary-button' : 'secondary-button'}`}
-                                                    style={{ fontSize: '12px', padding: '8px 15px', border: nuevaOrden.idProveedor === p.id ? '2px solid #fff' : 'none' }}
-                                                    onClick={() => handleSelectProveedor(p)}
-                                                >
-                                                    ✅ {p.nombre}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    ) : (
-                                        <div style={{ padding: '5px' }}>
-                                            <p style={{ color: '#ff4d4d', margin: '0', fontSize: '14px', fontWeight: 'bold' }}>
-                                                ⚠️ {analisisBloqueo || "Ningún proveedor suministra la totalidad de los artículos activos."}
-                                            </p>
-                                            <p style={{ color: '#aaa', margin: '5px 0 0 0', fontSize: '12px', fontStyle: 'italic' }}>
-                                                Sugerencia: Intente remover el artículo más restrictivo de la tabla inferior para encontrar coincidencias.
-                                            </p>
-                                        </div>
-                                    )}
+                        <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+                            <div className="user-form" style={{ width: '100%', maxWidth: '1200px', margin: '0 auto' }}>
+                                
+                                {/* NÚMERO DE ORDEN */}
+                                <div style={{ background: '#2a2a2a', padding: '20px', borderRadius: '8px', marginBottom: '20px', borderLeft: '4px solid #3c6c3e' }}>
+                                    <label style={{ color: '#aaa', fontSize: '11px', display: 'block', marginBottom: '5px' }}>NÚMERO DE ORDEN</label>
+                                    <input className="input-base" value={nuevaOrden.numeroOrdenCompra} readOnly style={{ width: '100%', background: '#333', color: '#3c6c3e', fontWeight: 'bold' }} />
                                 </div>
-                            )}
+
+                                {/* PANEL DE INFORMACIÓN DEL PROVEEDOR (IVA) */}
+                                {proveedorSeleccionado && (
+                                    <div style={{ 
+                                        background: proveedorEsResponsableInscripto() ? '#1b4a1b' : '#4a3b1b',
+                                        padding: '12px 20px',
+                                        borderRadius: '8px',
+                                        marginBottom: '20px',
+                                        borderLeft: `4px solid ${proveedorEsResponsableInscripto() ? '#4caf50' : '#ff9800'}`,
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center'
+                                    }}>
+                                        <div>
+                                            <span style={{ color: '#fff', fontWeight: 'bold' }}>Proveedor: {proveedorSeleccionado.nombre}</span>
+                                            <span style={{ 
+                                                color: '#fff', 
+                                                marginLeft: '20px',
+                                                background: 'rgba(255,255,255,0.2)',
+                                                padding: '4px 10px',
+                                                borderRadius: '20px',
+                                                fontSize: '12px'
+                                            }}>
+                                                {getCategoriaIVATexto()}
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <span style={{ color: '#fff' }}>
+                                                {proveedorEsResponsableInscripto() ? '✅ Aplica IVA 21%' : '⛔ Exento / Sin IVA'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* PANEL DE ANÁLISIS DE DISPONIBILIDAD */}
+                                {solicitudOrigen && (
+                                    <div style={{ 
+                                        background: proveedoresAptos.length > 0 ? '#1b2e1b' : '#2e1b1b', 
+                                        padding: '15px', borderRadius: '8px', marginBottom: '20px',
+                                        border: `1px solid ${proveedoresAptos.length > 0 ? '#3c6c3e' : '#8b2b2b'}`,
+                                        boxShadow: '0 4px 10px rgba(0,0,0,0.3)'
+                                    }}>
+                                        <h4 style={{ margin: '0 0 10px 0', color: '#fff', fontSize: '13px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                                            {buscandoAptos ? "⏳ Analizando mercado..." : "🔍 Proveedores con Stock Completo"}
+                                        </h4>
+                                        
+                                        {proveedoresAptos.length > 0 ? (
+                                            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                                                {proveedoresAptos.map(p => (
+                                                    <button 
+                                                        key={p.id}
+                                                        className={`action-button ${nuevaOrden.idProveedor === p.id ? 'primary-button' : 'secondary-button'}`}
+                                                        style={{ fontSize: '12px', padding: '8px 15px', border: nuevaOrden.idProveedor === p.id ? '2px solid #fff' : 'none' }}
+                                                        onClick={() => handleSelectProveedor(p)}
+                                                    >
+                                                        ✅ {p.nombre} ({p.categoriaIva === 'RESPONSABLE_INSCRIPTO' ? 'RI' : 'M/EX'})
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <div style={{ padding: '5px' }}>
+                                                <p style={{ color: '#ff4d4d', margin: '0', fontSize: '14px', fontWeight: 'bold' }}>
+                                                    ⚠️ {analisisBloqueo || "Ningún proveedor suministra la totalidad de los artículos activos."}
+                                                </p>
+                                                <p style={{ color: '#aaa', margin: '5px 0 0 0', fontSize: '12px', fontStyle: 'italic' }}>
+                                                    Sugerencia: Intente remover el artículo más restrictivo de la tabla inferior para encontrar coincidencias.
+                                                </p>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
 
                                 {/* Selección de Proveedor y Solicitud */}
                                 <div style={{ 
@@ -858,7 +923,7 @@ const OrdenCompra = ({ onPageChange }) => {
                                     </div>
                                 </div>
 
-                                {/* Tabla de artículos con cantidades editables */}
+                                {/* Tabla de artículos */}
                                 <div style={{ 
                                     background: '#2a2a2a', 
                                     padding: '20px', 
@@ -948,7 +1013,7 @@ const OrdenCompra = ({ onPageChange }) => {
                                     )}
                                 </div>
 
-                                {/* Resumen de totales */}
+                                {/* Resumen de totales con IVA condicional */}
                                 {nuevaOrden.detalles.length > 0 && (
                                     <div style={{ 
                                         background: '#1a1a1a', 
@@ -957,14 +1022,22 @@ const OrdenCompra = ({ onPageChange }) => {
                                         marginBottom: '20px',
                                         border: '1px solid #3c6c3e'
                                     }}>
-                                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '30px' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '30px', alignItems: 'center' }}>
                                             <div>
                                                 <span style={{ color: '#aaa' }}>Subtotal: </span>
                                                 <span style={{ color: '#fff', fontWeight: 'bold' }}>${calcularSubtotal()}</span>
                                             </div>
                                             <div>
-                                                <span style={{ color: '#aaa' }}>IVA (21%): </span>
-                                                <span style={{ color: '#fff', fontWeight: 'bold' }}>${calcularIVA()}</span>
+                                                <span style={{ color: '#aaa' }}>IVA: </span>
+                                                <span style={{ 
+                                                    color: proveedorEsResponsableInscripto() ? '#fff' : '#ff9800', 
+                                                    fontWeight: 'bold' 
+                                                }}>
+                                                    ${calcularIVA()}
+                                                    {!proveedorEsResponsableInscripto() && proveedorSeleccionado && 
+                                                        <span style={{ fontSize: '10px', marginLeft: '5px', color: '#ff9800' }}>(Exento)</span>
+                                                    }
+                                                </span>
                                             </div>
                                             <div>
                                                 <span style={{ color: '#aaa' }}>TOTAL: </span>
@@ -1008,7 +1081,6 @@ const OrdenCompra = ({ onPageChange }) => {
                     onSelect={handleSelectProveedor} 
                     onClose={() => setShowProveedorModal(false)} 
                     proveedoresAptos={proveedoresAptos} 
-                    // Si hay solicitudOrigen, activamos el modo filtro estricto
                     isFiltering={!!solicitudOrigen} 
                 />
             )}

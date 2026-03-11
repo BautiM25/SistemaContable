@@ -10,9 +10,11 @@ import org.springframework.stereotype.Service;
 
 import com.sistemacontable.sistema_contable.ElectroAndes.Model.Article;
 import com.sistemacontable.sistema_contable.ElectroAndes.Model.Asiento;
+import com.sistemacontable.sistema_contable.ElectroAndes.Model.CategoriaIva;
 import com.sistemacontable.sistema_contable.ElectroAndes.Model.CuentaCorriente;
 import com.sistemacontable.sistema_contable.ElectroAndes.Model.DetalleOrdenCompra;
 import com.sistemacontable.sistema_contable.ElectroAndes.Model.DetalleSolicitud;
+import com.sistemacontable.sistema_contable.ElectroAndes.Model.Divisa;
 import com.sistemacontable.sistema_contable.ElectroAndes.Model.OrdenCompra;
 import com.sistemacontable.sistema_contable.ElectroAndes.Model.Proveedor;
 import com.sistemacontable.sistema_contable.ElectroAndes.Model.SolicitudCompra;
@@ -50,7 +52,17 @@ public class OrdenCompraServiceImp implements OrdenCompraService {
 
         CuentaCorriente cc = proveedor.getCuentaCorriente();
 
-        // 2. Preparar Cabecera de la Orden
+        // 2. Verificar categoría de IVA del proveedor
+        boolean proveedorEsResponsableInscripto = proveedor.getCategoriaIva() == CategoriaIva.RESPONSABLE_INSCRIPTO;
+        
+        // Log para debugging
+        System.out.println("===== IVA DEBUG =====");
+        System.out.println("Proveedor: " + proveedor.getNombre());
+        System.out.println("Categoría IVA: " + proveedor.getCategoriaIva());
+        System.out.println("¿Es Responsable Inscripto? " + proveedorEsResponsableInscripto);
+        System.out.println("=====================");
+
+        // 3. Preparar Cabecera de la Orden
         OrdenCompra orden = new OrdenCompra();
         orden.setNumeroOrdenCompra(dto.getNumeroOrdenCompra());
         orden.setFechaEmision(LocalDate.now());
@@ -62,8 +74,9 @@ public class OrdenCompraServiceImp implements OrdenCompraService {
         orden.setObservaciones(dto.getObservaciones());
 
         BigDecimal acumuladoSubtotal = BigDecimal.ZERO;
+        Divisa divisaPorDefecto = Divisa.ARS; // Valor por defecto
 
-        // 3. Procesar items: Stock, Solicitud y Detalles de Orden
+        // 4. Procesar items: Stock, Solicitud y Detalles de Orden
         for (CreateDetalleOrdenCompraDto itemDto : dto.getDetalles()) {
             DetalleSolicitud dSol = solicitud.getDetalles().stream()
                     .filter(ds -> ds.getArticulo().getId().equals(itemDto.getIdArticulo()) && ds.getEstado())
@@ -95,15 +108,32 @@ public class OrdenCompraServiceImp implements OrdenCompraService {
 
             BigDecimal linea = itemDto.getPrecioUnitario().multiply(BigDecimal.valueOf(itemDto.getCantidad()));
             acumuladoSubtotal = acumuladoSubtotal.add(linea);
+            
+            // 🔥 CORREGIDO: Obtener la divisa del primer artículo (ahora como enum)
+            if (articulo.getDivisa() != null) {
+                divisaPorDefecto = articulo.getDivisa();
+            }
         }
 
-        // 4. Totales de la Orden
+        // 5. Totales de la Orden (AHORA CONDICIONAL)
         orden.setSubtotal(acumuladoSubtotal);
-        orden.setIva(acumuladoSubtotal.multiply(new BigDecimal("0.21")));
-        orden.setTotal(orden.getSubtotal().add(orden.getIva()));
-        orden.setMoneda(orden.getDetalles().get(0).getArticulo().getDivisa());
+        
+        BigDecimal iva = BigDecimal.ZERO;
+        BigDecimal total = orden.getSubtotal();
 
-        // --- 5. GENERAR ASIENTO CONTABLE (ORDENADO) ---
+        if (proveedorEsResponsableInscripto) {
+            iva = acumuladoSubtotal.multiply(new BigDecimal("0.21"));
+            total = orden.getSubtotal().add(iva);
+            System.out.println("✅ Proveedor RI - Aplicando IVA: $" + iva);
+        } else {
+            System.out.println("⛔ Proveedor no RI - Sin IVA");
+        }
+
+        orden.setIva(iva);
+        orden.setTotal(total);
+        orden.setMoneda(divisaPorDefecto);
+
+        // 6. GENERAR ASIENTO CONTABLE (AHORA CONDICIONAL)
         CreateAsientoDto asientoDto = new CreateAsientoDto();
         asientoDto.setFecha(LocalDate.now());
         asientoDto.setDescripcion("Compra s/ OC: " + orden.getNumeroOrdenCompra() + " - Prov: " + proveedor.getNombre());
@@ -111,12 +141,14 @@ public class OrdenCompraServiceImp implements OrdenCompraService {
 
         List<CreateDetalleAsientoDto> detallesAsiento = new ArrayList<>();
 
-        // IMPORTANTE: Primero agregamos todos los movimientos al DEBE para que aparezcan arriba
-        // DEBE: Mercaderías (ID 15)
+        // DEBE: Mercaderías (ID 15) - SIEMPRE VA
         detallesAsiento.add(new CreateDetalleAsientoDto(15L, orden.getSubtotal().doubleValue(), 0.0));
 
-        // DEBE: IVA Crédito Fiscal (ID 40)
-        detallesAsiento.add(new CreateDetalleAsientoDto(40L, orden.getIva().doubleValue(), 0.0));
+        // DEBE: IVA Crédito Fiscal (ID 40) - SOLO SI EL PROVEEDOR ES RI
+        if (proveedorEsResponsableInscripto && iva.compareTo(BigDecimal.ZERO) > 0) {
+            detallesAsiento.add(new CreateDetalleAsientoDto(40L, orden.getIva().doubleValue(), 0.0));
+            System.out.println("✅ Agregando línea de IVA Crédito Fiscal");
+        }
 
         // Determinamos la cuenta del HABER según condición
         Long cuentaHaberId;
@@ -128,7 +160,7 @@ public class OrdenCompraServiceImp implements OrdenCompraService {
             cuentaHaberId = 22L; // ID de la cuenta PROVEEDORES
         }
 
-        // HABER: Al final de la lista para que aparezca abajo en la vista
+        // HABER: Al final de la lista por el TOTAL
         detallesAsiento.add(new CreateDetalleAsientoDto(
             cuentaHaberId, 
             0.0, 
@@ -136,17 +168,22 @@ public class OrdenCompraServiceImp implements OrdenCompraService {
         ));
 
         asientoDto.setDetalles(detallesAsiento);
+        
+        // Verificar balance del asiento
+        double totalDebe = detallesAsiento.stream().mapToDouble(CreateDetalleAsientoDto::getDebe).sum();
+        double totalHaber = detallesAsiento.stream().mapToDouble(CreateDetalleAsientoDto::getHaber).sum();
+        System.out.println("Balance asiento - Debe: $" + totalDebe + " | Haber: $" + totalHaber);
+        
         Asiento asientoCreado = asientoService.crearAsiento(asientoDto);
         orden.setAsientoAsociado(asientoCreado);
 
-        // --- 6. ACTUALIZAR CUENTA CORRIENTE ---
+        // 7. ACTUALIZAR CUENTA CORRIENTE
         // Solo aumentamos el saldo si la compra es a CRÉDITO
-        if (!esContado) {
+        if (!esContado && cc != null) {
             cc.setSaldoActual(cc.getSaldoActual().add(orden.getTotal()));
-            proveedorRepo.save(proveedor);
         }
 
-        // 7. Persistir cambios en Solicitud y Orden
+        // 8. Persistir cambios en Solicitud y Orden
         solicitud.setFechaEmisionOC(LocalDate.now());
         boolean tieneItemsPendientes = solicitud.getDetalles().stream().anyMatch(DetalleSolicitud::getEstado);
         if (!tieneItemsPendientes) {
@@ -154,7 +191,10 @@ public class OrdenCompraServiceImp implements OrdenCompraService {
         }
 
         solicitudRepo.save(solicitud);
-        return ordenRepo.save(orden);
+        OrdenCompra ordenGuardada = ordenRepo.save(orden);
+        
+        System.out.println("✅ Orden generada exitosamente. ID: " + ordenGuardada.getId());
+        return ordenGuardada;
     }
 
     @Override
